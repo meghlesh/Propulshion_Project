@@ -1,0 +1,59 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Candidates | Propulsion Technology</title>
+  <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#F4F8F2] text-[#053830] font-sans">
+
+  <!-- Top Nav -->
+  <nav class="bg-[#053830] text-white py-4 px-6 flex justify-between items-center shadow-md">
+    <h1 class="text-2xl font-bold">Manage Candidates</h1>
+    <div>
+      <a href="{% url 'admin_dashboard' %}" class="text-[#FF9728] font-semibold hover:text-white mr-6">Dashboard</a>
+      <a href="{% url 'admin_logout' %}" class="bg-[#FF9728] text-[#053830] px-4 py-2 rounded-xl font-semibold hover:bg-white hover:text-[#053830] transition-all">Logout</a>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto mt-10 bg-white p-8 rounded-3xl shadow-2xl border border-[#D2E8B8]/40">
+    <h2 class="text-3xl font-extrabold mb-6 text-center text-[#053830]">Registered Candidates</h2>
+
+    {% if candidates %}
+    <div class="overflow-x-auto">
+      <table class="min-w-full border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+        <thead class="bg-[#053830] text-white">
+          <tr>
+            <th class="px-6 py-3 text-left">Full Name</th>
+            <th class="px-6 py-3 text-left">Username</th>
+            <th class="px-6 py-3 text-left">Email</th>
+            <th class="px-6 py-3 text-left">Phone</th>
+            <th class="px-6 py-3 text-left">Location</th>
+            <th class="px-6 py-3 text-left">School / University</th>
+            <th class="px-6 py-3 text-left">Joined</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          {% for c in candidates %}
+          <tr class="hover:bg-[#EAF4E0] transition-all">
+            <td class="px-6 py-3 font-semibold">{{ c.first_name_legal }} {{ c.last_name }}</td>
+            <td class="px-6 py-3">{{ c.user.username }}</td>
+            <td class="px-6 py-3">{{ c.user.email }}</td>
+            <td class="px-6 py-3">{{ c.phone_number }}</td>
+            <td class="px-6 py-3">{{ c.city }}, {{ c.state }}</td>
+            <td class="px-6 py-3">{{ c.school }}</td>
+            <td class="px-6 py-3 text-sm text-gray-600">{{ c.created_at|date:"M d, Y" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <p class="text-center text-gray-600 mt-4 text-lg">No candidates have registered yet.</p>
+    {% endif %}
+  </main>
+</body>
+</html>

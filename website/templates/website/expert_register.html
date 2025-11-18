@@ -1,0 +1,189 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Expert Registration | Propulsion Technology</title>
+  <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+
+  <!-- Poppins Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Poppins', 'sans-serif'] },
+          colors: {
+            'primary-green': '#053830',
+            'accent-green': '#D2E8B8',
+            'highlight-gold': '#FF9728',
+            'card-bg': '#F1F2F0',
+            'dark-text': '#262626',
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #D2E8B8;
+      background-image: radial-gradient(circle at center, rgba(5, 56, 48, 0.1) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+    .login-card {
+      box-shadow: 0 10px 30px rgba(5, 56, 48, 0.15), 0 5px 15px rgba(5, 56, 48, 0.05);
+    }
+  </style>
+</head>
+
+<body class="flex items-center justify-center min-h-screen p-4 font-sans text-dark-text">
+
+<div class="bg-white login-card rounded-3xl p-10 w-full max-w-lg border border-gray-100">
+    
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-extrabold text-primary-green">Expert Registration</h1>
+      <p class="text-gray-500 text-sm mt-1">Create your expert account</p>
+    </div>
+
+    {% if messages %}
+    <div class="mb-4">
+        {% for message in messages %}
+        <p class="bg-red-100 text-red-600 p-2 rounded-xl text-center font-semibold">{{ message }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="POST" class="space-y-4" id="expertForm" novalidate>
+        {% csrf_token %}
+
+        <!-- FULL NAME -->
+        <div>
+            <label class="block text-gray-700 font-semibold mb-1">Full Name (Optional)</label>
+            <input type="text" id="full_name" name="full_name"
+                   class="w-full px-5 py-3 border-2 border-accent-green rounded-xl bg-card-bg focus:border-primary-green transition"
+                   placeholder="Enter full name" maxlength="200">
+            <p id="nameError" class="text-red-600 text-sm mt-1 hidden"></p>
+        </div>
+
+        <!-- USERNAME -->
+        <div>
+            <label class="block text-gray-700 font-semibold mb-1">Username</label>
+            <input type="text" name="username" required
+                   class="w-full px-5 py-3 border-2 border-accent-green rounded-xl bg-card-bg focus:border-primary-green transition"
+                   placeholder="Enter username" maxlength="50">
+        </div>
+
+        <!-- EMAIL -->
+        <div>
+            <label class="block text-gray-700 font-semibold mb-1">Email</label>
+            <input type="email" id="email" name="email" required
+                   class="w-full px-5 py-3 border-2 border-accent-green rounded-xl bg-card-bg focus:border-primary-green transition"
+                   placeholder="Enter email">
+            <p id="emailError" class="text-red-600 text-sm mt-1 hidden"></p>
+        </div>
+
+        <!-- PASSWORD -->
+        <div>
+            <label class="block text-gray-700 font-semibold mb-1">Password</label>
+            <input type="password" id="password" name="password" required
+                   class="w-full px-5 py-3 border-2 border-accent-green rounded-xl bg-card-bg focus:border-primary-green transition"
+                   placeholder="Enter password" minlength="4" maxlength="20">
+            <p id="passwordError" class="text-red-600 text-sm mt-1 hidden"></p>
+        </div>
+
+        <!-- SUBMIT -->
+        <button type="submit" id="submitBtn"
+                class="w-full bg-primary-green text-white font-bold py-3.5 rounded-xl hover:bg-highlight-gold hover:text-dark-text transition">
+            Register
+        </button>
+    </form>
+
+    <div class="mt-8 text-center border-t border-gray-100 pt-6">
+      <p class="text-gray-600 text-sm mb-3">Already an Expert?</p>
+      <a href="{% url 'expert_login' %}" class="px-5 py-2.5 bg-highlight-gold text-dark-text font-semibold rounded-xl hover:bg-primary-green hover:text-white transition">
+         Login Now
+      </a>
+    </div>
+
+    <div class="text-center mt-6">
+      <a href="{% url 'home' %}" class="text-primary-green font-semibold hover:text-highlight-gold transition">
+        ← Back to Main Website
+      </a>
+    </div>
+</div>
+
+<!-- VALIDATION SCRIPT -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  const nameField = document.getElementById("full_name");
+  const emailField = document.getElementById("email");
+  const passwordField = document.getElementById("password");
+  const submitBtn = document.getElementById("submitBtn");
+
+  // FULL NAME VALIDATION (allow spaces, but NOT at start)
+  nameField.addEventListener("input", () => {
+    const val = nameField.value;
+
+    // ❌ Leading space not allowed
+    if (val.startsWith(" ")) {
+      showError("nameError", "Name cannot start with a space.");
+    }
+    // ❌ Only alphabets + spaces allowed
+    else if (!/^[A-Za-z ]*$/.test(val)) {
+      showError("nameError", "Only alphabets and spaces are allowed.");
+    }
+    else {
+      hideError("nameError");
+    }
+  });
+
+  // EMAIL VALIDATION
+  emailField.addEventListener("input", () => {
+    const val = emailField.value.trim();
+
+    if (!val.includes("@")) {
+      showError("emailError", "Email must contain '@'.");
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
+      showError("emailError", "Enter a valid email address.");
+    } else {
+      hideError("emailError");
+    }
+  });
+
+  // PASSWORD VALIDATION
+  passwordField.addEventListener("input", () => {
+    const len = passwordField.value.length;
+
+    if (len < 4) {
+      showError("passwordError", "Minimum 4 characters required.");
+    } else if (len > 20) {
+      showError("passwordError", "Maximum 20 characters allowed.");
+    } else {
+      hideError("passwordError");
+    }
+  });
+
+  // SHOW ERROR
+  function showError(id, msg) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.classList.remove("hidden");
+  }
+
+  // HIDE ERROR
+  function hideError(id) {
+    document.getElementById(id).classList.add("hidden");
+  }
+
+});
+</script>
+
+</body>
+</html>

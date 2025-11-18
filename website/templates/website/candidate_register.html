@@ -1,0 +1,394 @@
+{% load static %}
+{% load form_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Candidate Registration | Propulsion Technology</title>
+  <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#053830',
+            secondary: '#D2E8B8',
+            accent: '#FF9728',
+            lightbg: '#F4F8F2',
+          },
+          fontFamily: {
+            sans: ['Poppins', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* ✅ Default small screen fixes */
+    @media (max-width: 450px) {
+      form.grid {
+        grid-template-columns: 1fr !important;
+        gap: 0.75rem !important;
+      }
+      label {
+        font-size: 12px !important;
+      }
+      input, select, textarea {
+        font-size: 13px !important;
+        width: 100% !important;
+        padding: 6px 10px !important;
+      }
+      h1, h2 {
+        font-size: 1rem !important;
+      }
+      button {
+        font-size: 0.9rem !important;
+        padding: 8px 12px !important;
+        width: 100%;
+      }
+      main {
+        padding: 1rem !important;
+        margin: 0.5rem !important;
+      }
+    }
+
+    @media (max-width: 320px) {
+      main {
+        padding: 0.75rem !important;
+      }
+      h1 {
+        font-size: 0.95rem !important;
+      }
+      input, select, textarea {
+        font-size: 12px !important;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-lightbg font-sans text-primary min-h-screen flex flex-col">
+
+  <!-- Header -->
+<header class="bg-primary text-white py-4 shadow-md">
+  <div class="max-w-6xl mx-auto flex justify-between items-center px-4 sm:px-6 flex-wrap gap-2">
+    <h1 class="text-xl sm:text-2xl font-bold tracking-wide">Propulsion Technology</h1>
+
+    <!-- 🔹 Back to Home button (top-right only) -->
+    <a href="{% url 'home' %}"
+       class="bg-accent text-primary font-semibold px-4 sm:px-6 py-2 rounded-full
+              hover:bg-white hover:text-primary transition-all duration-300 text-sm sm:text-base shadow-md">
+      ← Back to Home
+    </a>
+  </div>
+</header>
+  <!-- Form Container -->
+  <main class="flex-grow w-full max-w-5xl mx-auto my-4 sm:my-8 bg-white 
+               p-3 sm:p-6 md:p-10 rounded-3xl shadow-2xl border border-secondary/40 
+               overflow-x-hidden">
+
+    <h1 class="text-2xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-center text-primary">
+      Create Your Candidate Account
+    </h1>
+
+    <!-- Global Form Errors -->
+    {% if form.non_field_errors %}
+      <div class="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded mb-6 text-sm">
+        <strong class="font-semibold">⚠ Please fix the errors below:</strong>
+        <ul class="mt-2 list-disc list-inside">
+          {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <!-- Django Messages -->
+    {% if messages %}
+      <div class="mb-6">
+        {% for message in messages %}
+          <div class="p-3 mb-3 text-center rounded-lg 
+            {% if message.tags == 'success' %}bg-green-100 text-green-800 border border-green-300
+            {% elif message.tags == 'error' %}bg-red-100 text-red-700 border border-red-300
+            {% else %}bg-yellow-100 text-yellow-700 border border-yellow-300{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- Registration Form -->
+    <form method="POST" 
+          class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-4 sm:gap-y-5 w-full">
+      {% csrf_token %}
+
+      <!-- PERSONAL INFORMATION -->
+      <div class="col-span-2">
+        <h2 class="text-base sm:text-lg md:text-xl font-semibold mb-3 text-primary border-b-2 border-secondary pb-1">
+          Personal Information
+        </h2>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">First Name (Legal) *</label>
+        {{ form.first_name_legal|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
+        {% if form.first_name_legal.errors %}
+          <p class="text-red-600 text-sm mt-1">{{ form.first_name_legal.errors.0 }}</p>
+        {% endif %}
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">Username *</label>
+        {{ form.username|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
+        {% if form.username.errors %}
+          <p class="text-red-600 text-sm mt-1">{{ form.username.errors.0 }}</p>
+        {% endif %}
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">Middle Name</label>
+        {{ form.middle_name|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
+        {% if form.middle_name.errors %}
+          <p class="text-red-600 text-sm mt-1">{{ form.middle_name.errors.0 }}</p>
+        {% endif %}
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">Last Name *</label>
+        {{ form.last_name|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
+        {% if form.last_name.errors %}
+          <p class="text-red-600 text-sm mt-1">{{ form.last_name.errors.0 }}</p>
+        {% endif %}
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">Preferred Email *</label>
+        {{ form.preferred_email|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
+        {% if form.preferred_email.errors %}
+          <p class="text-red-600 text-sm mt-1">{{ form.preferred_email.errors.0 }}</p>
+        {% endif %}
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">Phone Number *</label>
+        {{ form.phone_number|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
+        {% if form.phone_number.errors %}
+          <p class="text-red-600 text-sm mt-1">{{ form.phone_number.errors.0 }}</p>
+        {% endif %}
+      </div>
+
+      <!-- ADDRESS INFORMATION -->
+      <div class="col-span-2 mt-4 sm:mt-6">
+        <h2 class="text-base sm:text-lg md:text-xl font-semibold mb-3 text-primary border-b-2 border-secondary pb-1">
+          Address Information
+        </h2>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">Address Line 1 *</label>
+        {{ form.address_line1|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
+        {% if form.address_line1.errors %}
+          <p class="text-red-600 text-sm mt-1">{{ form.address_line1.errors.0 }}</p>
+        {% endif %}
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">Country *</label>
+        {{ form.country|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
+        {% if form.country.errors %}
+          <p class="text-red-600 text-sm mt-1">{{ form.country.errors.0 }}</p>
+        {% endif %}
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">State *</label>
+        {{ form.state|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
+        {% if form.state.errors %}
+          <p class="text-red-600 text-sm mt-1">{{ form.state.errors.0 }}</p>
+        {% endif %}
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">City *</label>
+        {{ form.city|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
+        {% if form.city.errors %}
+          <p class="text-red-600 text-sm mt-1">{{ form.city.errors.0 }}</p>
+        {% endif %}
+      </div>
+
+      <!-- EDUCATION -->
+      <div class="col-span-2 mt-4 sm:mt-6">
+        <h2 class="text-base sm:text-lg md:text-xl font-semibold mb-3 text-primary border-b-2 border-secondary pb-1">
+          Education Details
+        </h2>
+      </div>
+
+      <div class="col-span-2">
+        <label class="block text-sm font-semibold mb-1">School / University *</label>
+        {{ form.school|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
+        {% if form.school.errors %}
+          <p class="text-red-600 text-sm mt-1">{{ form.school.errors.0 }}</p>
+        {% endif %}
+      </div>
+
+      <!-- ACCOUNT SECURITY -->
+      <div class="col-span-2 mt-4 sm:mt-6">
+        <h2 class="text-base sm:text-lg md:text-xl font-semibold mb-3 text-primary border-b-2 border-secondary pb-1">
+          Account Security
+        </h2>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">Password *</label>
+        {{ form.password|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
+        {% if form.password.errors %}
+          <p class="text-red-600 text-sm mt-1">{{ form.password.errors.0 }}</p>
+        {% endif %}
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">Confirm Password *</label>
+        {{ form.confirm_password|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
+        {% if form.confirm_password.errors %}
+          <p class="text-red-600 text-sm mt-1">{{ form.confirm_password.errors.0 }}</p>
+        {% endif %}
+      </div>
+
+      <!-- SUBMIT -->
+      <div class="col-span-2 text-center mt-6 sm:mt-8">
+        <button type="submit" 
+                class="bg-primary text-white px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base 
+                       rounded-full font-semibold hover:bg-accent hover:text-primary 
+                       transition-all shadow-md w-full sm:w-auto">
+          Register
+        </button>
+
+        <p class="text-gray-600 mt-3 text-sm sm:text-base">
+          Already registered?
+          <a href="{% url 'candidate_login' %}" class="text-accent font-semibold hover:underline">
+            Login here
+          </a>
+        </p>
+      </div>
+    </form>
+  </main>
+
+  <footer class="bg-primary text-white py-4 text-center text-xs sm:text-sm mt-6">
+    © 2025 Propulsion Technology. All Rights Reserved.
+  </footer>
+
+  <!-- Validation JS (no trim) -->
+ <script>
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.querySelector("form");
+  const inputs = Array.from(form.querySelectorAll("input, select, textarea"))
+                      .filter(i => i.type !== "hidden" && i.type !== "submit" && i.type !== "button");
+
+  function getErrorElement(input) {
+    let error = input.parentNode.querySelector(".js-error-msg");
+    if (!error) {
+      error = document.createElement("p");
+      error.className = "js-error-msg text-red-600 text-sm mt-1";
+      input.parentNode.appendChild(error);
+    }
+    return error;
+  }
+
+  function validateField(input) {
+    const name = input.name;
+    const value = input.value;
+    const error = getErrorElement(input);
+    let message = "";
+
+    // Required check (uses input.required boolean)
+    if (input.required && !value) {
+      message = "This field is required.";
+    }
+    // Name fields: only letters, no spaces or symbols
+    else if (["first_name_legal", "middle_name", "last_name"].includes(name) && value) {
+      if (!/^[A-Za-z]+$/.test(value)) message = "Only letters allowed, no spaces or symbols.";
+    }
+    // Email validation
+    else if (name === "preferred_email" && value) {
+      // Note: basic email check (not exhaustive)
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) message = "Invalid email address.";
+    }
+    // Phone validation: digits only, 8-10 digits
+    else if (name === "phone_number" && value) {
+      if (!/^\d{8,10}$/.test(value)) message = "Phone number must be 8–10 digits.";
+    }
+    // Password length & no spaces
+    else if (name === "password" && value) {
+      if (value.length < 8) message = "Password must be at least 8 characters.";
+      else if (/\s/.test(value)) message = "Password cannot contain spaces.";
+    }
+    // Confirm password matches
+    else if (name === "confirm_password" && value) {
+      const pass = form.querySelector("input[name='password']").value;
+      if (value !== pass) message = "Passwords do not match.";
+    }
+
+    if (message) {
+      error.textContent = message;
+      input.classList.add("border-red-500");
+    } else {
+      error.textContent = "";
+      input.classList.remove("border-red-500");
+    }
+
+    return !message;
+  }
+
+  inputs.forEach(i => {
+    i.addEventListener("input", () => validateField(i));
+    i.addEventListener("blur", () => validateField(i));
+  });
+
+  form.addEventListener("submit", e => {
+    let valid = true;
+    inputs.forEach(i => { if (!validateField(i)) valid = false; });
+    if (!valid) {
+      e.preventDefault();
+      const firstInvalid = inputs.find(i => !validateField(i));
+      if (firstInvalid) firstInvalid.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  });
+});
+</script>
+
+
+<!-- ✅ Loader Overlay -->
+<div id="loader-overlay" class="hidden fixed inset-0 bg-white/90 flex flex-col items-center justify-center z-50">
+  <div class="w-14 h-14 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+  <p class="mt-4 text-primary font-semibold text-lg">Processing your registration...</p>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.querySelector("form");
+  const loader = document.getElementById("loader-overlay");
+
+  form.addEventListener("submit", function (e) {
+    // Run your existing validation logic
+    const inputs = Array.from(form.querySelectorAll("input, select, textarea"))
+                        .filter(i => i.type !== "hidden" && i.type !== "submit" && i.type !== "button");
+    let valid = true;
+    inputs.forEach(i => {
+      const errorEl = i.parentNode.querySelector(".js-error-msg");
+      if (errorEl && errorEl.textContent.trim() !== "") valid = false;
+    });
+
+    // If the form is valid, show loader immediately
+    if (valid) {
+      loader.classList.remove("hidden");
+    }
+  });
+});
+</script>
+
+
+</body>
+</html>

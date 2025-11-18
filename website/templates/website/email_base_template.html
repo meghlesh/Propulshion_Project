@@ -1,0 +1,102 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ submission_type }} Update</title>
+    <!-- Inline CSS is essential for cross-client email compatibility -->
+    <style>
+        body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+        table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+        img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+        a { color: #FF9728; text-decoration: none; }
+        .cta-button {
+            display: inline-block; padding: 12px 24px; border-radius: 8px;
+            background-color: #FF9728; color: #053830; font-weight: 700;
+            text-decoration: none; border: 1px solid #FF9728;
+            box-shadow: 0 4px 12px rgba(255, 151, 40, 0.3);
+        }
+        .content-table th, .content-table td {
+            padding: 10px; border-bottom: 1px solid #D2E8B8; text-align: left;
+        }
+        .content-table th {
+            background-color: #F1F2F0; color: #053830; font-weight: 600; width: 35%;
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f6f6f6; font-family: 'Poppins', sans-serif;">
+
+<!-- Main Container Table -->
+<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed; background-color: #f6f6f6;">
+    <tr>
+        <td align="center" style="padding: 30px 10px;">
+            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);">
+                
+                <!-- Header / Logo -->
+                <tr>
+                    <td align="center" style="padding: 30px 20px 20px 20px; background-color: #053830; border-radius: 12px 12px 0 0;">
+                        <span style="font-size: 24px; font-weight: 700; color: #D2E8B8; letter-spacing: 2px;">
+                            PROPULSION TECH
+                        </span>
+                        <p style="font-size: 14px; color: #FF9728; margin: 5px 0 0 0;">Digital Story Pioneers</p>
+                    </td>
+                </tr>
+
+                <!-- Content Body -->
+                <tr>
+                    <td align="left" style="padding: 40px 30px 20px 30px; color: #262626; font-size: 16px; line-height: 1.6;">
+                        <h2 style="color: #053830; font-size: 24px; font-weight: 700; margin-top: 0;">Hello, {{ user_name }}!</h2>
+                        
+                        <!-- DECLINE-SPECIFIC MESSAGE -->
+                        <p style="margin-bottom: 20px; font-weight: 500;">
+                            {{ intro_message|safe }}
+                        </p>
+                        
+                        <p style="margin-bottom: 25px;">
+                            Here are the details regarding your request and its status:
+                        </p>
+                        
+                        <!-- Details Table -->
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" class="content-table" style="border-collapse: collapse; border-radius: 8px; overflow: hidden; margin-bottom: 30px;">
+                            {% for key, value in details.items %}
+                                <tr>
+                                    <th style="font-size: 14px; color: #053830; padding: 10px; border-bottom: 1px solid #D2E8B8; text-align: left; background-color: #F1F2F0;">{{ key }}</th>
+                                    <td style="font-size: 14px; color: #262626; padding: 10px; border-bottom: 1px solid #D2E8B8; text-align: left; background-color: #ffffff;">{{ value }}</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                        
+                        <!-- CTA Button -->
+                        {% if site_url %}
+                        <p align="center" style="margin: 30px 0;">
+                            <a href="{{ site_url }}" target="_blank" class="cta-button" style="display: inline-block; padding: 12px 24px; border-radius: 8px; background-color: #FF9728; color: #053830; font-weight: 700; text-decoration: none; border: 1px solid #FF9728;">
+                                View Our Website
+                            </a>
+                        </p>
+                        {% endif %}
+                        
+                        <p style="margin-top: 20px; font-size: 14px; color: #5D5757;">
+                            Thank you for reaching out to Propulsion Technology!
+                        </p>
+                    </td>
+                </tr>
+
+                <!-- Footer -->
+                <tr>
+                    <td align="center" style="padding: 20px 30px 30px 30px; font-size: 12px; color: #5D5757; border-top: 1px solid #e0e0e0;">
+                        <p style="margin: 0;">&copy; 2025 Propulsion Technology. All rights reserved.</p>
+                        <p style="margin: 5px 0 0 0;">
+                            <a href="#" style="color: #5D5757;">Privacy Policy</a> | 
+                            <a href="#" style="color: #5D5757;">Terms of Service</a>
+                        </p>
+                    </td>
+                </tr>
+
+            </table>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>

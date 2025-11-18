@@ -1,0 +1,244 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Portfolio | Propulsion Technology</title>
+  <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#EAF4E0] font-sans text-[#053830]">
+
+<!-- Blur Loader -->
+<div id="blur-loader"
+     class="fixed inset-0 flex items-center justify-center bg-white/60 backdrop-blur-md z-[9999] hidden">
+    <div class="w-16 h-16 border-4 border-[#053830] border-t-transparent rounded-full animate-spin"></div>
+</div>
+
+  <!-- NAVBAR -->
+  <nav class="bg-[#053830] text-white p-5 flex justify-between items-center shadow-lg">
+    <h1 class="text-2xl font-bold">Manage Portfolio</h1>
+    <div>
+      <a href="{% url 'home' %}" class="text-[#FF9728] font-semibold hover:text-[#FFB857] mr-6 transition">Back To Home</a>
+      <a href="{% url 'admin_dashboard' %}" class="text-[#FF9728] font-semibold hover:text-[#FFB857] mr-6">Dashboard</a>
+      <a href="{% url 'admin_logout' %}" class="bg-[#FF9728] text-[#053830] px-5 py-1.5 rounded-xl font-semibold hover:bg-[#FFB857] transition">Logout</a>
+    </div>
+  </nav>
+
+  <main class="max-w-6xl mx-auto mt-10 p-6 bg-white rounded-3xl shadow-2xl">
+
+    <h2 class="text-3xl font-extrabold mb-6 text-center text-[#053830]">Manage Portfolio</h2>
+
+    {% if messages %}
+      {% for message in messages %}
+      <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-xl shadow-md mb-6" role="alert">
+        ✅ {{ message }}
+      </div>
+      {% endfor %}
+    {% endif %}
+
+    <!-- TABLE -->
+    <div class="overflow-x-auto mb-6">
+      <table class="min-w-full border border-gray-200 rounded-xl overflow-hidden shadow-lg">
+        <thead class="bg-[#053830] text-white">
+          <tr>
+            <th class="px-6 py-3 text-left">Title</th>
+            <th class="px-6 py-3 text-left">Category</th>
+            <th class="px-6 py-3 text-left">Description</th>
+            <th class="px-6 py-3 text-left">Order</th>
+            <th class="px-6 py-3 text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          {% for item in portfolios %}
+          <tr class="hover:bg-[#EAF4E0] transition-all">
+            <td class="px-6 py-3 font-semibold">{{ item.title }}</td>
+            <td class="px-6 py-3">{{ item.category }}</td>
+            <td class="px-6 py-3">{{ item.description|truncatechars:60 }}</td>
+            <td class="px-6 py-3">{{ item.order }}</td>
+            <td class="px-6 py-3 text-center">
+              <div class="flex justify-center space-x-2">
+                <a href="{% url 'edit_portfolio' item.id %}" class="text-blue-600 hover:text-blue-800 font-semibold">Edit</a>
+                <span class="text-gray-400">|</span>
+                <a href="{% url 'delete_portfolio' item.id %}" class="text-red-600 hover:text-red-800 font-semibold">Delete</a>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="text-center py-6 text-gray-500">No portfolio items yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ADD NEW PORTFOLIO ITEM -->
+    <div class="bg-[#EAF4E0] p-8 rounded-2xl shadow-inner mt-8">
+      <h3 class="text-2xl font-bold mb-6 text-[#053830]">Add New Portfolio Item</h3>
+
+      <form method="POST" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+        <div class="grid md:grid-cols-2 gap-6">
+          <div>
+            <label class="block font-semibold mb-2">Title</label>
+            <input id="title" type="text" name="title" required class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830]">
+          </div>
+
+          <div>
+            <label class="block font-semibold mb-2">Category</label>
+            <input type="text" name="category" class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830]">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold mb-2">Description</label>
+          <textarea name="description" rows="3" class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830]"></textarea>
+        </div>
+
+        <!-- <div>
+          <label class="block font-semibold mb-2">Image</label>
+          <input id="image" type="file" name="image" accept="image/*" class="w-full border border-gray-300 rounded-xl px-4 py-2 bg-white">
+          <p id="portfolio-file-name" class="text-sm text-gray-600 mt-2"></p>
+        </div> -->
+   <!-- Image Upload with Preview -->
+<!-- Image Upload with Preview + Remove -->
+<div>
+  <label class="block font-semibold mb-2">Image</label>
+  <input
+    id="image"
+    type="file"
+    name="image"
+    accept=".jpg, .jpeg, .png, .gif"
+    class="w-full border border-gray-300 rounded-xl px-4 py-2 bg-white focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all"
+  >
+
+  <!-- File name -->
+  <p id="portfolio-file-name" class="text-sm text-gray-600 mt-2"></p>
+
+  <!-- Error message -->
+  <p id="image-error" class="text-red-600 text-sm mt-1 hidden"></p>
+
+  <!-- Image preview -->
+  <div id="image-preview-container" class="mt-4 hidden">
+    <p class="font-semibold mb-2 text-gray-700">Image Preview:</p>
+
+    <div class="relative inline-block">
+      <img
+        id="image-preview"
+        src="#"
+        alt="Preview"
+        class="h-36 w-auto rounded-xl shadow-md border border-gray-200 object-cover transition-all duration-300"
+      >
+      <button
+        id="remove-image-btn"
+        type="button"
+        class="absolute top-2 right-2 bg-red-600 text-white text-xs px-2 py-1 rounded-md shadow hover:bg-red-700 transition-all"
+      >
+         Remove
+      </button>
+    </div>
+  </div>
+</div>
+
+        <div>
+          <label class="block font-semibold mb-2">Order</label>
+          <input type="number" name="order" value="0" class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830]">
+        </div>
+
+        <div class="flex justify-center mt-6">
+          <button type="submit" class="bg-[#053830] text-white px-8 py-3 rounded-xl font-semibold hover:bg-[#FF9728] hover:text-[#053830] transition-all shadow-lg">Add Portfolio</button>
+        </div>
+      </form>
+    </div>
+
+  </main>
+
+  <script>
+    // --- File Type, Size Validation, Preview & Remove ---
+const imageInput = document.getElementById('image');
+const fileNameEl = document.getElementById('portfolio-file-name');
+const errorEl = document.getElementById('image-error');
+const previewContainer = document.getElementById('image-preview-container');
+const previewImage = document.getElementById('image-preview');
+const removeBtn = document.getElementById('remove-image-btn');
+
+if (imageInput) {
+  imageInput.addEventListener('change', function () {
+    const file = this.files && this.files[0];
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    const maxSizeMB = 10;
+
+    // Reset UI
+    errorEl.classList.add('hidden');
+    previewContainer.classList.add('hidden');
+    previewImage.src = '';
+    fileNameEl.textContent = '';
+
+    if (!file) return;
+
+    // Type check
+    if (!validTypes.includes(file.type)) {
+      errorEl.textContent = "❌ Invalid file type. Please upload a JPG, PNG, or GIF image.";
+      errorEl.classList.remove('hidden');
+      this.value = '';
+      return;
+    }
+
+    // Size check
+    const fileSizeMB = file.size / (1024 * 1024);
+    if (fileSizeMB > maxSizeMB) {
+errorEl.textContent = `❌ File too large (${fileSizeMB.toFixed(2)} MB). Max size is ${maxSizeMB} MB.`;      errorEl.classList.remove('hidden');
+      this.value = '';
+      return;
+    }
+
+    // Show name
+fileNameEl.textContent = `Selected: ${file.name}`;
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = e => {
+      previewImage.src = e.target.result;
+      previewContainer.classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// --- Remove Image Button ---
+if (removeBtn) {
+  removeBtn.addEventListener('click', () => {
+    imageInput.value = '';
+    previewImage.src = '';
+    previewContainer.classList.add('hidden');
+    fileNameEl.textContent = '';
+    errorEl.classList.add('hidden');
+  });
+}
+ </script>
+
+<script>
+  // Show loader when DOM starts loading
+  document.addEventListener("DOMContentLoaded", () => {
+      const loader = document.getElementById("blur-loader");
+      loader.classList.remove("hidden");
+  });
+
+  // Hide loader when page fully loaded
+  window.addEventListener("load", () => {
+      const loader = document.getElementById("blur-loader");
+      loader.classList.add("hidden");
+  });
+
+  // Show loader on form submit (Add Portfolio)
+  const portfolioForm = document.querySelector("form");
+  if (portfolioForm) {
+      portfolioForm.addEventListener("submit", () => {
+          document.getElementById("blur-loader").classList.remove("hidden");
+      });
+  }
+</script>
+
+</body>
+</html>

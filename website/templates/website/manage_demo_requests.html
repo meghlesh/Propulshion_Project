@@ -1,0 +1,188 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Demo Requests | Propulsion Admin</title>
+  <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    body { font-family: 'Poppins', sans-serif; }
+  </style>
+</head>
+
+<body class="bg-[#EAF4E0] font-sans text-[#053830]">
+  
+  <!-- NAVBAR -->
+  <nav class="bg-[#053830] text-white p-5 flex justify-between items-center shadow-lg">
+    <h1 class="text-2xl font-bold">Manage Demo Requests</h1>
+    <div>
+      <a href="{% url 'home' %}" class="text-[#FF9728] font-semibold hover:text-white mr-6 transition-colors">Back To Home</a>
+      <a href="{% url 'admin_dashboard' %}" class="text-[#FF9728] font-semibold hover:text-white mr-6">Dashboard</a>
+      <a href="{% url 'admin_logout' %}" 
+         class="bg-[#FF9728] text-[#053830] px-4 py-2 rounded-xl font-semibold hover:bg-white hover:text-[#053830] transition-all">
+         Logout
+      </a>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="max-w-7xl mx-auto mt-10 p-8 bg-white rounded-3xl shadow-2xl" 
+        x-data="{ showDeclineModal: false, selectedId: null, selectedType: '' }">
+    
+    <h2 class="text-3xl font-extrabold mb-8 text-center tracking-tight">
+      Demo Schedules Overview
+    </h2>
+
+    {% if messages %}
+      <ul class="mb-6 text-center">
+        {% for message in messages %}
+          <li class="text-green-700 font-medium mb-2">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    {% if demo_requests %}
+    <div class="overflow-x-auto bg-[#EAF4E0] p-6 rounded-2xl shadow-inner">
+      <table class="min-w-full border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+        <thead class="bg-[#053830] text-white text-[15px]">
+          <tr>
+            <th class="px-6 py-3 text-left font-semibold">Name</th>
+            <th class="px-6 py-3 text-left font-semibold">Email</th>
+            <th class="px-6 py-3 text-left font-semibold">Phone</th>
+            <th class="px-6 py-3 text-left font-semibold">Company</th>
+            <th class="px-6 py-3 text-left font-semibold">Scheduled Date</th>
+            <th class="px-6 py-3 text-left font-semibold">Message</th>
+            <th class="px-6 py-3 text-left font-semibold">Assigned Expert</th>
+            <th class="px-6 py-3 text-left font-semibold">Status</th>
+            <th class="px-6 py-3 text-left font-semibold">Action</th>
+          </tr>
+        </thead>
+
+        <tbody class="divide-y divide-gray-200 text-[15px]">
+          {% for demo in demo_requests %}
+          <tr class="hover:bg-[#EAF4E0] transition-all">
+            <td class="px-6 py-3 font-semibold text-[#053830]">{{ demo.name }}</td>
+            <td class="px-6 py-3 text-gray-700">{{ demo.email }}</td>
+            <td class="px-6 py-3 text-gray-600">{{ demo.phone|default:"—" }}</td>
+            <td class="px-6 py-3 text-gray-600">{{ demo.company|default:"—" }}</td>
+            <td class="px-6 py-3 text-gray-600">{{ demo.scheduled_date|date:"M d, Y H:i" }}</td>
+            <td class="px-6 py-3 text-gray-600">{{ demo.message|default:"(No message)" }}</td>
+
+            <!-- Assigned Expert -->
+            <td class="px-6 py-3">
+              {% if demo.assigned_expert %}
+                <span class="text-green-700 font-medium">
+                  {{ demo.assigned_expert.full_name|default:demo.assigned_expert.username }}
+                </span>
+              {% else %}
+                <span class="text-gray-400 italic">Not Assigned</span>
+              {% endif %}
+            </td>
+
+            <!-- Status Badge -->
+            <td class="px-6 py-3">
+{% if demo.status == "assigned" %}
+  <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs font-medium">Assigned</span>
+
+{% elif demo.status == "accepted" %}
+  <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-medium">Accepted</span>
+
+{% elif demo.status == "rejected" %}
+  <span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-medium">Rejected</span>
+
+{% elif demo.status == "declined" %}
+  <span class="bg-red-200 text-red-800 px-2 py-1 rounded text-xs font-medium">Declined</span>
+
+{% else %}
+  <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-medium">Pending</span>
+{% endif %}
+            </td>
+
+            <!-- Assign/Decline Form -->
+            <td class="px-6 py-3">
+              <form method="POST" class="flex items-center gap-2">
+                {% csrf_token %}
+                <input type="hidden" name="demo_id" value="{{ demo.id }}">
+
+                {% if demo.status == "pending" %}
+                  <select name="expert_id" class="border rounded-lg px-2 py-1 text-sm focus:ring-2 focus:ring-[#053830] focus:border-[#053830]">
+                    <option value="">-- Select Expert --</option>
+                    {% for expert in experts %}
+                      <option value="{{ expert.id }}" {% if demo.assigned_expert == expert %}selected{% endif %}>
+                        {{ expert.full_name|default:expert.username }}
+                      </option>
+                    {% endfor %}
+                  </select>
+
+                  <button type="submit" name="action" value="assign"
+                    class="bg-green-600 text-white px-3 py-1 rounded text-xs font-semibold hover:bg-green-700 transition">
+                    Assign
+                  </button>
+
+                  <!-- Decline Button -->
+                  <button type="button"
+                          @click="selectedId = '{{ demo.id }}'; showDeclineModal = true"
+                          class="bg-red-500 text-white px-3 py-1 rounded text-xs font-semibold hover:bg-red-600 transition">
+                    Decline
+                  </button>
+                {% else %}
+                  <span class="text-gray-500 italic text-sm">Action Finalized</span>
+                {% endif %}
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center py-10 bg-[#EAF4E0] rounded-xl shadow-inner text-gray-600 text-lg italic">
+      No demo requests found yet.
+    </div>
+    {% endif %}
+
+    <!-- Decline Modal -->
+    <div x-show="showDeclineModal" x-transition.opacity
+         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" x-cloak>
+      <div @click.away="showDeclineModal = false"
+           class="bg-white w-full max-w-md p-6 rounded-xl shadow-2xl relative border-t-4 border-red-500">
+        <button @click="showDeclineModal = false"
+                class="absolute top-3 right-3 text-gray-500 hover:text-red-700 transition text-2xl font-bold">&times;</button>
+        <h3 class="text-xl font-bold mb-4 text-red-700">Decline Request Confirmation</h3>
+        <p class="mb-4 text-gray-600">Please provide a brief reason for declining this request (ID: <span x-text="selectedId"></span>).</p>
+        
+        <form method="POST">
+          {% csrf_token %}
+          <input type="hidden" name="id" x-bind:value="selectedId">
+          <input type="hidden" name="action" value="decline">
+
+          <div>
+            <label for="decline_reason_demo" class="block text-sm font-medium text-gray-700 mb-1">Reason for Decline</label>
+            <textarea id="decline_reason_demo" name="decline_reason" rows="4" required
+                      class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-red-500 focus:border-red-500"></textarea>
+          </div>
+
+          <div class="flex justify-end gap-3 mt-5">
+            <button type="button" @click="showDeclineModal = false"
+                    class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition">
+              Cancel
+            </button>
+            <button type="submit"
+                    class="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition">
+              Confirm Decline
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="text-center text-gray-600 mt-8 text-sm pb-6">
+    © 2025 <span class="text-[#FF9728] font-semibold">Propulsion Technology</span>. All Rights Reserved.
+  </footer>
+</body>
+</html>

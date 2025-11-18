@@ -1,0 +1,104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Portfolio | Propulsion Technology</title>
+    <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#EAF4E0] font-sans text-[#053830]">
+
+    <!-- Navbar -->
+    <nav class="bg-[#053830] text-white p-5 flex justify-between items-center shadow-xl">
+        <h1 class="text-3xl font-extrabold tracking-wider">Edit Portfolio</h1>
+        <div>
+            <a href="{% url 'manage_portfolio' %}" class="text-[#FF9728] font-semibold hover:text-white mr-6 transition-colors">Back to Portfolio</a>
+            <a href="{% url 'admin_logout' %}" class="bg-[#FF9728] text-[#053830] px-4 py-2 rounded-xl font-semibold hover:bg-white hover:text-[#053830] transition-all shadow-md">Logout</a>
+        </div>
+    </nav>
+
+    <main class="max-w-3xl mx-auto mt-16 p-8 bg-white rounded-3xl shadow-2xl">
+        <h2 class="text-3xl font-extrabold mb-8 text-center">Update Portfolio Item</h2>
+
+        <form method="POST" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- Title -->
+            <div>
+                <label for="title" class="block font-semibold mb-2">Title</label>
+                <input type="text" id="title" name="title" value="{{ portfolio.title }}" required
+                       class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all">
+            </div>
+
+            <!-- Category -->
+            <div>
+                <label for="category" class="block font-semibold mb-2">Category</label>
+                <input type="text" id="category" name="category" value="{{ portfolio.category }}"
+                       class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all">
+            </div>
+
+            <!-- Description -->
+            <div>
+                <label for="description" class="block font-semibold mb-2">Description</label>
+                <textarea id="description" name="description" rows="4"
+                          class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all">{{ portfolio.description }}</textarea>
+            </div>
+
+            <!-- Order -->
+            <div>
+                <label for="order" class="block font-semibold mb-2">Display Order</label>
+                <input type="number" id="order" name="order" value="{{ portfolio.order }}"
+                       class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all">
+            </div>
+
+            <!-- Image -->
+            <div>
+                <label for="image" class="block font-semibold mb-2">Project Image</label>
+                {% if portfolio.image %}
+                    <img src="{{ portfolio.image.url }}" alt="{{ portfolio.title }}" class="w-48 h-32 object-cover rounded-xl mb-4 shadow-md border">
+                {% endif %}
+                <input type="file" id="image" name="image" accept="image/*"
+                       class="w-full border border-gray-300 rounded-xl px-4 py-2 bg-white focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all">
+                <p class="text-sm text-gray-600 mt-1">Upload new image only if you want to replace the existing one.</p>
+            </div>
+
+            <!-- Slug -->
+            <div>
+                <label for="slug" class="block font-semibold mb-2">Slug (Auto-generated)</label>
+                <input type="text" id="slug" name="slug" value="{{ portfolio.slug }}" readonly
+                       class="w-full border border-gray-300 rounded-xl px-4 py-2 bg-gray-100 text-gray-600">
+            </div>
+
+            <!-- Submit -->
+            <div class="flex justify-center mt-8">
+                <button type="submit"
+                        class="bg-[#053830] text-white px-8 py-3 rounded-xl font-semibold hover:bg-[#FF9728] hover:text-[#053830] transition-all shadow-lg shadow-[#053830]/40 transform hover:scale-[1.02] hover:-translate-y-1">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </main>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const titleInput = document.getElementById("title");
+  const slugInput = document.getElementById("slug");
+
+  if (!titleInput || !slugInput) return;
+
+  // Automatically generate slug from title
+  titleInput.addEventListener("input", () => {
+    let slug = titleInput.value
+      .toLowerCase()                      // convert to lowercase
+      .replace(/[^a-z0-9\s-]/g, "")       // remove special chars
+      .trim()                             // remove spaces around
+      .replace(/\s+/g, "-");              // replace spaces with hyphens
+
+    slugInput.value = slug;
+  });
+});
+</script>
+
+</body>
+</html>

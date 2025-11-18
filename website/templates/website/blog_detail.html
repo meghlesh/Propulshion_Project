@@ -1,0 +1,109 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ post.title }} | Propulsion Blog</title>
+        <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Configuration in a proper script block -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-green': '#053830',
+                        'accent-green': '#D2E8B8',
+                        'highlight-gold': '#FF9728',
+                        'dark-text': '#262626',
+                        'card-bg': '#F1F2F0',
+                    },
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom styles for article content readability -->
+    <style>
+        /* Using Tailwind's typography classes for readability */
+        .article-content h2 {
+            font-size: 1.875rem; /* text-3xl */
+            font-weight: 700;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--tw-colors-primary-green);
+        }
+        .article-content h3 {
+            font-size: 1.5rem; /* text-2xl */
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--tw-colors-dark-text);
+        }
+        .article-content p {
+            line-height: 1.7;
+            margin-bottom: 1.25rem;
+            color: #262626; /* dark-text */
+        }
+        .article-content ul, .article-content ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1.5rem;
+            list-style-type: disc;
+        }
+    </style>
+</head>
+<body class="bg-card-bg text-dark-text font-sans antialiased" style="background-color: #F1F2F0;">
+
+    <!-- Navbar -->
+    <nav class="bg-white px-5 py-4 md:px-10 flex justify-between items-center shadow-md border-b border-gray-100">
+        <a href="/" class="text-2xl font-extrabold text-primary-green">Propulsion</a>
+        <div class="flex gap-4">
+            <a href="{% url 'blog_list' %}" class="px-4 py-2 rounded-lg bg-primary-green text-white font-semibold hover:bg-highlight-gold hover:text-dark-text transition-colors">Blog List</a>
+        </div>
+    </nav>
+
+    <!-- Article Content -->
+    <main class="max-w-4xl mx-auto my-12 p-5 md:p-10 bg-white rounded-3xl shadow-2xl border border-gray-100">
+
+        <!-- Header -->
+        <header class="mb-8 border-b pb-6">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-primary-green mb-4 leading-tight">{{ post.title }}</h1>
+            <p class="text-lg font-medium text-gray-700 mb-4">{{ post.summary }}</p>
+            
+            <div class="flex items-center text-sm text-gray-500 space-x-4">
+                <span>By <span class="font-semibold text-dark-text">{{ post.author.username }}</span></span>
+                <span>•</span>
+                <span>Published on {{ post.published_date|date:"F j, Y" }}</span>
+            </div>
+        </header>
+
+        <!-- Featured Image -->
+        {% if post.featured_image %}
+        <img src="{{ post.featured_image.url }}" alt="{{ post.title }}" class="w-full h-80 object-cover rounded-2xl shadow-lg mb-8">
+        {% endif %}
+
+        <!-- Body Content -->
+        <article class="article-content max-w-none text-lg">
+            {{ post.content|linebreaks }}
+        </article>
+        
+        <div class="mt-10 pt-6 border-t border-gray-200">
+            <a href="{% url 'blog_list' %}" class="text-primary-green font-semibold hover:text-highlight-gold transition-colors">← Back to all posts</a>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark-text text-white py-10 mt-12 px-5">
+        <div class="text-center text-gray-500 text-sm">
+            <p>&copy; 2025 Propulsion Technology. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,237 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Manage Expert Queries | Propulsion Admin</title>
+  <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+  <style>
+    body { font-family: 'Poppins', sans-serif; }
+    [x-cloak] { display: none !important; }
+  </style>
+</head>
+
+<body class="bg-[#EAF4E0] font-sans text-[#053830]">
+
+<!-- Blur Loader -->
+<div id="blur-loader"
+     class="fixed inset-0 flex items-center justify-center bg-white/60 backdrop-blur-md z-[9999] hidden">
+  <div class="w-16 h-16 border-4 border-[#053830] border-t-transparent rounded-full animate-spin"></div>
+</div>
+
+<nav class="bg-[#053830] text-white p-5 flex justify-between items-center shadow-lg">
+  <h1 class="text-2xl font-bold">Pending Expert Queries</h1>
+  <div>
+    <a href="{% url 'home' %}" class="text-[#FF9728] font-semibold hover:text-white mr-6 transition-colors">Back To Home</a>
+    <a href="{% url 'admin_dashboard' %}" class="text-[#FF9728] font-semibold hover:text-white mr-6">Dashboard</a>
+    <a href="{% url 'admin_logout' %}"
+       class="bg-[#FF9728] text-[#053830] px-4 py-2 rounded-xl font-semibold hover:bg-white hover:text-[#053830] transition-all">
+       Logout
+    </a>
+  </div>
+</nav>
+
+<main class="max-w-7xl mx-auto mt-10 p-8 bg-white rounded-3xl shadow-2xl">
+
+  <h2 class="text-3xl font-extrabold mb-8 text-center tracking-tight">Pending Expert Queries Overview</h2>
+
+  {% if messages %}
+    <ul class="mb-6">
+      {% for message in messages %}
+        <li class="text-green-700 font-medium mb-1 text-center">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <!-- Alpine Root -->
+  <div x-data="{ showDeclineModal: false, selectedId: null }">
+
+    {% if queries %}
+    <div class="overflow-x-auto bg-[#EAF4E0] p-6 rounded-2xl shadow-inner">
+      <table class="min-w-full border-collapse bg-white rounded-xl shadow-md border border-gray-200">
+        <thead class="bg-[#053830] text-white text-[15px]">
+          <tr>
+            <th class="px-6 py-3 text-left font-semibold">Name</th>
+            <th class="px-6 py-3 text-left font-semibold">Email</th>
+            <th class="px-6 py-3 text-left font-semibold">Service</th>
+            <th class="px-6 py-3 text-left font-semibold">Message</th>
+            <th class="px-6 py-3 text-left font-semibold">Submitted On</th>
+            <th class="px-6 py-3 text-left font-semibold">Assigned Expert</th>
+            <th class="px-6 py-3 text-left font-semibold">Status</th>
+            <th class="px-6 py-3 text-left font-semibold">Action</th>
+          </tr>
+        </thead>
+
+        <tbody class="divide-y divide-gray-200 text-[15px]">
+          {% for q in queries %}
+          <tr class="hover:bg-[#EAF4E0] transition-all">
+
+            <td class="px-6 py-3 font-semibold text-[#053830]">{{ q.name }}</td>
+            <td class="px-6 py-3 text-gray-700">{{ q.email }}</td>
+            <td class="px-6 py-3 text-gray-700">{{ q.service.title }}</td>
+            <td class="px-6 py-3 text-gray-600">{{ q.message|truncatechars:60 }}</td>
+            <td class="px-6 py-3 text-gray-500 text-sm">{{ q.submitted_at|date:"M d, Y H:i" }}</td>
+
+            <td class="px-6 py-3">
+              {% if q.assigned_expert %}
+                <span class="font-medium text-[#053830]">
+                  {{ q.assigned_expert.full_name|default:q.assigned_expert.username }}
+                </span>
+              {% else %}
+                <span class="text-gray-400 italic">Not Assigned</span>
+              {% endif %}
+            </td>
+
+           <td class="px-6 py-3">
+
+  {% if q.status == "pending" %}
+    <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs font-medium">Pending</span>
+
+  {% elif q.status == "assigned" %}
+    <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-medium">Assigned</span>
+
+  {% elif q.status == "accepted" %}
+    <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-medium">Accepted</span>
+
+  {% elif q.status == "rejected" %}
+    <span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-medium">Rejected</span>
+
+  {% elif q.status == "declined" %}
+    <span class="bg-red-200 text-red-800 px-2 py-1 rounded text-xs font-medium">Declined</span>
+
+  {% else %}
+    <span class="bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs font-medium">Unknown</span>
+
+  {% endif %}
+
+</td>
+
+            <td class="px-6 py-3">
+              {% if q.status == "pending" %}
+              <form method="POST" class="flex items-center gap-2 assign-form">
+                {% csrf_token %}
+                <input type="hidden" name="query_id" value="{{ q.id }}">
+
+                <select name="expert_id"
+                        class="expert-select border rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-[#053830] transition">
+                  <option value="">-- Select Expert --</option>
+                  {% for expert in experts %}
+                    <option value="{{ expert.id }}"
+                      {% if q.assigned_expert == expert %}selected{% endif %}>
+                      {{ expert.full_name|default:expert.username }}
+                    </option>
+                  {% endfor %}
+                </select>
+
+                <button name="action" value="assign"
+                        type="submit"
+                        class="assign-btn px-3 py-1.5 rounded-lg text-sm font-medium border bg-white text-[#053830] border-gray-300">
+                  Assign
+                </button>
+
+                <button type="button"
+                        @click="selectedId = '{{ q.id }}'; showDeclineModal = true"
+                        class="bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-red-700 transition">
+                  Decline
+                </button>
+              </form>
+              {% else %}
+                <span class="text-gray-400 italic">Action Finalized</span>
+              {% endif %}
+            </td>
+
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-gray-600 text-center py-10 italic text-lg">No expert queries received yet.</p>
+    {% endif %}
+
+    <!-- Global Decline Modal -->
+    <div x-show="showDeclineModal" x-cloak x-transition.opacity
+         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+
+      <div @click.away="showDeclineModal = false"
+           class="bg-white w-full max-w-md p-6 rounded-xl shadow-2xl relative border-t-4 border-red-600">
+
+        <button @click="showDeclineModal = false"
+                class="absolute top-3 right-3 text-gray-500 hover:text-red-700 transition text-2xl font-bold">&times;</button>
+
+        <h3 class="text-xl font-bold mb-4 text-red-700">Decline Request</h3>
+
+        <p class="mb-4 text-gray-600 text-sm">
+          Enter the reason for declining Query ID: <b x-text="selectedId"></b>
+        </p>
+
+        <form method="POST">
+          {% csrf_token %}
+          <input type="hidden" name="query_id" x-bind:value="selectedId">
+          <input type="hidden" name="action" value="decline">
+
+          <textarea name="decline_reason" rows="4" required
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-red-600 focus:border-red-600"></textarea>
+
+          <div class="flex justify-end gap-3 mt-5">
+            <button type="button"
+                    @click="showDeclineModal = false"
+                    class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition">
+              Cancel
+            </button>
+
+            <button type="submit"
+                    class="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition">
+              Confirm Decline
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const loader = document.getElementById("blur-loader");
+    if (loader) loader.classList.remove("hidden");
+});
+window.addEventListener("load", function () {
+    const loader = document.getElementById("blur-loader");
+    if (loader) loader.classList.add("hidden");
+});
+
+// Enable/disable Assign button
+document.addEventListener("DOMContentLoaded", function () {
+  function updateAssignButton(select) {
+    if (!select) return;
+    const form = select.closest(".assign-form");
+    const btn = form.querySelector(".assign-btn");
+    const val = select.value.trim();
+
+    if (val) {
+      btn.disabled = false;
+      btn.classList.remove("bg-white", "text-[#053830]", "border-gray-300");
+      btn.classList.add("bg-green-600", "text-white");
+    } else {
+      btn.disabled = true;
+      btn.classList.remove("bg-green-600", "text-white");
+      btn.classList.add("bg-white", "text-[#053830]", "border-gray-300");
+    }
+  }
+
+  document.querySelectorAll(".expert-select").forEach(sel => {
+    updateAssignButton(sel);
+    sel.addEventListener("change", () => updateAssignButton(sel));
+  });
+});
+</script>
+
+</body>
+</html>

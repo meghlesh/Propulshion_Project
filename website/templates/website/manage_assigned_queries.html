@@ -1,0 +1,170 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Total Assigned Queries | Propulsion Admin</title>
+  <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Poppins', sans-serif; }
+  </style>
+</head>
+
+<body class="bg-[#EAF4E0] font-sans text-[#053830]">
+  
+<!-- Blur Loader -->
+<div id="blur-loader"
+     class="fixed inset-0 flex items-center justify-center bg-white/60 backdrop-blur-md z-[9999] hidden">
+  <div class="w-16 h-16 border-4 border-[#053830] border-t-transparent rounded-full animate-spin"></div>
+</div>
+
+  <!-- NAVBAR -->
+  <nav class="bg-[#053830] text-white p-5 flex justify-between items-center shadow-lg">
+    <h1 class="text-2xl font-bold">Total Assigned Expert Queries</h1>
+    <div>
+      <a href="{% url 'home' %}" class="text-[#FF9728] font-semibold hover:text-white mr-6 transition-colors">Back To Home</a>
+      <a href="{% url 'admin_dashboard' %}" class="text-[#FF9728] font-semibold hover:text-white mr-6">Dashboard</a>
+      <a href="{% url 'admin_logout' %}" 
+         class="bg-[#FF9728] text-[#053830] px-4 py-2 rounded-xl font-semibold hover:bg-white hover:text-[#053830] transition-all">
+         Logout
+      </a>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="max-w-7xl mx-auto mt-10 p-8 bg-white rounded-3xl shadow-2xl">
+    <h2 class="text-3xl font-extrabold mb-8 text-center tracking-tight">
+      Total Assigned Expert Queries ({{ queries|length }})
+    </h2>
+
+    {% if messages %}
+      <ul class="mb-6 text-center">
+        {% for message in messages %}
+          <li class="text-green-700 font-medium mb-2">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <!-- FILTERS -->
+    <div class="bg-[#EAF4E0] p-6 rounded-2xl shadow-inner mb-10">
+<form method="get" class="flex flex-wrap items-end gap-4">
+  <!-- Date Filter -->
+  <div>
+    <label class="block font-semibold mb-2 text-[#053830]">Filter by Date</label>
+    <select name="date_filter"
+            class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all">
+      <option value="" {% if not current_filter %}selected{% endif %}>All Time</option>
+      <option value="today" {% if current_filter == 'today' %}selected{% endif %}>Today</option>
+      <option value="last_7_days" {% if current_filter == 'last_7_days' %}selected{% endif %}>Last 7 Days</option>
+      <option value="this_month" {% if current_filter == 'this_month' %}selected{% endif %}>This Month</option>
+    </select>
+  </div>
+
+  <!-- Sort Order -->
+  <div>
+    <label class="block font-semibold mb-2 text-[#053830]">Sort By</label>
+    <select name="sort_by"
+            class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all">
+      <option value="latest" {% if current_sort == 'latest' %}selected{% endif %}>Latest</option>
+      <option value="oldest" {% if current_sort == 'oldest' %}selected{% endif %}>Oldest</option>
+    </select>
+  </div>
+
+  <!-- Buttons -->
+  <div class="flex gap-3 items-end">
+    <button type="submit"
+            class="bg-[#053830] text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-[#FF9728] hover:text-[#053830] transition-all shadow-md">
+      Apply Filter
+    </button>
+    <a href="{% url 'manage_assigned_queries' %}"
+       class="bg-white border border-gray-300 text-gray-700 px-6 py-2.5 rounded-xl font-medium hover:bg-gray-100 hover:text-red-600 transition-all shadow-sm">
+      Reset
+    </a>
+  </div>
+</form>
+
+    </div>
+
+    <!-- QUERIES TABLE -->
+    {% if queries %}
+    <div class="overflow-x-auto bg-[#EAF4E0] p-6 rounded-2xl shadow-inner">
+      <table class="min-w-full border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+        <thead class="bg-[#053830] text-white text-[15px]">
+          <tr>
+            <th class="px-6 py-3 text-left font-semibold">Name</th>
+            <th class="px-6 py-3 text-left font-semibold">Email</th>
+            <th class="px-6 py-3 text-left font-semibold">Service</th>
+            <th class="px-6 py-3 text-left font-semibold">Message Snippet</th>
+            <th class="px-6 py-3 text-left font-semibold">Assigned Expert</th>
+            <th class="px-6 py-3 text-left font-semibold">Status</th>
+            <th class="px-6 py-3 text-left font-semibold">Submitted On</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200 text-[15px]">
+          {% for q in queries %}
+          <tr class="hover:bg-[#EAF4E0] transition-all">
+            <td class="px-6 py-3 font-semibold text-[#053830]">{{ q.name }}</td>
+            <td class="px-6 py-3 text-gray-700">{{ q.email }}</td>
+            <td class="px-6 py-3 text-[#FF9728] font-semibold">{{ q.service.title }}</td>
+            <td class="px-6 py-3 text-gray-600">{{ q.message|truncatechars:50 }}</td>
+            <td class="px-6 py-3 text-green-700 font-medium">
+              {{ q.assigned_expert.full_name|default:q.assigned_expert.username }}
+            </td>
+            <td class="px-6 py-3">
+              <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-medium">
+                {{ q.status|capfirst }}
+              </span>
+            </td>
+            <td class="px-6 py-3 text-gray-500 text-sm whitespace-nowrap">
+              {{ q.submitted_at|date:"M d, Y H:i" }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center py-10 bg-[#EAF4E0] rounded-xl shadow-inner text-gray-600 text-lg italic">
+      No assigned queries found for the selected filter.
+    </div>
+    {% endif %}
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="text-center text-gray-600 mt-8 text-sm pb-6">
+    © 2025 <span class="text-[#FF9728] font-semibold">Propulsion Technology</span>. All Rights Reserved.
+  </footer>
+
+
+<script>
+  // Show loader immediately when page starts loading
+  document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("blur-loader").classList.remove("hidden");
+  });
+
+  // Hide loader when fully loaded
+  window.addEventListener("load", () => {
+      document.getElementById("blur-loader").classList.add("hidden");
+  });
+
+  // Show loader when applying filter
+  const filterForm = document.querySelector("form[method='get']");
+  if (filterForm) {
+      filterForm.addEventListener("submit", () => {
+          document.getElementById("blur-loader").classList.remove("hidden");
+      });
+  }
+
+  // Show loader on Reset click
+  const resetBtn = document.querySelector("a[href='{% url 'manage_assigned_queries' %}']");
+  if (resetBtn) {
+      resetBtn.addEventListener("click", () => {
+          document.getElementById("blur-loader").classList.remove("hidden");
+      });
+  }
+</script>
+
+</body>
+</html>

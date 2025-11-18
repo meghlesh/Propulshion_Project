@@ -1,0 +1,21 @@
+{% load static %}
+{% extends "website/email_base_template.html" %}
+
+{% block content %}
+<h2 style="color: #b91c1c;">Hello, {{ expert_name }}!</h2>
+
+<p style="margin-bottom: 20px; font-weight: 500;">
+⚠ Unfortunately, your expert registration request has been declined by the Propulsion Technology admin team.
+</p>
+
+<p><strong>Reason:</strong> {{ reason }}</p>
+
+<table border="0" cellpadding="0" cellspacing="0" width="100%" class="content-table" style="border-collapse: collapse; border-radius: 8px; overflow: hidden; margin-bottom: 30px;">
+  {% for key, value in details.items %}
+  <tr>
+    <th style="font-size: 14px; color: #053830; padding: 10px; border-bottom: 1px solid #D2E8B8; text-align: left; background-color: #F1F2F0;">{{ key }}</th>
+    <td style="font-size: 14px; color: #262626; padding: 10px; border-bottom: 1px solid #D2E8B8; text-align: left; background-color: #ffffff;">{{ value }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

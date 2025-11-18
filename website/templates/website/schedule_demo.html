@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schedule a Demo | Propulsion</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-[#EAF4E0] font-sans text-[#053830] min-h-screen flex items-center justify-center">
+
+  <style>
+  /* small fade for smoother appearance */
+  #blur-loader { transition: opacity 180ms ease, visibility 180ms ease; }
+  #blur-loader.show { opacity: 1; visibility: visible; }
+  #blur-loader.hide { opacity: 0; visibility: hidden; }
+</style>
+
+<div id="blur-loader" class="fixed inset-0 flex items-center justify-center bg-white/60 backdrop-blur-md z-[9999] hide" aria-hidden="true">
+  <div class="w-16 h-16 border-4 border-[#053830] border-t-transparent rounded-full animate-spin" role="status" aria-label="Loading"></div>
+</div>
+  <div class="bg-white shadow-2xl rounded-3xl p-8 w-full max-w-md border-t-4 border-highlight-gold">
+    <h2 class="text-2xl font-bold text-center mb-6">Schedule a Demo</h2>
+
+    {% if messages %}
+    {% for message in messages %}
+    <p class="bg-green-100 text-green-800 p-3 mb-4 rounded-lg text-sm font-semibold">{{ message }}</p>
+    {% endfor %}
+    <div class="button-container">
+      <a href="javascript:history.back()"
+        class="inline-block text-accent font-semibold hover:text-primary focus:text-primary transition-colors outline-none focus:ring-2 focus:ring-accent/40 rounded">Back</a>
+      <a href="{% url 'home' %}"
+        class="inline-block text-accent font-semibold hover:text-primary focus:text-primary transition-colors outline-none focus:ring-2 focus:ring-accent/40 rounded">
+        ← Back to Home
+      </a>
+    </div>
+    <style>
+      .button-container {
+        display: flex;
+        justify-content: space-between;
+        /* pushes buttons to opposite sides */
+        align-items: center;
+        margin-top: 20px;
+      }
+    </style>
+    {% else %}
+    <form id="demoForm" method="POST" onsubmit="return validateDate()">
+      {% csrf_token %}
+
+      <div class="mb-4">
+        <label class="block font-semibold mb-2">Name</label>
+        <input type="text" name="name" required
+          class="w-full border rounded-xl px-4 py-2 focus:ring-2 focus:ring-highlight-gold focus:outline-none">
+      </div>
+
+      <div class="mb-4">
+        <label class="block font-semibold mb-2">Email</label>
+        <input type="email" name="email" required
+          class="w-full border rounded-xl px-4 py-2 focus:ring-2 focus:ring-highlight-gold focus:outline-none">
+      </div>
+
+      <div class="mb-4">
+        <label class="block font-semibold mb-2">Phone</label>
+        <input type="text" name="phone"
+          class="w-full border rounded-xl px-4 py-2 focus:ring-2 focus:ring-highlight-gold focus:outline-none">
+      </div>
+
+      <div class="mb-4">
+        <label class="block font-semibold mb-2">Company</label>
+        <!-- added id so JS can autofill -->
+        <input id="companyField" type="text" name="company" value="{{ request.GET.service }}"
+          class="w-full border rounded-xl px-4 py-2 focus:ring-2 focus:ring-highlight-gold focus:outline-none">
+      </div>
+
+      <div class="mb-4">
+        <label class="block font-semibold mb-2">Message</label>
+        <textarea name="message" rows="3"
+          class="w-full border rounded-xl px-4 py-2 focus:ring-2 focus:ring-highlight-gold focus:outline-none"></textarea>
+      </div>
+
+      <div class="mb-6">
+        <label class="block font-semibold mb-2">Preferred Demo Date & Time</label>
+        <!-- added id and onsubmit will call validateDate() -->
+        <input id="scheduled_date" type="datetime-local" name="scheduled_date" required
+          class="w-full border rounded-xl px-4 py-2 focus:ring-2 focus:ring-highlight-gold focus:outline-none">
+        <p id="dateError" class="text-red-600 text-sm mt-2 hidden">
+          Please select a valid future date and time.
+        </p>
+      </div>
+
+      <button type="submit"
+        class="bg-highlight-gold text-primary-green w-full py-3 rounded-xl font-semibold hover:bg-primary-green hover:text-white transition-all">
+        Submit
+      </button>
+    </form>
+
+    <div class="text-center mt-4">
+      <a href="{% url 'home' %}" class="text-sm text-gray-600 hover:text-highlight-gold transition-all">← Back to
+        Home</a>
+    </div>
+    {% endif %}
+  </div>
+
+<script>
+(function () {
+  const dateInput = document.getElementById('scheduled_date');
+  const errorMsg = document.getElementById('dateError');
+  if (!dateInput) return;
+
+  // helper to show inline error below date field
+  function showInvalid(msg) {
+    errorMsg.textContent = msg;
+    errorMsg.classList.remove('hidden');
+    dateInput.classList.add('border-red-500', 'focus:ring-red-500');
+    dateInput.classList.remove('focus:ring-highlight-gold');
+    dateInput.setCustomValidity(msg);
+  }
+
+  function clearInvalid() {
+    errorMsg.textContent = '';
+    errorMsg.classList.add('hidden');
+    dateInput.classList.remove('border-red-500', 'focus:ring-red-500');
+    dateInput.classList.add('focus:ring-highlight-gold');
+    dateInput.setCustomValidity('');
+  }
+
+  function truncateLongRuns(s) {
+    return s.replace(/\d{5,}/g, m => m.slice(0, 4));
+  }
+
+  // Prevent typing more than 4 digits in any numeric part
+  dateInput.addEventListener('beforeinput', function (e) {
+    if (!['insertText', 'insertCompositionText'].includes(e.inputType)) return;
+    const data = e.data || '';
+    if (!/^\d$/.test(data)) return;
+    const el = dateInput;
+    const newVal = el.value.slice(0, el.selectionStart) + data + el.value.slice(el.selectionEnd);
+    if (/\d{5,}/.test(newVal)) {
+      e.preventDefault();
+      showInvalid('Please use a 4-digit year.');
+    } else {
+      clearInvalid();
+    }
+  });
+
+  // Handle paste (clean pasted text)
+  dateInput.addEventListener('paste', function (e) {
+    e.preventDefault();
+    const pasted = (e.clipboardData || window.clipboardData).getData('text') || '';
+    const sanitized = truncateLongRuns(pasted);
+    const el = dateInput;
+    const before = el.value.slice(0, el.selectionStart);
+    const after = el.value.slice(el.selectionEnd);
+    el.value = before + sanitized + after;
+    validateAndShow();
+  });
+
+  // Handle normal input sanitization
+  dateInput.addEventListener('input', function () {
+    const before = dateInput.value;
+    const sanitized = truncateLongRuns(before);
+    if (sanitized !== before) dateInput.value = sanitized;
+    validateAndShow();
+  });
+
+  // Parse and validate date
+  function parseLocalDate(val) {
+    if (!val) return null;
+
+    if (dateInput.valueAsDate instanceof Date && !isNaN(dateInput.valueAsDate)) {
+      return dateInput.valueAsDate;
+    }
+
+    const iso = val.match(/^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?$/);
+    if (iso) {
+      const [_, y, m, d, h = 0, min = 0] = iso.map(Number);
+      return new Date(y, m - 1, d, h, min);
+    }
+
+    const other = val.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:\s+(\d{1,2}):(\d{2}))?$/);
+    if (other) {
+      const [_, a, b, y, h = 0, min = 0] = other.map(Number);
+      let day, month;
+      if (a > 12) { day = a; month = b; } else if (b > 12) { day = b; month = a; } else { month = a; day = b; }
+      return new Date(y, month - 1, day, h, min);
+    }
+
+    return null;
+  }
+
+  // Main validator (runs on input + blur + submit)
+  function validateAndShow() {
+    const val = dateInput.value.trim();
+
+    if (!val) {
+      showInvalid('Please select a date and time.');
+      return false;
+    }
+
+    if (/\d{5,}/.test(val)) {
+      showInvalid('Please use a 4-digit year.');
+      return false;
+    }
+
+    const parsed = parseLocalDate(val);
+    if (!parsed || isNaN(parsed.getTime())) {
+      showInvalid('Invalid date format. Use YYYY-MM-DD or DD/MM/YYYY.');
+      return false;
+    }
+
+    const now = new Date();
+    if (parsed <= now) {
+      showInvalid('Please select a future date and time.');
+      return false;
+    }
+
+    clearInvalid();
+    return true;
+  }
+
+  // Run validation live
+  ['input', 'blur', 'change', 'keyup'].forEach(ev =>
+    dateInput.addEventListener(ev, validateAndShow)
+  );
+
+  // Block form submit if invalid
+  const form = dateInput.closest('form');
+  if (form) {
+    form.addEventListener('submit', function (e) {
+      if (!validateAndShow()) {
+        e.preventDefault();
+        dateInput.focus();
+      }
+    });
+  }
+
+  window.validateDate = validateAndShow;
+})();
+</script>
+
+
+<script>
+(function () {
+  const loader = document.getElementById('blur-loader');
+  if (!loader) return;
+
+  function showLoader() {
+    loader.classList.remove('hide');
+    loader.classList.add('show');
+    // keep accessibility state consistent
+    loader.setAttribute('aria-hidden', 'false');
+    // prevent accidental double clicks causing multiple submits
+    document.activeElement?.blur?.();
+  }
+
+  function hideLoader() {
+    loader.classList.remove('show');
+    loader.classList.add('hide');
+    loader.setAttribute('aria-hidden', 'true');
+  }
+
+  // --- 1) Show on page start, hide on full load (same behaviour as other admin pages) ---
+  document.addEventListener('DOMContentLoaded', () => {
+    // briefly show loader while DOM is building (you already use this pattern)
+    loader.classList.remove('hide');
+    loader.classList.add('show');
+  });
+  window.addEventListener('load', () => {
+    // hide after everything loaded
+    hideLoader();
+  });
+
+  // --- 2) Form submit (Schedule a Demo) ---
+  const demoForm = document.getElementById('demoForm') || document.querySelector("form");
+  if (demoForm) {
+    demoForm.addEventListener('submit', (e) => {
+      // If form is invalid, don't show loader (browser will block submit)
+      if (!demoForm.checkValidity()) {
+        // let browser show built-in validation messages
+        return;
+      }
+      showLoader();
+      // allow normal submit to proceed (no preventDefault)
+    });
+  }
+
+  // --- 3) Catch "assign / decline / delete / save" interactions ---
+  // This uses event delegation and covers:
+  // - <a href="...assign...">, <a href="...decline..."> etc.
+  // - buttons with classes like 'assign-btn', 'decline-btn', 'delete-btn'
+  // - any element with data-action="assign|decline|delete|save|toggle"
+  document.addEventListener('click', function (ev) {
+    const el = ev.target.closest && ev.target.closest('a, button, [data-action]');
+    if (!el) return;
+
+    // links that navigate away
+    if (el.tagName === 'A' && el.href) {
+      const href = el.getAttribute('href') || '';
+      // show loader for internal actions containing common keywords
+      if (/(assign|decline|delete|remove|toggle|activate|deactivate|edit|save)/i.test(href) || el.dataset.action) {
+        showLoader();
+        // allow link to proceed
+        return;
+      }
+      return;
+    }
+
+    // buttons
+    if (el.tagName === 'BUTTON' || el.matches('[role="button"]')) {
+      const cls = (el.className || '') + ' ' + (el.dataset.action || '');
+      if (/(assign|decline|delete|remove|save|submit|confirm)/i.test(cls)) {
+        // If button is inside a form that will submit, leave form handler to show loader
+        const parentForm = el.closest('form');
+        if (!parentForm) {
+          // not a form submit — show loader while action proceeds (e.g., JS or link)
+          showLoader();
+        }
+        return;
+      }
+    }
+
+    // Any element with data-action attribute for safety
+    if (el.dataset && el.dataset.action) {
+      const act = (el.dataset.action || '').toLowerCase();
+      if (/(assign|decline|delete|save|toggle|activate|deactivate|confirm)/.test(act)) {
+        showLoader();
+      }
+    }
+  }, true /* useCapture to catch early */);
+
+  // --- 4) For forms submitted by JS (fetch/XHR) — optional hook helpers ---
+  // If you use fetch/XHR to submit assign/decline, you can call:
+  // window.apiShowLoader()  before starting request, and window.apiHideLoader() after completion.
+  window.apiShowLoader = showLoader;
+  window.apiHideLoader = hideLoader;
+
+  // --- 5) Safety: hide loader after 15s if something goes wrong (prevents permanent block) ---
+  // but keep short — you can remove or adjust if you prefer a longer timeout.
+  let lastShow = 0;
+  const WATCH_TIMEOUT = 15000;
+  const watcher = setInterval(() => {
+    if (loader.classList.contains('show')) {
+      lastShow = Date.now();
+    } else {
+      lastShow = 0;
+    }
+    // if loader has been stuck visible for too long, hide it (prevents permanent screen block)
+    if (lastShow && (Date.now() - lastShow) > WATCH_TIMEOUT) {
+      hideLoader();
+    }
+  }, 1000);
+
+})();
+</script>
+
+
+
+
+
+
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+</body>
+
+</html>

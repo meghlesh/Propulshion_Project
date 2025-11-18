@@ -1,0 +1,368 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Missions | Propulsion Admin</title>
+    <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<style>
+/* ✅ Clean and consistent styling for Django form fields */
+input[type="text"],
+input[type="date"],
+textarea {
+  width: 100%;                /* w-full */
+  border: 1px solid #d1d5db;  /* border-gray-300 */
+  border-radius: 0.5rem;      /* rounded-lg */
+  padding: 0.5rem 0.75rem;    /* px-3 py-2 */
+  box-sizing: border-box;
+  font-size: 1rem;
+  transition: all 0.2s ease-in-out;
+}
+
+/* ✅ Focus effect — orange highlight */
+input[type="text"]:focus,
+input[type="date"]:focus,
+textarea:focus {
+  outline: none;                            /* focus:outline-none */
+  border-color: #FF9728;                    /* focus:border-[#FF9728] */
+  box-shadow: 0 0 0 3px rgba(255, 151, 40, 0.3); /* focus:ring-[#FF9728] */
+}
+
+/* ✅ Prevent textareas from overflowing */
+textarea {
+  resize: vertical;       /* Allow vertical resize only */
+  max-width: 100%;        /* Prevent overflow */
+  box-sizing: border-box;
+  line-height: 1.5;
+}
+
+/* ✅ Keep consistent spacing between fields */
+form p {
+  margin-bottom: 1rem;    /* space-y-4 effect */
+}
+
+/* ✅ Optional: improve label spacing if you use labels above inputs */
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: #053830;
+}
+
+/* Field row wrapper (default stacked label + field) */
+.field-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.8rem;
+}
+
+/* Checkbox row: align checkbox and label on same line, centered vertically */
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.8rem;
+}
+
+/* Make default Django checkbox input a little larger and consistent */
+.checkbox-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #053830; /* modern browsers; keeps checkbox color consistent */
+  margin: 0;
+}
+
+/* Keep the label inline for checkboxes (do not force block) */
+.checkbox-row label {
+  display: inline-block;
+  margin-bottom: 0;
+}
+
+/* Error text for fields */
+.field-error {
+  color: #dc2626;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* small helper for the table cell that displayed the checkbox — center it */
+.table-checkbox-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* small responsive tweak so form doesn't feel cramped on small screens */
+@media (max-width: 640px) {
+  .field-row, .checkbox-row { gap: 0.5rem; }
+}
+</style>
+<body class="bg-[#EAF4E0] font-sans text-[#053830]">
+
+
+<!-- Blur Loader -->
+<div id="blur-loader"
+     class="fixed inset-0 flex items-center justify-center bg-white/60 backdrop-blur-md z-[9999] hidden">
+  <div class="w-16 h-16 border-4 border-[#053830] border-t-transparent rounded-full animate-spin"></div>
+</div>
+
+    <!-- 🔹 Top Navbar -->
+  <nav class="bg-[#053830] text-white p-5 flex justify-between items-center shadow-lg">
+    <h1 class="text-2xl font-bold">Manage Mission</h1>
+    <div>
+      <a href="{% url 'home' %}" class="text-[#FF9728] font-semibold hover:text-[#FFB857] mr-6 transition">Back To Home</a>
+      <a href="{% url 'admin_dashboard' %}" class="text-[#FF9728] font-semibold hover:text-[#FFB857] mr-6">Dashboard</a>
+      <a href="{% url 'admin_logout' %}" class="bg-[#FF9728] text-[#053830] px-5 py-1.5 rounded-xl font-semibold hover:bg-[#FFB857] transition">Logout</a>
+    </div>
+  </nav>
+
+    <!-- 🔸 Main Section -->
+    <main class="max-w-6xl mx-auto mt-10 bg-white p-8 rounded-2xl shadow-xl space-y-10">
+
+        <!-- Flash Messages -->
+        {% if messages %}
+            <div>
+                {% for message in messages %}
+                    <div class="mb-3 px-4 py-3 rounded-lg font-medium 
+                                {% if message.tags == 'success' %}bg-green-100 text-green-800
+                                {% elif message.tags == 'error' %}bg-red-100 text-red-800
+                                {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Add Mission Form -->
+        <section class="p-6 rounded-xl border-l-4 border-[#FF9728] bg-white shadow-md hover:shadow-lg transition-all duration-300">
+            <h2 class="text-2xl font-semibold mb-4">Add New Mission</h2>
+            
+            <!-- ✅ Added validation hook -->
+            <form method="POST" id="missionForm" onsubmit="return validateDateRange()">
+                {% csrf_token %}
+                <div class="space-y-5">
+                    {# Render each field; special-case checkboxes so label + checkbox align on one line #}
+                    {% for field in form %}
+                        {% if field.field.widget.input_type == "checkbox" %}
+                            <div class="checkbox-row">
+                                {# Django renders the checkbox input; label sometimes renders before or after - ensure label present #}
+                                {{ field }}
+                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {% if field.errors %}
+                                    <p class="field-error">{{ field.errors|striptags }}</p>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="field-row">
+                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <p class="text-sm text-gray-500">{{ field.help_text }}</p>
+                                {% endif %}
+                                {% if field.errors %}
+                                    <p class="field-error">{{ field.errors|striptags }}</p>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <!-- ✅ Error message placeholder -->
+                <p id="dateError" class="text-red-600 font-semibold mt-2 hidden"></p>
+
+                <button type="submit" 
+                        class="mt-4 bg-[#FF9728] text-white px-6 py-2 rounded-lg font-semibold hover:bg-[#053830] hover:text-[#FF9728] transition-all">
+                    Add Mission
+                </button>
+            </form>
+        </section>
+
+        <!-- Missions List -->
+        <section class="p-6 rounded-xl border-l-4 border-[#053830] bg-white shadow-md hover:shadow-lg transition-all duration-300">
+            <h2 class="text-2xl font-semibold mb-4">Existing Missions</h2>
+            <div class="overflow-x-auto">
+                
+                <table class="w-full border-collapse border border-gray-300 text-left text-sm">
+                    <thead class="bg-[#053830] text-white">
+                        <tr>
+                            <th class="px-4 py-2 border border-gray-300">Title</th>
+                            <th class="px-4 py-2 border border-gray-300">Description</th>
+                            <th class="px-4 py-2 border border-gray-300">Start Date</th>
+                            <th class="px-4 py-2 border border-gray-300">End Date</th>
+                            <th class="px-4 py-2 border border-gray-300">Active</th>
+                            <th class="px-4 py-2 border border-gray-300 text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mission in missions %}
+                        <tr class="hover:bg-gray-100 transition">
+                            <td class="px-4 py-2 border border-gray-300">{{ mission.title }}</td>
+                            <td class="px-4 py-2 border border-gray-300">{{ mission.description|truncatewords:12 }}</td>
+                            <td class="px-4 py-2 border border-gray-300">{{ mission.start_date }}</td>
+                            <td class="px-4 py-2 border border-gray-300">{{ mission.end_date }}</td>
+                            <td class="px-4 py-2 border border-gray-300 text-center table-checkbox-cell">
+                                {% if mission.is_active %}
+                                    <span class="text-green-700 font-semibold">Yes</span>
+                                {% else %}
+                                    <span class="text-red-600 font-semibold">No</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-2 border border-gray-300 text-center">
+                                <a href="{% url 'edit_mission' mission.id %}" class="text-[#FF9728] hover:underline font-medium">Edit</a>
+                                <span class="text-gray-400">|</span>
+                                <a href="{% url 'delete_mission' mission.id %}" onclick="return confirm('Are you sure you want to delete this mission?');" class="text-red-600 hover:underline font-medium">Delete</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-6 text-gray-500">No missions found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- ✅ JavaScript Validation -->
+ <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const startDate = document.querySelector('input[name="start_date"]');
+  const endDate = document.querySelector('input[name="end_date"]');
+  const errorMsg = document.getElementById("dateError");
+  const form = document.getElementById("missionForm");
+
+  if (!startDate || !endDate || !errorMsg || !form) return;
+
+  // ✅ Auto-format as dd/mm/yyyy while typing
+  function autoFormatDate(input) {
+    let val = input.value.replace(/\D/g, "");
+    if (val.length >= 2 && val.length <= 4) val = val.slice(0, 2) + "/" + val.slice(2);
+    else if (val.length > 4)
+      val = val.slice(0, 2) + "/" + val.slice(2, 4) + "/" + val.slice(4, 8);
+    input.value = val;
+  }
+
+  // ✅ Basic format check (dd/mm/yyyy)
+  function isValidDateFormat(value) {
+    const pattern = /^(0?[1-9]|[12][0-9]|3[01])\/(0?[1-9]|1[012])\/\d{4}$/;
+    return pattern.test(value);
+  }
+
+  // ✅ Convert "dd/mm/yyyy" → JS Date
+  function parseDate(value) {
+    const [day, month, year] = value.split("/").map(Number);
+    return new Date(year, month - 1, day);
+  }
+
+  // ✅ Core validation with real-time error display
+  function validateDates(showError = true) {
+    const startVal = startDate.value.trim();
+    const endVal = endDate.value.trim();
+
+    // Reset previous error states
+    errorMsg.classList.add("hidden");
+    errorMsg.textContent = "";
+    startDate.classList.remove("border-red-500");
+    endDate.classList.remove("border-red-500");
+
+    // Start Date format check
+    if (startVal && !isValidDateFormat(startVal)) {
+      if (showError) {
+        errorMsg.textContent = "Start Date must be in dd/mm/yyyy format.";
+        errorMsg.classList.remove("hidden");
+      }
+      startDate.classList.add("border-red-500");
+      return false;
+    }
+
+    // End Date format check
+    if (endVal && !isValidDateFormat(endVal)) {
+      if (showError) {
+        errorMsg.textContent = "End Date must be in dd/mm/yyyy format.";
+        errorMsg.classList.remove("hidden");
+      }
+      endDate.classList.add("border-red-500");
+      return false;
+    }
+
+    // Logical check — End >= Start
+    if (isValidDateFormat(startVal) && isValidDateFormat(endVal)) {
+      const start = parseDate(startVal);
+      const end = parseDate(endVal);
+      if (end < start) {
+        if (showError) {
+          errorMsg.textContent = "⚠ End Date cannot be before Start Date.";
+          errorMsg.classList.remove("hidden");
+        }
+        endDate.classList.add("border-red-500");
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  // ✅ Real-time event handlers
+  startDate.addEventListener("input", (e) => {
+    autoFormatDate(e.target);
+    validateDates(true); // live validation feedback
+  });
+
+  endDate.addEventListener("input", (e) => {
+    autoFormatDate(e.target);
+    validateDates(true); // live validation feedback
+  });
+
+  // ✅ Prevent form submission if invalid
+  form.addEventListener("submit", (e) => {
+    if (!validateDates(true)) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  });
+});
+</script>
+
+<script>
+  // Show loader when DOM starts loading
+  document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("blur-loader").classList.remove("hidden");
+  });
+
+  // Hide loader when page fully ready
+  window.addEventListener("load", () => {
+      document.getElementById("blur-loader").classList.add("hidden");
+  });
+
+  // Show loader when submitting "Add Mission" form
+  const missionForm = document.getElementById("missionForm");
+  if (missionForm) {
+      missionForm.addEventListener("submit", () => {
+          document.getElementById("blur-loader").classList.remove("hidden");
+      });
+  }
+
+  // (Optional) Show loader when clicking Edit Mission (if you want)
+  const editLinks = document.querySelectorAll("a[href*='edit_mission']");
+  editLinks.forEach(link => {
+      link.addEventListener("click", () => {
+          document.getElementById("blur-loader").classList.remove("hidden");
+      });
+  });
+
+  // Optional loader for Delete Mission click
+  const deleteLinks = document.querySelectorAll("a[href*='delete_mission']");
+  deleteLinks.forEach(link => {
+      link.addEventListener("click", () => {
+          document.getElementById("blur-loader").classList.remove("hidden");
+      });
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,345 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Blog Posts | Propulsion Technology</title>
+  <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'primary-green': '#053830',
+            'accent-green': '#D2E8B8',
+            'highlight-gold': '#FF9728',
+            'primary-green-hover': '#155C54'
+          },
+          fontFamily: {
+            'sans': ['Poppins', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+</head>
+
+<body class="bg-[#EAF4E0] font-sans text-[#053830]">
+
+
+<!-- Blur Loader -->
+<div id="blur-loader"
+     class="fixed inset-0 flex items-center justify-center bg-white/60 backdrop-blur-md z-[9999] hidden">
+  <div class="w-16 h-16 border-4 border-[#053830] border-t-transparent rounded-full animate-spin"></div>
+</div>
+
+  <!-- Navbar -->
+  <nav class="bg-[#053830] text-white p-5 flex justify-between items-center shadow-lg">
+    <h1 class="text-2xl font-bold">Manage Blog Posts</h1>
+    <div>
+      <a href="{% url 'home' %}" class="text-[#FF9728] font-semibold hover:text-[#FFB857] mr-6 transition">Back To Home</a>
+      <a href="{% url 'admin_dashboard' %}" class="text-[#FF9728] font-semibold hover:text-[#FFB857] mr-6">Dashboard</a>
+      <a href="{% url 'admin_logout' %}" class="bg-[#FF9728] text-[#053830] px-5 py-1.5 rounded-xl font-semibold hover:bg-[#FFB857] transition">Logout</a>
+    </div>
+  </nav>
+
+  <main class="max-w-6xl mx-auto mt-10 p-6 bg-white rounded-3xl shadow-2xl">
+    <h2 class="text-3xl font-extrabold mb-6 text-center">All Blog Posts</h2>
+
+    {% if messages %}
+      {% for message in messages %}
+        <p class="text-green-700 text-center mb-4 font-semibold">{{ message }}</p>
+      {% endfor %}
+    {% endif %}
+
+    <!-- Posts Table -->
+    <div class="overflow-x-auto mb-12">
+      <table class="min-w-full border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+        <thead class="bg-[#053830] text-white">
+          <tr>
+            <th class="px-6 py-3 text-left">Title</th>
+            <th class="px-6 py-3 text-left">Author</th>
+            <th class="px-6 py-3 text-left">Status</th>
+            <th class="px-6 py-3 text-left">Published Date</th>
+            <th class="px-6 py-3 text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          {% for post in posts %}
+          <tr class="hover:bg-[#EAF4E0] transition-all">
+            <td class="px-6 py-3 font-semibold">{{ post.title }}</td>
+            <td class="px-6 py-3">{{ post.author.username }}</td>
+            <td class="px-6 py-3">
+              {% if post.status == 'published' %}
+                <span class="bg-green-200 text-green-800 px-3 py-1 rounded-full text-xs font-semibold">Published</span>
+              {% else %}
+                <span class="bg-yellow-200 text-yellow-800 px-3 py-1 rounded-full text-xs font-semibold">Draft</span>
+              {% endif %}
+            </td>
+            <td class="px-6 py-3">{% if post.published_date %}{{ post.published_date|date:"M d, Y" }}{% else %}—{% endif %}</td>
+            <td class="px-6 py-3 text-center">
+              <div class="flex items-center justify-center space-x-2 whitespace-nowrap">
+                <a href="{% url 'edit_blog_post' post.id %}" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors">Edit</a>
+                <span class="text-gray-400">|</span>
+                <a href="{% url 'delete_blog_post' post.id %}" class="text-red-600 hover:text-red-800 font-semibold transition-colors">Delete</a>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="text-center py-6 text-gray-500">No blog posts found yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Add New Post Form -->
+    <div class="bg-[#EAF4E0] p-8 rounded-2xl shadow-inner">
+      <h3 class="text-2xl font-bold mb-6 text-[#053830]">Add New Blog Post</h3>
+
+      <form id="blogForm" method="POST" enctype="multipart/form-data" class="space-y-6" novalidate>
+        {% csrf_token %}
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <div>
+            <label for="title" class="block font-semibold mb-2">Title</label>
+            <input type="text" id="title" name="title" required
+              class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-primary-green focus:border-primary-green transition-all">
+          </div>
+          <div>
+            <label for="status" class="block font-semibold mb-2">Status</label>
+            <select id="status" name="status" required
+              class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-primary-green focus:border-primary-green transition-all">
+              <option value="draft">Draft (Save for later)</option>
+              <option value="published">Publish Now</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Summary Field with Limit -->
+        <div>
+          <label for="summary" class="block font-semibold mb-2">Summary (Max 250 characters)</label>
+          <textarea id="summary" name="summary" rows="3" maxlength="250" required
+            class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-primary-green focus:border-primary-green transition-all"
+            placeholder="Enter a short summary of the blog post"></textarea>
+          <p id="summaryCounter" class="text-sm text-gray-600 mt-1 text-right">0 / 250 characters</p>
+        </div>
+
+        <div>
+          <label for="content" class="block font-semibold mb-2">Full Content</label>
+          <textarea id="content" name="content" rows="10" required
+            class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-primary-green focus:border-primary-green transition-all"
+            placeholder="Enter the full content of the blog post"></textarea>
+        </div>
+
+        <!-- Featured Image -->
+        <div class="relative">
+          <label for="featured_image" class="block font-semibold mb-2">Featured Image</label>
+
+          <div class="flex items-center space-x-3">
+            <input type="file" id="featured_image" name="featured_image"
+              accept=".jpg,.jpeg,.png,.gif,image/*"
+              class="w-full border border-gray-300 rounded-xl px-4 py-2 bg-white focus:ring-2 focus:ring-primary-green focus:border-primary-green transition-all"
+              onchange="handleImageChange(event)">
+            <button type="button" id="previewButton"
+              class="hidden p-2 bg-[#EAF4E0] border border-gray-300 rounded-lg hover:bg-[#FF9728]/10 transition-all"
+              title="Preview image"
+              onclick="toggleImageModal(true)">
+              🔍
+            </button>
+            <button type="button" id="removeButton"
+              class="hidden p-2 bg-red-100 border border-red-300 rounded-lg text-red-600 hover:bg-red-200 transition-all"
+              title="Remove image"
+              onclick="removeImage()">
+              ✖
+            </button>
+          </div>
+
+          <p id="fileError" class="text-red-600 text-sm mt-2 hidden"></p>
+
+          <div id="fileInfo" class="mt-2 text-sm text-gray-700 hidden">
+            <p id="fileName"></p>
+            <p id="fileSize"></p>
+            <img id="filePreview" class="mt-2 max-w-xs rounded-md hidden" alt="preview"/>
+          </div>
+        </div>
+
+        <!-- Image Preview Modal -->
+        <div id="imageModal" class="hidden fixed inset-0 bg-black/70 flex justify-center items-center z-50">
+          <div class="bg-white p-6 rounded-2xl shadow-2xl relative max-w-lg">
+            <button type="button" class="absolute top-3 right-3 text-gray-600 hover:text-red-600 text-2xl font-bold" onclick="toggleImageModal(false)">
+              &times;
+            </button>
+            <img id="previewImage" src="" alt="Image Preview" class="max-h-[70vh] rounded-xl shadow-lg object-contain">
+          </div>
+        </div>
+
+        <div class="flex justify-center mt-6">
+          <button id="saveBtn" type="submit"
+            class="bg-[#053830] text-white px-8 py-3 rounded-xl font-semibold hover:bg-[#FF9728] hover:text-[#053830] transition-all shadow-lg shadow-[#053830]/40 transform hover:scale-[1.02] hover:-translate-y-1">
+            Save Post
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    // Character counter for summary field
+    const summary = document.getElementById('summary');
+    const counter = document.getElementById('summaryCounter');
+    summary.addEventListener('input', () => {
+      const len = summary.value.length;
+      counter.textContent = `${len} / 250 characters`;
+      counter.classList.toggle('text-red-600', len >= 250);
+    });
+
+    // Image validation + preview logic (same as before)
+    (function () {
+      const VALID_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg', 'image/webp'];
+      const MAX_SIZE_MB = 5;
+
+      const form = document.getElementById('blogForm');
+      const fileInput = document.getElementById('featured_image');
+      const fileError = document.getElementById('fileError');
+      const fileInfo = document.getElementById('fileInfo');
+      const fileNameEl = document.getElementById('fileName');
+      const fileSizeEl = document.getElementById('fileSize');
+      const filePreview = document.getElementById('filePreview');
+      const previewBtn = document.getElementById('previewButton');
+      const removeBtn = document.getElementById('removeButton');
+      const previewImageModalImg = document.getElementById('previewImage');
+
+      function showError(msg) {
+        fileError.textContent = msg;
+        fileError.classList.remove('hidden');
+        fileInfo.classList.add('hidden');
+        filePreview.classList.add('hidden');
+        previewBtn.classList.add('hidden');
+        removeBtn.classList.add('hidden');
+      }
+      function clearError() { fileError.textContent = ''; fileError.classList.add('hidden'); }
+      function validateFileObj(file) {
+        if (!file) return { ok: true };
+        if (!VALID_TYPES.includes(file.type)) return { ok: false, message: 'Invalid file type. Allowed: JPG, PNG, GIF, WEBP.' };
+        const sizeMB = file.size / (1024 * 1024);
+        if (sizeMB > MAX_SIZE_MB) return { ok: false, message: `File too large (${sizeMB.toFixed(2)} MB). Max ${MAX_SIZE_MB} MB.` };
+        return { ok: true };
+      }
+
+      window.handleImageChange = function (event) {
+        clearError();
+        const file = event.target.files[0];
+        if (!file) { fileInfo.classList.add('hidden'); previewBtn.classList.add('hidden'); removeBtn.classList.add('hidden'); return; }
+        const result = validateFileObj(file);
+        if (!result.ok) { showError(result.message); fileInput.value = ''; return; }
+
+        fileInfo.classList.remove('hidden');
+        fileNameEl.textContent = 'Name: ' + file.name;
+        fileSizeEl.textContent = 'Size: ' + (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          filePreview.src = e.target.result;
+          filePreview.classList.remove('hidden');
+          previewImageModalImg.src = e.target.result;
+          previewBtn.classList.remove('hidden');
+          removeBtn.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      };
+
+      window.toggleImageModal = function (show) {
+        const modal = document.getElementById('imageModal');
+        modal.classList.toggle('hidden', !show);
+      };
+
+      window.removeImage = function () {
+        fileInput.value = '';
+        filePreview.src = '';
+        previewImageModalImg.src = '';
+        fileInfo.classList.add('hidden');
+        filePreview.classList.add('hidden');
+        previewBtn.classList.add('hidden');
+        removeBtn.classList.add('hidden');
+        clearError();
+      };
+
+      form.addEventListener('submit', function (ev) {
+        clearError();
+        const file = fileInput.files[0];
+        if (file) {
+          const result = validateFileObj(file);
+          if (!result.ok) { ev.preventDefault(); showError(result.message); fileError.scrollIntoView({ behavior: 'smooth', block: 'center' }); return false; }
+        }
+        return true;
+      });
+    })();
+  </script>
+
+  <script>
+  // Real-time + submit validation for "Title" field
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('blogForm');
+    const titleInput = document.getElementById('title');
+
+    // Create error message placeholder if not already there
+    let titleError = document.createElement('p');
+    titleError.className = 'text-red-600 text-sm mt-1 hidden';
+    titleInput.insertAdjacentElement('afterend', titleError);
+
+    function validateTitle() {
+      const value = titleInput.value.trim();
+      if (!value) {
+        titleError.textContent = 'Title is required.';
+        titleError.classList.remove('hidden');
+        titleInput.classList.add('border-red-500', 'focus:ring-red-500');
+        return false;
+      } else {
+        titleError.textContent = '';
+        titleError.classList.add('hidden');
+        titleInput.classList.remove('border-red-500', 'focus:ring-red-500');
+        return true;
+      }
+    }
+
+    // Real-time validation
+    titleInput.addEventListener('input', validateTitle);
+    titleInput.addEventListener('blur', validateTitle);
+
+    // On submit validation
+    form.addEventListener('submit', (e) => {
+      if (!validateTitle()) {
+        e.preventDefault();
+        titleInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        titleInput.focus();
+      }
+    });
+  });
+</script>
+
+<script>
+  // Show loader when DOM begins loading
+  document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("blur-loader").classList.remove("hidden");
+  });
+
+  // Hide loader when fully loaded
+  window.addEventListener("load", () => {
+      document.getElementById("blur-loader").classList.add("hidden");
+  });
+
+  // Show loader on Save Post (form submit)
+  const blogForm = document.getElementById("blogForm");
+  if (blogForm) {
+      blogForm.addEventListener("submit", () => {
+          document.getElementById("blur-loader").classList.remove("hidden");
+      });
+  }
+</script>
+
+</body>
+</html>

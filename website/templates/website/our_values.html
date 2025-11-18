@@ -1,0 +1,94 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Core Values | Propulsion Technology</title>
+    <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .card-shadow {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card-shadow:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-[#EAF4E0] font-sans text-[#053830]">
+
+<header class="bg-[#053830] text-white shadow-2xl">
+    <div class="max-w-6xl mx-auto px-6 py-16 text-center">
+        <h1 class="text-5xl font-extrabold mb-4">Our Core Values</h1>
+        <p class="text-xl text-[#FF9728] font-semibold">
+            At Propulsion Technology, we're driven by purpose, innovation, and integrity.
+        </p>
+    </div>
+</header>
+
+<section class="max-w-6xl mx-auto px-6 py-12">
+
+  {% if values %}
+  
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    {% for v in values %}
+    <div class="flex flex-col bg-white rounded-3xl shadow-2xl border-l-4 border-[#FF9728] 
+                hover:shadow-[#053830]/20 transition-all duration-300 p-8 card-shadow h-full">
+      
+      {% if v.icon %}
+      <div class="text-5xl mb-4 text-center">{{ v.icon }}</div>
+      {% endif %}
+      
+      <h2 class="text-2xl font-bold text-[#053830] mb-4 text-center break-all whitespace-normal">
+    {{ v.title }}
+</h2>
+
+      <!-- FIX: break-words added -->
+      <p class="text-gray-700 leading-relaxed text-center break-words min-h-[130px]">
+        {{ v.description }}
+      </p>
+      
+      <div class="mt-6 pt-4 border-t border-gray-200 text-center">
+        <span class="text-sm text-[#FF9728] font-semibold">Value #{{ forloop.counter }}</span>
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="bg-white rounded-3xl shadow-2xl p-12 text-center">
+    <span class="text-6xl mb-4 block">😕</span>
+    <h2 class="text-2xl font-bold text-gray-800 mb-2">No Values Yet</h2>
+    <p class="text-gray-600 text-lg">
+      Our core values are being defined. Check back soon!
+    </p>
+  </div>
+  {% endif %}
+
+  <div class="text-center mt-12">
+    <a href="{% url 'home' %}" 
+       class="inline-block bg-[#053830] text-white px-10 py-4 rounded-xl font-semibold text-lg 
+              hover:bg-[#FF9728] hover:text-[#053830] transition-all shadow-lg shadow-[#053830]/40 
+              transform hover:scale-105 hover:-translate-y-1">
+      Back to Home
+    </a>
+  </div>
+
+</section>
+
+<footer class="bg-[#053830] text-white text-center py-8 mt-16 shadow-2xl">
+    <div class="max-w-6xl mx-auto px-6">
+        <p class="text-lg font-semibold">
+            © {{ now|date:"Y" }} <span class="text-[#FF9728]">Propulsion Technology</span>. All rights reserved.
+        </p>
+        <p class="text-sm text-gray-400 mt-2">
+            Driven by values, powered by innovation.
+        </p>
+    </div>
+</footer>
+
+</body>
+</html>

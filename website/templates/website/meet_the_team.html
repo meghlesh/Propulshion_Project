@@ -1,0 +1,87 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meet The Team | Propulsion Technology</title>
+    <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use Inter font implicitly -->
+</head>
+
+<body class="bg-gradient-to-b from-[#EAF4E0] via-[#F6FAF2] to-[#D8EBD0] font-sans text-[#053830] min-h-screen flex flex-col">
+
+    
+    <!-- Hero Header Section -->
+    <header class="relative bg-[#053830] text-white text-center py-20 shadow-2xl overflow-hidden">
+        <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center opacity-10"></div>
+        <div class="relative max-w-6xl mx-auto px-6">
+            <h1 class="text-5xl md:text-6xl font-extrabold mb-4 drop-shadow-md">Meet Our Visionaries</h1>
+            <p class="text-xl text-[#FF9728] font-semibold">
+                The talented individuals propelling our mission forward.
+            </p>
+        </div>
+    </header>
+
+    <!-- Main Content Wrapper -->
+    <main class="flex-grow">
+        <section class="max-w-6xl mx-auto py-16 px-6 pb-32">
+            <h2 class="text-3xl font-bold text-center mb-12 text-[#053830]">Propulsion Technology Leadership</h2>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
+                {% for member in members %}
+                <div class="bg-white rounded-3xl shadow-xl p-8 text-center transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 border-b-4 border-[#FF9728] flex flex-col justify-between">
+                    <div>
+                        {% if member.image %}
+                            <img src="{{ member.image.url }}" alt="{{ member.name }}" class="w-36 h-36 mx-auto rounded-full object-cover mb-6 border-4 border-[#053830] ring-4 ring-gray-200">
+                        {% else %}
+                            <img src="https://placehold.co/144x144/053830/FF9728?text=PT" alt="No Image" class="w-36 h-36 mx-auto rounded-full object-cover mb-6 border-4 border-[#053830] ring-4 ring-gray-200">
+                        {% endif %}
+                        
+                        <h3 class="text-2xl font-bold mb-1">{{ member.name }}</h3>
+                        <p class="text-lg font-medium text-gray-600 mb-4">{{ member.position }}</p>
+                    </div>
+
+                    {% if member.linkedin %}
+                    <div class="pt-4 border-t border-gray-100 mt-4">
+                        <a href="{{ member.linkedin }}" target="_blank" class="inline-flex items-center text-[#FF9728] text-base font-semibold hover:text-[#053830] transition-colors duration-200">
+                            <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764 0-.974.784-1.764 1.75-1.764s1.75.79 1.75 1.764c0 .974-.784 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4.008-3.33-4.008 0v5.604h-3v-11h3v1.765c1.396-2.586 7.008-2.38 7.008 3.522v5.713z"/>
+                            </svg>
+                            Connect on LinkedIn
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <p class="text-center col-span-4 text-xl font-medium text-gray-600 py-10">No team members found. We're hiring!</p>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+
+    <!-- Back to Home (added) -->
+    <div class="max-w-6xl mx-auto px-6 mb-8">
+        <div class="text-center mt-4">
+            <a href="{% url 'home' %}"
+                class="inline-block bg-[#053830] text-white px-10 py-4 rounded-xl font-semibold text-lg hover:bg-[#FF9728] hover:text-[#053830] transition-all duration-300 shadow-lg shadow-[#053830]/40 transform hover:scale-105 hover:-translate-y-1">
+                Back to Home
+            </a>
+        </div>
+    </div>
+
+    <!-- Footer fixed to bottom -->
+    <footer class="bg-[#053830] text-white text-center py-10 shadow-2xl mt-auto">
+        <div class="max-w-6xl mx-auto px-6">
+            <p class="text-lg font-semibold">
+                © {% now "Y" %} <span class="text-[#FF9728]">Propulsion Technology</span>. All rights reserved.
+            </p>
+            <p class="text-sm text-gray-400 mt-2">Building the future, one innovation at a time.</p>
+        </div>
+    </footer>
+
+</body>
+
+</html>

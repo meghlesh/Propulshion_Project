@@ -1,0 +1,98 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Propulsion Blog | Insights & Resources</title>
+        <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FIX: Moved Tailwind config into a standard <script> block to prevent parser conflicts -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-green': '#053830',
+                        'accent-green': '#D2E8B8',
+                        'highlight-gold': '#FF9728',
+                        'dark-text': '#262626',
+                        'card-bg': '#F1F2F0', // Added card-bg here for consistency
+                    },
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Optional custom CSS here */
+        .blog-card {
+            transition: all 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-card-bg text-dark-text font-sans antialiased" style="background-color: #F1F2F0;">
+
+    <!-- Navbar -->
+    <nav class="bg-white px-5 py-4 md:px-10 flex justify-between items-center shadow-md border-b border-gray-100">
+        <a href="/" class="text-2xl font-extrabold text-primary-green">Propulsion</a>
+        <div class="flex gap-4">
+            <a href="{% url 'home' %}" class="px-4 py-2 rounded-lg bg-accent-green text-dark-text font-semibold hover:bg-primary-green hover:text-white transition-colors">Home</a>
+            <!-- <a href="{% url 'blog_list' %}" class="px-4 py-2 rounded-lg bg-primary-green text-white font-semibold shadow-md">Blog</a> -->
+        </div>
+    </nav>
+
+    <!-- Hero Header -->
+    <header class="max-w-7xl mx-auto py-16 px-5 md:px-10 text-center">
+        <p class="text-lg font-semibold text-highlight-gold mb-2">LATEST ARTICLES</p>
+        <h1 class="text-5xl md:text-6xl font-extrabold text-dark-text mb-4">The Knowledge Hub</h1>
+        <p class="text-xl font-medium text-gray-600 max-w-3xl mx-auto">
+            Deep dive into digital strategy, web development trends, and marketing insights from our experts.
+        </p>
+    </header>
+
+    <!-- Blog Posts Grid -->
+    <main class="max-w-7xl mx-auto p-5 md:p-10">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {% for post in posts %}
+            <a href="{% url 'blog_detail' slug=post.slug %}" class="blog-card bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 block border border-gray-200">
+                
+                <!-- Featured Image -->
+                {% if post.featured_image %}
+                <img src="{{ post.featured_image.url }}" alt="{{ post.title }}" class="h-48 w-full object-cover">
+                {% else %}
+                <div class="h-48 w-full bg-primary-green/20 flex items-center justify-center text-3xl text-primary-green/50 font-bold">
+                    [Featured Image Placeholder]
+                </div>
+                {% endif %}
+
+                <div class="p-6">
+                    <h3 class="text-xl font-bold mb-3 text-dark-text hover:text-highlight-gold transition-colors">{{ post.title }}</h3>
+                    <p class="text-gray-600 mb-4 text-sm leading-relaxed">{{ post.summary }}</p>
+                    
+                    <div class="flex justify-between items-center pt-4 border-t border-gray-200 text-sm font-semibold">
+                        <span class="text-gray-500">By {{ post.author.username }}</span>
+                        <span class="text-primary-green hover:underline">Read Article →</span>
+                    </div>
+                </div>
+            </a>
+            {% empty %}
+            <div class="col-span-full text-center py-10 bg-white rounded-xl shadow-lg">
+                <p class="text-gray-600 text-lg">No published blog posts found yet. Check back soon!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark-text text-white py-10 mt-12 px-5">
+        <div class="text-center text-gray-500 text-sm">
+            <p>&copy; 2025 Propulsion Technology. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

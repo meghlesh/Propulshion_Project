@@ -1,0 +1,528 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Team | Propulsion Admin</title>
+    <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</head>
+<body class="bg-[#EAF4E0] font-sans text-[#053830]">
+
+  <!-- Blur Loader -->
+<div id="blur-loader"
+     class="fixed inset-0 flex items-center justify-center bg-white/60 backdrop-blur-md z-[9999] hidden">
+  <div class="w-16 h-16 border-4 border-[#053830] border-t-transparent rounded-full animate-spin"></div>
+</div>
+
+    <!-- 🔹 Top Navbar -->
+  <nav class="bg-[#053830] text-white p-5 flex justify-between items-center shadow-lg">
+    <h1 class="text-2xl font-bold">Manage Blog Posts</h1>
+    <div>
+      <a href="{% url 'home' %}" class="text-[#FF9728] font-semibold hover:text-[#FFB857] mr-6 transition">Back To Home</a>
+      <a href="{% url 'admin_dashboard' %}" class="text-[#FF9728] font-semibold hover:text-[#FFB857] mr-6">Dashboard</a>
+      <a href="{% url 'admin_logout' %}" class="bg-[#FF9728] text-[#053830] px-5 py-1.5 rounded-xl font-semibold hover:bg-[#FFB857] transition">Logout</a>
+    </div>
+  </nav>
+    {% if messages %}
+  <div id="alertBox" 
+       class="fixed top-6 left-1/2 transform -translate-x-1/2 
+              bg-green-600 text-white px-6 py-3 rounded-xl 
+              font-semibold shadow-lg z-50 animate-fade-in">
+    {% for message in messages %}
+      {{ message }}
+    {% endfor %}
+  </div>
+{% endif %}
+
+
+    <!-- 🔸 Main Section -->
+    <div class="max-w-6xl mx-auto mt-10 bg-white p-8 rounded-2xl shadow-xl" x-data="{ editId: null }">
+
+        <!-- Add Member Section -->
+        <h2 class="text-2xl font-semibold text-[#053830] mb-6">Add New Team Member</h2>
+
+        </form> 
+        <form method="POST" enctype="multipart/form-data" 
+      class="space-y-4 mb-10" id="addMemberForm" onsubmit="return validateForm(event)">
+    {% csrf_token %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+            <input type="text" id="name" name="name" placeholder="Name" 
+                class="border rounded-lg p-2 w-full focus:ring-2 focus:ring-[#053830] focus:border-[#053830]" required>
+            <p id="error-name" class="text-red-600 text-sm mt-1 hidden">Name is required.</p>
+        </div>
+
+        <div>
+            <input type="text" id="position" name="position" placeholder="Position" 
+                class="border rounded-lg p-2 w-full focus:ring-2 focus:ring-[#053830] focus:border-[#053830]" required>
+            <p id="error-position" class="text-red-600 text-sm mt-1 hidden">Position is required.</p>
+        </div>
+
+        <div>
+            <input type="email" id="email" name="email" placeholder="Email" 
+                class="border rounded-lg p-2 w-full focus:ring-2 focus:ring-[#053830] focus:border-[#053830]" required>
+            <p id="error-email" class="text-red-600 text-sm mt-1 hidden">Please enter a valid email address.</p>
+        </div>
+
+        <div>
+            <input type="url" id="linkedin" name="linkedin" placeholder="LinkedIn URL" 
+                class="border rounded-lg p-2 w-full focus:ring-2 focus:ring-[#053830] focus:border-[#053830]" required>
+            <p id="error-linkedin" class="text-red-600 text-sm mt-1 hidden">Please enter a valid LinkedIn URL (https://...)</p>
+        </div>
+
+        <div class="md:col-span-2">
+            <input type="file" id="image" name="image" accept="image/*" 
+                class="border rounded-lg p-2 w-full focus:ring-2 focus:ring-[#053830] focus:border-[#053830]" required>
+            <p id="error-image" class="text-red-600 text-sm mt-1 hidden">Please upload a team member photo.</p>
+        </div>
+    </div>
+
+    <button type="submit" 
+        class="bg-[#053830] text-white px-6 py-2 rounded-lg hover:bg-[#075040] transition">
+        Add Member
+    </button>
+</form>
+
+
+        <hr class="my-6 border-gray-300">
+
+        <!-- Manage Team Members -->
+        <h2 class="text-2xl font-semibold text-[#053830] mb-6">Team Members</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {% for member in members %}
+            <div class="bg-gray-50 rounded-xl p-4 shadow text-center" x-data="{ editing: false }">
+
+                <!-- Display Section -->
+                <div x-show="!editing" class="space-y-2">
+                    {% if member.image %}
+                        <img src="{{ member.image.url }}" alt="{{ member.name }}" class="w-24 h-24 rounded-full mx-auto mb-3 object-cover">
+                    {% else %}
+                        <img src="{% static 'images/default.jpg' %}" alt="No Image" class="w-24 h-24 rounded-full mx-auto mb-3">
+                    {% endif %}
+
+                    <h3 class="text-lg font-semibold">{{ member.name }}</h3>
+                    <p class="text-gray-500">{{ member.position }}</p>
+
+                    {% if member.linkedin %}
+                        <a href="{{ member.linkedin }}" target="_blank" class="text-[#FF9728] text-sm hover:underline">LinkedIn</a>
+                    {% endif %}
+
+                    <div class="flex justify-center gap-2 mt-4">
+                        <button @click="editing = true" 
+                                class="bg-blue-600 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-700">
+                            Edit
+                        </button>
+
+                        <form action="{% url 'delete_member' member.id %}" method="POST" onsubmit="return confirm('Delete {{ member.name }}?')">
+                            {% csrf_token %}
+                            <button type="submit" 
+                                    class="bg-red-600 text-white px-3 py-1 rounded-md text-sm hover:bg-red-700">
+                                Delete
+                            </button>
+                        </form>
+                        
+
+                    </div>
+                </div>
+
+                <!-- Edit Form -->
+                <div x-show="editing" class="space-y-3" x-cloak>
+                    <form method="POST" enctype="multipart/form-data" action="{% url 'edit_member' member.id %}">
+                        {% csrf_token %}
+                        <input type="text" name="name" value="{{ member.name }}" placeholder="Name" class="border rounded-lg p-2 w-full mb-2" required>
+                        <input type="text" name="position" value="{{ member.position }}" placeholder="Position" class="border rounded-lg p-2 w-full mb-2" required>
+                        <input type="email" name="email" value="{{ member.email }}" placeholder="Email" class="border rounded-lg p-2 w-full mb-2">
+                        <input type="url" name="linkedin" value="{{ member.linkedin }}" placeholder="LinkedIn URL" class="border rounded-lg p-2 w-full mb-2">
+                      <div class="space-y-2">
+
+    {% if member.image %}
+        <div class="flex flex-col items-center mb-2">
+            <label 
+                onclick="document.getElementById('image-input-{{ member.id }}').click()" 
+                class="cursor-pointer group">
+                
+                <img src="{{ member.image.url }}" alt="{{ member.name }}" 
+                     class="w-20 h-20 rounded-full object-cover border border-gray-300 group-hover:opacity-70 transition duration-200"
+                     id="current-image-{{ member.id }}">
+                     
+                <p class="text-sm text-gray-500 mt-1 group-hover:text-[#FF9728]">Click to change</p>
+            </label>
+        </div>
+    {% endif %}
+
+    <!-- Image input (now only triggered manually via JS click) -->
+    <input type="file" 
+           name="image" 
+           id="image-input-{{ member.id }}" 
+           accept="image/jpeg, image/png"
+           class="hidden"
+           onchange="previewNewImage(event, '{{ member.id }}')">
+
+    <img id="preview-image-{{ member.id }}" 
+         class="hidden w-20 h-20 rounded-full object-cover border border-gray-300 mt-2 mx-auto" 
+         alt="Preview">
+
+</div>
+                        <div class="flex justify-between mt-3">
+                            <button type="submit" class="bg-green-600 text-white px-3 py-1 rounded-md text-sm hover:bg-green-700">
+                                Save
+                            </button>
+                            <button type="button" @click="editing = false" class="text-gray-500 hover:text-gray-700 text-sm">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+            {% empty %}
+            <p class="col-span-3 text-center text-gray-500">No team members added yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+<script>
+function validateForm(event) {
+    event.preventDefault(); // Always stop default submission until all fields are valid
+    let isValid = true;
+
+    // Validation rules and patterns
+    const fields = [
+        { id: "name", error: "error-name", required: true, pattern: /^[A-Za-z\s]+$/, msg: "Name can only contain letters and spaces." },
+        { id: "position", error: "error-position", required: true, pattern: /^[A-Za-z\s]+$/, msg: "Position can only contain letters and spaces." },
+        { id: "email", error: "error-email", required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, msg: "Enter a valid email address." },
+        { id: "linkedin", error: "error-linkedin", required: true, pattern: /^https:\/\/(www\.)?linkedin\.com\/.+$/, msg: "Enter a valid LinkedIn URL (must start with https://linkedin.com/)." },
+        { id: "image", error: "error-image", required: true, file: true }
+    ];
+
+    fields.forEach(f => {
+        const input = document.getElementById(f.id);
+        const errorEl = document.getElementById(f.error);
+        const value = input.value.trim();
+        let valid = true;
+
+        // Check required
+        if (f.required && !value) valid = false;
+
+        // Pattern validation
+        if (f.pattern && value && !f.pattern.test(value)) {
+            valid = false;
+            errorEl.textContent = f.msg;
+        }
+
+        // File validation (image)
+        if (f.file && input.files.length > 0) {
+            const file = input.files[0];
+            const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
+            if (!allowedTypes.includes(file.type)) {
+                valid = false;
+                errorEl.textContent = "Only JPG, PNG, or WEBP images are allowed.";
+            } else if (file.size > 5 * 1024 * 1024) {
+                valid = false;
+                errorEl.textContent = "Image size must be less than 5 MB.";
+            }
+        }
+
+        // Show or hide error
+        if (!valid) {
+            errorEl.classList.remove("hidden");
+            input.classList.add("border-red-500");
+            isValid = false;
+        } else {
+            errorEl.classList.add("hidden");
+            input.classList.remove("border-red-500");
+        }
+    });
+
+    if (!isValid) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return false; // Prevent submission
+    }
+
+    // ✅ If all fields valid — allow form submit
+    document.getElementById("addMemberForm").submit();
+}function validateForm(event) {
+    event.preventDefault(); // Always stop default submission until all fields are valid
+    let isValid = true;
+
+    // Validation rules and patterns
+    const fields = [
+        { id: "name", error: "error-name", required: true, pattern: /^[A-Za-z\s]+$/, msg: "Name can only contain letters and spaces." },
+        { id: "position", error: "error-position", required: true, pattern: /^[A-Za-z\s]+$/, msg: "Position can only contain letters and spaces." },
+        { id: "email", error: "error-email", required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, msg: "Enter a valid email address." },
+        { id: "linkedin", error: "error-linkedin", required: true, pattern: /^https:\/\/(www\.)?linkedin\.com\/.+$/, msg: "Enter a valid LinkedIn URL (must start with https://linkedin.com/)." },
+        { id: "image", error: "error-image", required: true, file: true }
+    ];
+
+    fields.forEach(f => {
+        const input = document.getElementById(f.id);
+        const errorEl = document.getElementById(f.error);
+        const value = input.value.trim();
+        let valid = true;
+
+        // Check required
+        if (f.required && !value) valid = false;
+
+        // Pattern validation
+        if (f.pattern && value && !f.pattern.test(value)) {
+            valid = false;
+            errorEl.textContent = f.msg;
+        }
+
+        // File validation (image)
+        if (f.file && input.files.length > 0) {
+            const file = input.files[0];
+            const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
+            if (!allowedTypes.includes(file.type)) {
+                valid = false;
+                errorEl.textContent = "Only JPG, PNG, or WEBP images are allowed.";
+            } else if (file.size > 5 * 1024 * 1024) {
+                valid = false;
+                errorEl.textContent = "Image size must be less than 5 MB.";
+            }
+        }
+
+        // Show or hide error
+        if (!valid) {
+            errorEl.classList.remove("hidden");
+            input.classList.add("border-red-500");
+            isValid = false;
+        } else {
+            errorEl.classList.add("hidden");
+            input.classList.remove("border-red-500");
+        }
+    });
+
+    if (!isValid) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return false; // Prevent submission
+    }
+
+    // ✅ If all fields valid — allow form submit
+    document.getElementById("addMemberForm").submit();
+}
+</script>
+<style>
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+.border-red-500 {
+  animation: shake 0.2s ease-in-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+.cursor-pointer img:hover {
+  transform: scale(1.05);
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const imageInput = document.getElementById("image");
+  const imageError = document.getElementById("error-image");
+
+  // 🔹 Image validation: only JPG/PNG and <5MB
+  imageInput.addEventListener("change", () => {
+    const file = imageInput.files[0];
+    if (!file) {
+      imageError.textContent = "Please upload a team member photo.";
+      imageError.classList.remove("hidden");
+      imageInput.classList.add("border-red-500");
+      return;
+    }
+
+    const allowedTypes = ["image/jpeg", "image/png"];
+    if (!allowedTypes.includes(file.type)) {
+      imageError.textContent = "Only JPG and PNG image formats are allowed.";
+      imageError.classList.remove("hidden");
+      imageInput.classList.add("border-red-500");
+    } else if (file.size > 5 * 1024 * 1024) {
+      imageError.textContent = "Image size must be less than 5 MB.";
+      imageError.classList.remove("hidden");
+      imageInput.classList.add("border-red-500");
+    } else {
+      imageError.classList.add("hidden");
+      imageInput.classList.remove("border-red-500");
+    }
+  });
+
+  // 🔹 Validate again before submitting
+  document.getElementById("addMemberForm").addEventListener("submit", (event) => {
+    const file = imageInput.files[0];
+    let valid = true;
+
+    if (!file) {
+      imageError.textContent = "Please upload a team member photo.";
+      imageError.classList.remove("hidden");
+      valid = false;
+    } else if (!["image/jpeg", "image/png"].includes(file.type)) {
+      imageError.textContent = "Only JPG and PNG image formats are allowed.";
+      imageError.classList.remove("hidden");
+      valid = false;
+    } else if (file.size > 5 * 1024 * 1024) {
+      imageError.textContent = "Image size must be less than 5 MB.";
+      imageError.classList.remove("hidden");
+      valid = false;
+    } else {
+      imageError.classList.add("hidden");
+    }
+
+    if (!valid) {
+      event.preventDefault();
+      imageInput.classList.add("border-red-500");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  });
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const fields = [
+    { id: "name", error: "error-name", pattern: /^[A-Za-z\s]+$/, msg: "Name can only contain letters and spaces." },
+    { id: "position", error: "error-position", pattern: /^[A-Za-z\s]+$/, msg: "Position can only contain letters and spaces." },
+    { id: "email", error: "error-email", pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, msg: "Enter a valid email address." },
+    { id: "linkedin", error: "error-linkedin", pattern: /^https:\/\/(www\.)?linkedin\.com\/.+$/, msg: "Enter a valid LinkedIn URL (must start with https://linkedin.com/)." },
+  ];
+
+  // 🔹 Attach instant validation to all text fields
+  fields.forEach(f => {
+    const input = document.getElementById(f.id);
+    const errorEl = document.getElementById(f.error);
+
+    input.addEventListener("input", () => {
+      const value = input.value.trim();
+      if (!value || (f.pattern && !f.pattern.test(value))) {
+        errorEl.textContent = f.msg;
+        errorEl.classList.remove("hidden");
+        input.classList.add("border-red-500");
+      } else {
+        errorEl.classList.add("hidden");
+        input.classList.remove("border-red-500");
+      }
+    });
+  });
+
+  // 🔹 Validate image on change
+  const imageInput = document.getElementById("image");
+  const imageError = document.getElementById("error-image");
+  imageInput.addEventListener("change", () => {
+    const file = imageInput.files[0];
+    if (!file) {
+      imageError.textContent = "Please upload a team member photo.";
+      imageError.classList.remove("hidden");
+      return;
+    }
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      imageError.textContent = "Only JPG, PNG, or WEBP images are allowed.";
+      imageError.classList.remove("hidden");
+      imageInput.classList.add("border-red-500");
+    } else if (file.size > 5 * 1024 * 1024) {
+      imageError.textContent = "Image size must be less than 5 MB.";
+      imageError.classList.remove("hidden");
+    } else {
+      imageError.classList.add("hidden");
+      imageInput.classList.remove("border-red-500");
+    }
+  });
+
+  // 🔹 Final validation before submit
+  document.getElementById("addMemberForm").addEventListener("submit", (event) => {
+    let isValid = true;
+
+    fields.forEach(f => {
+      const input = document.getElementById(f.id);
+      const errorEl = document.getElementById(f.error);
+      const value = input.value.trim();
+      if (!value || (f.pattern && !f.pattern.test(value))) {
+        errorEl.textContent = f.msg;
+        errorEl.classList.remove("hidden");
+        input.classList.add("border-red-500");
+        isValid = false;
+      }
+    });
+
+    // Check image again before submitting
+    const file = imageInput.files[0];
+    if (!file) {
+      imageError.textContent = "Please upload a team member photo.";
+      imageError.classList.remove("hidden");
+      isValid = false;
+    }
+
+    if (!isValid) event.preventDefault();
+  });
+});
+</script>
+
+<script>
+function previewNewImage(event, memberId) {
+  const file = event.target.files[0];
+  const preview = document.getElementById(`preview-image-${memberId}`);
+  const current = document.getElementById(`current-image-${memberId}`);
+
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      preview.src = e.target.result;
+      preview.classList.remove("hidden");
+      if (current) current.style.opacity = "0.4"; // fade out old image
+    };
+    reader.readAsDataURL(file);
+  } else {
+    preview.classList.add("hidden");
+    if (current) current.style.opacity = "1";
+  }
+}
+</script>
+
+<script>
+  // Show loader immediately when page starts loading
+  document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("blur-loader").classList.remove("hidden");
+  });
+
+  // Hide loader when fully loaded
+  window.addEventListener("load", () => {
+      document.getElementById("blur-loader").classList.add("hidden");
+  });
+
+  // Show loader when adding a new member
+  const addMemberForm = document.getElementById("addMemberForm");
+  if (addMemberForm) {
+      addMemberForm.addEventListener("submit", () => {
+          document.getElementById("blur-loader").classList.remove("hidden");
+      });
+  }
+
+  // Show loader when editing an existing team member
+  const editForms = document.querySelectorAll("form[action*='edit_member']");
+  editForms.forEach(form => {
+      form.addEventListener("submit", () => {
+          document.getElementById("blur-loader").classList.remove("hidden");
+      });
+  });
+
+  // Optional: Loader on delete
+  const deleteForms = document.querySelectorAll("form[action*='delete_member']");
+  deleteForms.forEach(form => {
+      form.addEventListener("submit", () => {
+          document.getElementById("blur-loader").classList.remove("hidden");
+      });
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,241 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expert Dashboard | Propulsion Technology</title>
+    <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Alpine.js for dropdowns and mobile toggles -->
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <!-- Load D3.js for chart -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary-green': '#053830',
+                        'accent-green': '#D2E8B8',
+                        'highlight-gold': '#FF9728',
+                        'primary-green-hover': '#155C54',
+                    },
+                },
+            },
+        };
+    </script>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #e2e8f0;
+        }
+        .sidebar-nav::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar-nav::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+        }
+        .chart-container {
+            width: 100%;
+            max-width: 100%;
+            min-height: 350px;
+        }
+        .flex-1 {
+            overflow-y: auto;
+        }
+        .nav-item.active {
+            background-color: #155C54;
+            color: white;
+        }
+    </style>
+</head>
+<body class="min-h-screen antialiased bg-gray-100" x-data="{ userDropdownOpen: false }">
+
+    {% if messages %}
+        <div style="background:#d1e7dd;padding:1rem;border-radius:8px;max-width:900px;margin:1rem auto;color:#0f5132;font-weight:600;text-align:center;border:1px solid #badbcc;" class="mx-4 md:mx-auto">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const msg = document.querySelector('[style*="background:#d1e7dd"]');
+        if (msg) {
+            setTimeout(() => {
+                msg.style.transition = "opacity 0.6s ease";
+                msg.style.opacity = "0";
+                setTimeout(() => msg.remove(), 600);
+            }, 3000);
+        }
+    });
+    </script>
+
+    <!-- MAIN LAYOUT -->
+    <div class="flex min-h-screen">
+        <!-- SIDEBAR -->
+        <aside id="sidebar"
+               class="bg-primary-green text-white w-64 space-y-6 py-7 px-2 fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition duration-200 ease-in-out z-30 shadow-2xl"
+               x-ref="sidebar">
+
+            <!-- Logo -->
+            <a href="{% url 'expert_dashboard' %}" class="text-white flex items-center space-x-2 px-4">
+                <span class="text-2xl font-extrabold tracking-wider">
+                    Propulsion <span class="text-highlight-gold">Expert</span>
+                </span>
+            </a>
+
+            <!-- Navigation -->
+            <nav class="sidebar-nav flex flex-col justify-between h-[calc(100vh-6rem)] overflow-y-auto">
+                <div>
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest px-4 pt-4 pb-2">
+                        Main Menu
+                    </p>
+
+                    <!-- Dashboard -->
+                    <a href="{% url 'expert_dashboard' %}"
+                       class="nav-item active block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium">
+                        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3"></path>
+                        </svg>
+                        <span>Dashboard</span>
+                    </a>
+
+                    <!-- Expert Queries -->
+                    <a href="{% url 'expert_assigned_queries' %}"
+                       class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
+                        <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24"
+                             stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        <span>Expert Queries</span>
+                    </a>
+
+                    <!-- Demo Schedules -->
+                    <a href="{% url 'expert_assigned_demos' %}"
+                       class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
+                        <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24"
+                             stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <span>Demo Schedules</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <header class="flex items-center justify-between p-4 bg-white border-b border-gray-200 shadow-sm sticky top-0 z-20">
+                <h1 class="text-2xl font-bold text-gray-800">Expert Control Panel</h1>
+
+                <div class="flex items-center space-x-4">
+                    <div class="hidden sm:block">
+                        <input type="text" placeholder="Search..."
+                               class="px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-highlight-gold focus:border-highlight-gold transition duration-150 text-sm">
+                    </div>
+
+                    <!-- Logout -->
+                    <a href="{% url 'expert_logout' %}"
+                       class="text-red-600 hover:text-red-800 text-sm font-medium flex items-center space-x-1">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </header>
+
+            <!-- CONTENT -->
+            <main class="flex-1 overflow-x-hidden overflow-y-auto p-6">
+                <div class="bg-white p-6 rounded-xl shadow-lg mb-8 border-l-4 border-highlight-gold">
+                    <h2 class="text-xl font-semibold text-gray-800">Welcome back, {{ expert_name|default:'Expert' }}!</h2>
+                    <p class="text-gray-600 mt-1">Here’s a quick summary of your assigned work.</p>
+                </div>
+
+                <!-- Placeholder Dashboard Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white p-5 rounded-xl shadow-md border-l-4 border-highlight-gold">
+                        <p class="text-sm text-gray-500 font-medium">Assigned Queries</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-1">{{ assigned_queries_count|default:0 }}</p>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-xl shadow-md border-l-4 border-primary-green">
+                        <p class="text-sm text-gray-500 font-medium">Demo Schedules</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-1">{{ assigned_demos_count|default:0 }}</p>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-xl shadow-md border-l-4 border-highlight-gold">
+                        <p class="text-sm text-gray-500 font-medium">Completed Tasks</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-1">{{ completed_tasks|default:0 }}</p>
+                    </div>
+                </div>
+                
+                
+                <footer class="text-center text-gray-500 pt-10 pb-4 text-sm">
+                    <p>© 2025 <span class="text-highlight-gold font-semibold">Propulsion Technology</span>. All Rights Reserved.</p>
+            
+                </footer>
+            </main>
+
+        </div>
+    </div>
+
+    <button id="mobile-menu-btn" class="fixed top-4 left-4 p-2 bg-primary-green text-white rounded-lg md:hidden z-40">
+        <svg id="menu-icon-open" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+        <svg id="menu-icon-close" class="w-6 h-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+    </button>
+
+
+    
+
+    <script>
+        function setupSidebarToggle() {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const menuIconOpen = document.getElementById('menu-icon-open');
+            const menuIconClose = document.getElementById('menu-icon-close');
+
+            if (!mobileMenuBtn || !sidebar) return;
+
+            mobileMenuBtn.addEventListener('click', () => {
+                const isSidebarOpen = sidebar.classList.contains('-translate-x-full');
+
+                if (isSidebarOpen) {
+                    sidebar.classList.remove('-translate-x-full');
+                    menuIconOpen.classList.add('hidden');
+                    menuIconClose.classList.remove('hidden');
+                } else {
+                    sidebar.classList.add('-translate-x-full');
+                    menuIconOpen.classList.remove('hidden');
+                    menuIconClose.classList.add('hidden');
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setupSidebarToggle();
+        });
+    </script>
+</body>
+</html>

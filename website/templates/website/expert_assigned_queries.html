@@ -1,0 +1,107 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assigned Expert Queries | Propulsion Expert</title>
+  <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-[#EAF4E0] font-sans text-[#053830]">
+
+  <!-- Navbar -->
+  <nav class="bg-[#053830] text-white p-5 flex justify-between items-center shadow-lg">
+    <h1 class="text-2xl font-bold">Assigned Expert Queries</h1>
+    <div>
+      <a href="{% url 'expert_dashboard' %}" class="text-[#FF9728] font-semibold hover:text-white mr-6">Dashboard</a>
+      <a href="{% url 'expert_logout' %}" 
+         class="bg-[#FF9728] text-[#053830] px-4 py-2 rounded-xl font-semibold hover:bg-white hover:text-[#053830] transition-all">
+         Logout
+      </a>
+    </div>
+  </nav>
+
+  <!-- Success Messages -->
+  {% if messages %}
+  <div class="max-w-6xl mx-auto mt-6 px-4">
+    {% for message in messages %}
+    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-xl shadow-md">
+      ✅ {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Main Content -->
+  <main class="max-w-6xl mx-auto mt-10 p-8 bg-white rounded-3xl shadow-2xl mb-10">
+    <h2 class="text-3xl font-extrabold mb-6 text-center">Assigned Expert Queries</h2>
+
+    {% if assigned_queries %}
+    <div class="overflow-x-auto mt-4">
+      <table class="min-w-full border border-gray-200 rounded-2xl overflow-hidden shadow-md">
+        <thead class="bg-[#053830] text-white">
+          <tr>
+            <th class="py-3 px-6 text-left font-semibold">Client Name</th>
+            <th class="py-3 px-6 text-left font-semibold">Email</th>
+            <th class="py-3 px-6 text-left font-semibold">Service</th>
+            <th class="py-3 px-6 text-left font-semibold">Message</th>
+            <th class="py-3 px-6 text-center font-semibold">Status</th>
+            <th class="py-3 px-6 text-center font-semibold">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200 text-gray-700">
+          {% for q in assigned_queries %}
+          <tr class="hover:bg-[#F9FBF8] transition">
+            <td class="py-3 px-6 font-medium uppercase">{{ q.name }}</td>
+            <td class="py-3 px-6">{{ q.email }}</td>
+            <td class="py-3 px-6 text-[#FF9728] font-semibold">{{ q.service.title }}</td>
+            <td class="py-3 px-6">{{ q.message|truncatechars:50 }}</td>
+            <td class="py-3 px-6 text-center">
+              {% if q.status == "accepted" %}
+                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold shadow-sm">Accepted</span>
+              {% elif q.status == "rejected" %}
+                <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-semibold shadow-sm">Rejected</span>
+              {% else %}
+                <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-semibold shadow-sm">Assigned</span>
+              {% endif %}
+            </td>
+            <td class="py-3 px-6 text-center">
+              {% if q.status == "assigned" %}
+              <form method="POST" class="flex justify-center gap-2">
+                {% csrf_token %}
+                <input type="hidden" name="query_id" value="{{ q.id }}">
+                <button name="action" value="accept"
+                        class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-xs font-semibold shadow-md transition-all transform hover:scale-105">
+                        Accept
+                </button>
+                <button name="action" value="reject"
+                        class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-xs font-semibold shadow-md transition-all transform hover:scale-105">
+                        Reject
+                </button>
+              </form>
+              {% else %}
+                <span class="text-gray-500 italic">No action available</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center bg-gray-50 py-12 rounded-2xl border border-gray-200 shadow-md mt-10">
+      <p class="text-lg font-semibold text-gray-600">No expert queries assigned yet.</p>
+      <p class="text-sm text-gray-500">Once assigned, they will appear here with full details.</p>
+    </div>
+    {% endif %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="text-center text-sm text-gray-600 pb-6">
+    © 2025 Propulsion Technology. All Rights Reserved.
+  </footer>
+
+</body>
+</html>

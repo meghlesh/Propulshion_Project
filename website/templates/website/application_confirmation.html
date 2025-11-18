@@ -1,0 +1,76 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Application Submitted | Propulsion Technology</title>
+
+  <!-- Tailwind + Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body { font-family: 'Poppins', sans-serif; }
+  </style>
+</head>
+
+<body class="bg-gradient-to-b from-[#F9FAFB] via-[#F3F7F2] to-[#E8F0EB] min-h-screen">
+
+  <!-- =============================
+       NAVBAR
+       ============================= -->
+  <nav class="bg-[#053830] text-white p-5 flex justify-between items-center shadow-lg sticky top-0 z-40">
+      <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">
+          Propulsion Technology
+      </h1>
+
+      <a href="{% url 'home' %}"
+         class="bg-[#FF9728] px-5 py-2 rounded-xl text-[#053830] font-semibold hover:bg-white hover:text-[#053830] transition-all shadow-md hover:shadow-lg">
+         Back to home
+      </a>
+  </nav>
+
+  <!-- =============================
+       MAIN SUCCESS CARD
+       ============================= -->
+  <div class="flex justify-center items-center py-16">
+
+    <div class="bg-white p-10 md:p-12 rounded-3xl shadow-2xl w-full max-w-xl border border-gray-100 text-center transform transition-all duration-300 hover:scale-[1.01]">
+
+        <!-- Success Icon -->
+        <div class="flex justify-center mb-6">
+          <div class="w-20 h-20 bg-green-100 text-green-600 flex items-center justify-center rounded-full shadow-md">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" viewBox="0 0 24 24" fill="currentColor">
+              <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-2.59a.75.75 0 10-1.06-1.06l-4.72 4.72-2.06-2.06a.75.75 0 10-1.06 1.06l2.59 2.59c.3.3.79.3 1.09 0l5.22-5.22z" clip-rule="evenodd" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Heading -->
+        <h2 class="text-3xl font-extrabold text-[#053830] mb-3">
+            Application Submitted Successfully!
+        </h2>
+
+        <!-- Message -->
+        <p class="text-gray-700 text-base leading-relaxed mb-6">
+            Thank you for applying! <br>
+        </p>
+
+        <p class="text-gray-600 text-sm mb-8">
+            Our HR team will review your application and contact you shortly.
+        </p>
+
+        <!-- Button -->
+        <a href="{% url 'careers_list' %}"
+           class="bg-[#FF9728] text-[#053830] px-8 py-3 rounded-xl font-semibold text-lg
+                  hover:bg-[#053830] hover:text-white transition-all shadow-md">
+           Back to Careers
+        </a>
+
+    </div>
+
+  </div>
+
+</body>
+</html>

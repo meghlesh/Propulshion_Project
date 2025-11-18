@@ -1,0 +1,147 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Value | Propulsion Technology</title>
+    <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-[#EAF4E0] font-sans text-[#053830]">
+
+<!-- Navbar -->
+<nav class="bg-[#053830] text-white p-5 flex justify-between items-center shadow-lg">
+    <h1 class="text-2xl font-bold">Edit Value</h1>
+    <div>
+        <a href="{% url 'manage_our_values' %}" class="text-[#FF9728] font-semibold hover:text-white mr-6">
+            Back to Values
+        </a>
+        <a href="{% url 'admin_logout' %}" class="bg-[#FF9728] text-[#053830] px-4 py-2 rounded-xl font-semibold hover:bg-white hover:text-[#053830] transition-all">
+            Logout
+        </a>
+    </div>
+</nav>
+
+<!-- Edit Value Form -->
+<main class="max-w-3xl mx-auto mt-10 p-6 bg-white rounded-3xl shadow-2xl">
+ <h2 class="text-3xl font-extrabold mb-2 text-center">
+    Edit
+</h2>
+
+<h2 class="text-3xl font-extrabold mb-6 text-center break-all whitespace-normal leading-tight">
+    {{ value.title }}
+</h2>
+
+
+
+    <form id="editValueForm" method="POST" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- Title -->
+        <div>
+            <label for="title" class="block font-semibold mb-2">Title *</label>
+            <input type="text" id="title" name="title" value="{{ value.title }}" maxlength="50" required
+                class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all">
+            <p id="titleError" class="text-red-600 text-sm mt-1 hidden"></p>
+            <p class="text-xs text-gray-500 mt-1">
+                <span id="titleCount">{{ value.title|length }}</span>/50 characters
+            </p>
+        </div>
+
+        <!-- Description -->
+        <div>
+            <label for="description" class="block font-semibold mb-2">Description *</label>
+            <textarea id="description" name="description" rows="5" maxlength="300" required
+                class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all">{{ value.description }}</textarea>
+            <p id="descError" class="text-red-600 text-sm mt-1 hidden"></p>
+            <p class="text-xs text-gray-500 mt-1">
+                <span id="descCount">{{ value.description|length }}</span>/300 characters
+            </p>
+        </div>
+
+        <!-- Active Status Checkbox -->
+        <div class="flex items-center bg-gray-50 p-4 rounded-xl border border-gray-200">
+            <input type="checkbox" id="is_active" name="is_active" {% if value.is_active %}checked{% endif %}
+                class="w-5 h-5 text-[#053830] border-gray-300 rounded focus:ring-[#053830]">
+            <label for="is_active" class="ml-3 text-sm font-semibold text-[#053830]">
+                ✅ Active (Display this value on the website)
+            </label>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex justify-center mt-6 space-x-4">
+            <a href="{% url 'manage_our_values' %}"
+               class="bg-gray-300 text-gray-700 px-8 py-3 rounded-xl font-semibold hover:bg-gray-400 transition-all shadow-md">
+                Cancel
+            </a>
+
+            <button type="submit"
+                class="bg-[#053830] text-white px-8 py-3 rounded-xl font-semibold hover:bg-[#FF9728] hover:text-[#053830] transition-all shadow-lg shadow-[#053830]/40 transform hover:scale-[1.02] hover:-translate-y-1">
+                Update Value
+            </button>
+        </div>
+    </form>
+</main>
+
+<!-- Validation Script -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const title = document.getElementById("title");
+    const desc = document.getElementById("description");
+
+    const titleError = document.getElementById("titleError");
+    const descError = document.getElementById("descError");
+
+    const titleCount = document.getElementById("titleCount");
+    const descCount = document.getElementById("descCount");
+
+    const form = document.getElementById("editValueForm");
+
+    // Live Character Count
+    title.addEventListener("input", () => {
+        titleCount.textContent = title.value.length;
+
+        if (title.value.length > 50) {
+            titleError.textContent = "Title cannot exceed 50 characters.";
+            titleError.classList.remove("hidden");
+        } else {
+            titleError.classList.add("hidden");
+        }
+    });
+
+    desc.addEventListener("input", () => {
+        descCount.textContent = desc.value.length;
+
+        if (desc.value.length > 300) {
+            descError.textContent = "Description cannot exceed 300 characters.";
+            descError.classList.remove("hidden");
+        } else {
+            descError.classList.add("hidden");
+        }
+    });
+
+    // Form Submit Validation
+    form.addEventListener("submit", (e) => {
+        let valid = true;
+
+        if (title.value.length > 50) {
+            titleError.textContent = "Title cannot exceed 50 characters.";
+            titleError.classList.remove("hidden");
+            valid = false;
+        }
+
+        if (desc.value.length > 300) {
+            descError.textContent = "Description cannot exceed 300 characters.";
+            descError.classList.remove("hidden");
+            valid = false;
+        }
+
+        if (!valid) e.preventDefault();
+    });
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,100 @@
+{% load static %}
+{% load tz %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Careers | Propulsion Technology</title>
+  <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="min-h-screen flex flex-col bg-gradient-to-b from-[#EAF4E0] via-[#F6FAF2] to-[#D8EBD0] font-sans text-[#053830]">
+
+  <!-- ✅ Compact Hero Header -->
+  <header class="relative bg-[#053830] text-white text-center py-12 md:py-14 shadow-2xl overflow-hidden">
+    <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center opacity-10"></div>
+    <div class="relative max-w-4xl mx-auto px-6">
+      <h1 class="text-4xl md:text-5xl font-extrabold mb-3 drop-shadow-md">Open Positions</h1>
+      <p class="text-lg text-[#FF9728] font-semibold">
+        Explore opportunities — innovate, grow, and make an impact with us.
+      </p>
+    </div>
+  </header>
+
+  <!-- ✅ Main Content -->
+  <main class="max-w-6xl mx-auto w-full px-6 py-12 flex-grow">
+
+    <!-- Flash Messages -->
+    {% if messages %}
+    <div class="max-w-2xl mx-auto mb-6">
+      {% for message in messages %}
+        <div
+          class="px-6 py-3 text-center rounded-xl font-semibold shadow-md mb-4
+          {% if message.tags == 'success' %} bg-green-100 text-green-800 border border-green-300
+          {% elif message.tags == 'error' %} bg-red-100 text-red-800 border border-red-300
+          {% elif message.tags == 'warning' %} bg-yellow-100 text-yellow-800 border border-yellow-300
+          {% else %} bg-[#EAF4E0] text-[#053830] border border-[#CDE5B1] {% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Job Listings -->
+    <section class="space-y-6">
+      {% if jobs %}
+        {% for job in jobs %}
+        <article class="bg-white p-6 rounded-2xl shadow-md flex flex-col md:flex-row md:justify-between md:items-center hover:shadow-lg transition">
+          <div class="mb-4 md:mb-0">
+            <h2 class="text-xl font-bold">{{ job.title }}</h2>
+<p class="text-sm text-gray-600 mt-1">
+    {{ job.location|default:"Remote" }} • 
+    Posted: {{ job.posted_at|localtime|date:"M d, Y, g:i a" }}
+  </p>
+            {% if job.summary %}
+            <p class="mt-3 text-gray-700">{{ job.summary }}</p>
+            {% endif %}
+          </div>
+
+          <div class="flex items-center gap-4">
+            <a href="{% url 'apply_job' job.id %}" class="bg-[#053830] text-white px-5 py-2 rounded-lg shadow hover:bg-[#155C54] transition">
+              Apply
+            </a>
+            <a href="{% url 'job_detail' job.id %}" class="text-sm text-[#FF9728] hover:underline font-medium">
+  View Details
+</a>
+          </div>
+        </article>
+        {% endfor %}
+      {% else %}
+        <div class="bg-white p-6 rounded-2xl shadow text-gray-600 text-center">
+          No job openings at the moment.
+        </div>
+      {% endif %}
+    </section>
+
+    <!-- ✅ Back to Home Button -->
+    <div class="text-center mt-12">
+      <a href="{% url 'home' %}"
+         class="inline-block bg-[#053830] text-white px-10 py-4 rounded-xl font-semibold text-lg hover:bg-[#FF9728] hover:text-[#053830] transition-all duration-300 shadow-lg shadow-[#053830]/40 transform hover:scale-105 hover:-translate-y-1">
+         Back to Home
+      </a>
+    </div>
+  </main>
+
+  <!-- ✅ Footer (Always at bottom) -->
+  <footer class="w-full bg-[#053830] text-white mt-auto">
+    <div class="max-w-6xl mx-auto py-8 text-center px-6">
+      <p class="text-lg font-semibold">
+        © {{ now|date:"Y" }} <span class="text-[#FF9728]">Propulsion Technology</span>. All rights reserved.
+      </p>
+      <p class="text-sm text-[#BFD3CB] mt-2">
+        Building the future, one innovation at a time.
+      </p>
+    </div>
+  </footer>
+
+</body>
+</html>

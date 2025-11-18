@@ -1,0 +1,108 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Candidate Login | Propulsion Technology</title>
+  <link rel="icon" type="image/png" href="{% static 'img/logo.png' %}">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#053830',
+            accent: '#FF9728',
+            secondary: '#D2E8B8',
+            lightbg: '#EAF4E0',
+          },
+          fontFamily: {
+            sans: ['Poppins', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+</head>
+
+<body class="bg-lightbg font-sans text-primary min-h-screen flex flex-col items-center justify-center">
+
+  <!-- Login Card -->
+  <div class="bg-white p-10 rounded-3xl shadow-2xl border border-secondary/40 w-full max-w-md text-center animate-fadeIn">
+    <h1 class="text-3xl font-extrabold mb-6 text-primary">Candidate Login</h1>
+
+    <form method="POST" class="space-y-5">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="bg-red-100 text-red-800 p-2 rounded-md text-sm">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <div>
+        <label for="id_username" class="block text-left text-sm font-semibold mb-1">Username</label>
+        <input type="text" name="username" id="id_username"
+               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition"
+               placeholder="Enter your username" required>
+      </div>
+
+      <div>
+        <label for="id_password" class="block text-left text-sm font-semibold mb-1">Password</label>
+        <input type="password" name="password" id="id_password"
+               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition"
+               placeholder="Enter your password" required>
+      </div>
+
+      <button type="submit"
+              class="w-full bg-primary text-white font-semibold py-3 rounded-lg hover:bg-accent hover:text-primary transition-all shadow-md">
+        Login
+      </button>
+    </form>
+
+    <p class="text-gray-600 mt-4">
+      Don’t have an account?
+      <a href="{% url 'candidate_register' %}" class="text-accent font-semibold hover:underline">Register</a>
+      <br><br>
+      <a href="{% url 'candidate_password_reset' %}" class="hover:underline text-primary font-medium">
+        Forgot Password?
+      </a>
+    </p>
+
+    <!-- Back to Main Website -->
+    <div class="mt-8 text-center border-t border-gray-100 pt-6">
+      <a href="/"
+         class="inline-block bg-primary text-white font-semibold py-2 px-6 rounded-xl
+                hover:bg-accent hover:text-primary transition-all shadow-md
+                transform hover:scale-[1.03] hover:-translate-y-0.5">
+        Back to Main Website
+      </a>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="text-sm text-gray-600 mt-10">
+    © 2025 Propulsion Technology. All Rights Reserved.
+  </footer>
+
+  <!-- Animation -->
+  <style>
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(15px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .animate-fadeIn {
+      animation: fadeIn 0.7s ease-in-out;
+    }
+  </style>
+
+</body>
+</html>

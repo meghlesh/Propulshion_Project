@@ -1,0 +1,78 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ about.title|default:"About Our Story" }} | Propulsion Technology</title>
+    <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#EAF4E0] font-sans text-[#053830]">
+
+    <!-- Header/Hero Section -->
+    <header class="bg-[#053830] text-white shadow-2xl">
+        <div class="max-w-6xl mx-auto px-6 py-16 text-center">
+            <h1 class="text-5xl font-extrabold mb-4">{{ about.title|default:"Our Story" }}</h1>
+            <p class="text-xl text-[#FF9728] font-semibold">Discover who we are and what drives us forward</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-6 py-12">
+        {% if about %}
+            <!-- Our Mission Section -->
+            <section class="mb-12 bg-white rounded-3xl shadow-2xl p-8 border-l-4 border-[#FF9728] transform hover:scale-[1.02] transition-all">
+                <div class="flex items-center mb-4">
+                    <span class="text-4xl mr-3"></span>
+                    <h2 class="text-3xl font-bold text-[#053830]">Our Mission</h2>
+                </div>
+                <p class="text-gray-700 leading-relaxed text-lg">{{ about.mission }}</p>
+            </section>
+
+            <!-- Our Vision Section -->
+            <section class="mb-12 bg-white rounded-3xl shadow-2xl p-8 border-l-4 border-[#053830] transform hover:scale-[1.02] transition-all">
+                <div class="flex items-center mb-4">
+                    <span class="text-4xl mr-3"></span>
+                    <h2 class="text-3xl font-bold text-[#053830]">Our Vision</h2>
+                </div>
+                <p class="text-gray-700 leading-relaxed text-lg">{{ about.vision }}</p>
+            </section>
+
+            <!-- Our Story Section -->
+            <section class="bg-white rounded-3xl shadow-2xl p-8 border-l-4 border-[#FF9728] transform hover:scale-[1.02] transition-all">
+                <div class="flex items-center mb-4">
+                    <span class="text-4xl mr-3"></span>
+                    <h2 class="text-3xl font-bold text-[#053830]">Our Story</h2>
+                </div>
+                <p class="text-gray-700 leading-relaxed text-lg whitespace-pre-line">{{ about.story }}</p>
+            </section>
+        {% else %}
+            <!-- No Content Message -->
+            <div class="bg-white rounded-3xl shadow-2xl p-12 text-center">
+                <span class="text-6xl mb-4 block"></span>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">No Content Yet</h2>
+                <p class="text-gray-600 text-lg">Our story is being written. Check back soon!</p>
+            </div>
+        {% endif %}
+
+        <!-- Back to Home Button -->
+        <div class="text-center mt-12">
+            <a href="{% url 'home' %}" 
+               class="inline-block bg-[#053830] text-white px-10 py-4 rounded-xl font-semibold text-lg hover:bg-[#FF9728] hover:text-[#053830] transition-all shadow-lg shadow-[#053830]/40 transform hover:scale-105 hover:-translate-y-1">
+                 Back to Home
+            </a>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#053830] text-white text-center py-8 mt-16 shadow-2xl">
+        <div class="max-w-6xl mx-auto px-6">
+            <p class="text-lg font-semibold">© {{ now|date:"Y" }} <span class="text-[#FF9728]">Propulsion Technology</span>. All rights reserved.</p>
+            <p class="text-sm text-gray-400 mt-2">Building the future, one innovation at a time.</p>
+        </div>
+    </footer>
+
+</body>
+</html>

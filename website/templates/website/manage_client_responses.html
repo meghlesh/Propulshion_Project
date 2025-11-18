@@ -1,0 +1,192 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Client Responses | Admin Dashboard</title>
+  <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    @keyframes fade-in {
+      from {
+        opacity: 0;
+        transform: scale(0.97);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .animate-fade-in {
+      animation: fade-in 0.25s ease-out;
+    }
+  </style>
+
+</head>
+
+<body class="bg-[#EAF4E0] font-sans text-[#053830]">
+
+  <!-- NAVBAR -->
+  <nav class="bg-[#053830] text-white p-5 flex justify-between items-center shadow-lg">
+    <h1 class="text-2xl font-bold">Client Responses</h1>
+    <div>
+      <a href="{% url 'home' %}" class="text-[#FF9728] font-semibold hover:text-white mr-6">Back To Home</a>
+      <a href="{% url 'admin_dashboard' %}" class="text-[#FF9728] font-semibold hover:text-white mr-6">Dashboard</a>
+      <a href="{% url 'admin_logout' %}"
+        class="bg-[#FF9728] text-[#053830] px-4 py-2 rounded-xl font-semibold hover:bg-white hover:text-[#053830] transition-all">
+        Logout
+      </a>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="max-w-7xl mx-auto mt-10 p-8 bg-white rounded-3xl shadow-2xl">
+    <h2 class="text-3xl font-extrabold mb-8 text-center">All Client Responses</h2>
+
+    <!-- Message Box -->
+    <div class="bg-[#EAF4E0] p-6 rounded-2xl shadow-inner mb-10">
+
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-semibold">Messages Overview</h3>
+        <span class="text-sm text-gray-700 bg-white px-3 py-1 rounded-lg shadow-sm">
+          Total: <strong>{{ messages_data|length }}</strong>
+        </span>
+      </div>
+
+      <!-- TABLE -->
+      <div class="overflow-x-auto bg-white rounded-xl shadow-lg border border-gray-200">
+
+        <table class="min-w-full border-collapse text-sm">
+          <thead class="bg-[#053830] text-white">
+            <tr>
+              <th class="px-6 py-3 text-left font-semibold">Name</th>
+              <th class="px-6 py-3 text-left font-semibold">Email</th>
+              <th class="px-6 py-3 text-left font-semibold">Subject</th>
+              <th class="px-6 py-3 text-left font-semibold">Message</th>
+              <th class="px-6 py-3 text-left font-semibold">Submitted At</th>
+              <th class="px-6 py-3 text-left font-semibold">Attachment</th>
+            </tr>
+          </thead>
+
+          <tbody class="divide-y divide-gray-200">
+
+            {% for msg in messages_data %}
+            <tr class="hover:bg-[#EAF4E0] transition">
+
+              <!-- NAME: One-line only (full name shown, ellipsis if long) -->
+              <td class="px-6 py-4 font-semibold text-[#053830] whitespace-nowrap overflow-hidden text-ellipsis max-w-[180px]">
+                {{ msg.name }}
+              </td>
+
+              <td class="px-6 py-4 text-gray-700 whitespace-nowrap">{{ msg.email }}</td>
+
+              <!-- SUBJECT: show only 10 chars -->
+              <td class="px-6 py-4 text-gray-700 whitespace-nowrap overflow-hidden text-ellipsis max-w-[170px]">
+                {{ msg.subject|slice:":10" }}{% if msg.subject|length > 10 %}...{% endif %}
+                {% if msg.subject|length > 10 %}
+                <button onclick="showMessage(`{{ msg.name }}`, `{{ msg.subject }}`, `{{ msg.message|escapejs }}`)"
+                  class="text-[#FF9728] hover:underline ml-2">
+                  View More
+                </button>
+                {% endif %}
+              </td>
+
+              <!-- MESSAGE: show only 10 chars -->
+              <td class="px-6 py-4 text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis max-w-[180px]">
+                {{ msg.message|slice:":10" }}{% if msg.message|length > 10 %}...{% endif %}
+                {% if msg.message|length > 10 %}
+                <button onclick="showMessage(`{{ msg.name }}`, `{{ msg.subject }}`, `{{ msg.message|escapejs }}`)"
+                  class="text-[#FF9728] hover:underline ml-2">
+                  View More
+                </button>
+                {% endif %}
+              </td>
+
+              <td class="px-6 py-4 text-gray-500 whitespace-nowrap">
+                {{ msg.submitted_at|date:'M d, Y H:i' }}
+              </td>
+
+              <!-- ATTACHMENT -->
+              <td class="px-6 py-4 text-center">
+                {% if msg.attachment %}
+                <a href="{{ msg.attachment.url }}" target="_blank"
+                  class="text-[#FF9728] font-semibold hover:underline">
+                  📎 View File
+                </a>
+                {% else %}
+                <span class="text-gray-400 italic">No File</span>
+                {% endif %}
+              </td>
+
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center py-8 text-gray-600 italic">No client messages yet.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+
+        </table>
+      </div>
+    </div>
+
+    <footer class="text-center text-gray-600 mt-8 text-sm">
+      © 2025 <span class="text-[#FF9728] font-semibold">Propulsion Technology</span>. All Rights Reserved.
+    </footer>
+  </main>
+
+  <!-- MESSAGE MODAL -->
+  <div id="messageModal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50">
+
+    <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-2xl animate-fade-in max-h-[90vh] overflow-y-auto">
+
+      <h3 id="modalTitle" class="text-2xl font-bold text-[#053830] mb-2"></h3>
+      <h4 id="modalSubject" class="text-lg text-[#FF9728] font-semibold mb-4"></h4>
+
+      <div class="bg-[#F9FAF8] border border-gray-300 rounded-xl p-4 max-h-[50vh] overflow-y-auto whitespace-pre-wrap">
+        <p id="modalMessage" class="text-gray-700 leading-relaxed"></p>
+      </div>
+
+      <div class="text-center mt-8">
+        <button onclick="closeModal()"
+          class="bg-[#FF9728] text-[#053830] px-6 py-2 rounded-xl font-semibold hover:bg-[#ffb055] transition">
+          Close
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL SCRIPT -->
+  <script>
+    function showMessage(name, subject, message) {
+      document.getElementById("modalTitle").innerText = name;
+      document.getElementById("modalSubject").innerText = subject;
+      document.getElementById("modalMessage").innerText = message;
+
+      const modal = document.getElementById("messageModal");
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeModal() {
+      const modal = document.getElementById("messageModal");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+      document.body.style.overflow = "";
+    }
+  </script>
+
+</body>
+
+</html>

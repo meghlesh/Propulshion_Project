@@ -1,0 +1,113 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Candidate Dashboard | Propulsion Technology</title>
+      <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-[#EAF4E0] font-sans text-[#053830]">
+
+<!-- ✨ Candidate Dashboard Loader -->
+<div id="pageLoader"
+     class="fixed inset-0 flex flex-col items-center justify-center bg-white/70 backdrop-blur-md z-[9999] transition-all duration-700">
+  <div class="relative">
+    <div class="w-20 h-20 border-[5px] border-[#053830]/20 border-t-[#053830] rounded-full animate-spin"></div>
+    <div class="absolute inset-2 w-16 h-16 border-[4px] border-[#FF9728]/30 border-t-[#FF9728] rounded-full animate-[spin_2.5s_linear_infinite]"></div>
+  </div>
+  <p class="mt-8 text-[#053830] text-lg font-semibold tracking-wide animate-pulse">Fetching your data...</p>
+</div>
+
+  <!-- Navbar -->
+  <nav class="bg-[#053830] text-white p-5 flex justify-between items-center shadow-lg">
+    <h1 class="text-2xl font-bold">Candidate Dashboard</h1>
+    <div>
+      <a href="{% url 'home' %}" class="text-[#FF9728] font-semibold hover:text-white mr-6">Home</a>
+      <a href="{% url 'candidate_logout' %}" class="bg-[#FF9728] text-[#053830] px-4 py-2 rounded-xl font-semibold hover:bg-white hover:text-[#053830] transition-all">Logout</a>
+    </div>
+  </nav>
+
+  <!-- Main Section -->
+  <main class="max-w-5xl mx-auto mt-10 p-6 bg-white rounded-3xl shadow-2xl">
+    <h2 class="text-3xl font-extrabold mb-6 text-center">My Job Applications</h2>
+
+    <!-- Display Messages -->
+    {% if messages %}
+      {% for message in messages %}
+        <div class="mb-4 p-3 rounded text-sm {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    {% if applications %}
+    <div class="overflow-x-auto">
+      <table class="min-w-full border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+        <thead class="bg-[#053830] text-white">
+          <tr>
+            <th class="px-6 py-3 text-left">Job Title</th>
+            <th class="px-6 py-3 text-left">Applied On</th>
+            <th class="px-6 py-3 text-left">Status</th>
+            <th class="px-6 py-3 text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          {% for app in applications %}
+          <tr class="hover:bg-[#EAF4E0] transition-all">
+            <td class="px-6 py-3 font-semibold">{{ app.job.title }}</td>
+            <td class="px-6 py-3">{{ app.applied_at|date:"M d, Y" }}</td>
+
+            <!-- Status -->
+<td class="px-6 py-3">
+  <span class="
+      {% if app.display_status == 'Submitted' %}bg-blue-100 text-blue-800
+      {% elif app.display_status == 'Shortlisted' %}bg-green-100 text-green-700
+      {% elif app.display_status == 'Rejected' %}bg-red-100 text-red-700
+      {% elif app.display_status == 'Withdrawn' %}bg-gray-200 text-gray-600
+      {% else %}bg-yellow-100 text-yellow-700{% endif %}
+      px-3 py-1 rounded-full text-xs font-semibold
+  ">
+    {{ app.display_status }}
+  </span>
+</td>
+
+            <!-- Withdraw Button -->
+            <td class="px-6 py-3 text-center">
+              <form method="POST" onsubmit="return confirm('Are you sure you want to withdraw your application for {{ app.job.title }}?');">
+                {% csrf_token %}
+                <input type="hidden" name="application_id" value="{{ app.id }}">
+                <button type="submit"
+                  class="bg-red-500 text-white px-4 py-1.5 rounded-md text-sm font-semibold hover:bg-red-600 transition-all">
+                  Withdraw
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <p class="text-center text-gray-600 mt-4 text-lg">You haven’t applied for any jobs yet.</p>
+    {% endif %}
+  </main>
+
+
+
+<script>
+window.addEventListener("load", () => {
+  const loader = document.getElementById("pageLoader");
+  if (loader) {
+    loader.style.opacity = "0";
+    loader.style.transform = "scale(1.05)";
+    setTimeout(() => loader.style.display = "none", 800);
+  }
+});
+</script>
+
+</body>
+</html>

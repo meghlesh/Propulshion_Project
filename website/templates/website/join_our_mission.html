@@ -1,0 +1,137 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Join Our Mission | Propulsion Technology</title>
+    <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gradient-to-b from-[#EAF4E0] via-[#F6FAF2] to-[#D8EBD0] font-sans text-[#053830]">
+
+    <!-- Header / Hero Section -->
+    <header class="relative bg-[#053830] text-white text-center py-20 shadow-2xl overflow-hidden">
+        <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center opacity-10"></div>
+        <div class="relative max-w-6xl mx-auto px-6">
+            <h1 class="text-5xl md:text-6xl font-extrabold mb-4 drop-shadow-md">Join Our Mission</h1>
+            <p class="text-xl text-[#FF9728] font-semibold">
+                Be part of something bigger — innovate, inspire, and make an impact.
+            </p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-6 py-16 space-y-20">
+
+        <!-- Mission Section -->
+        <section
+            class="bg-white rounded-3xl shadow-xl p-10 md:p-14 border-l-4 border-[#FF9728] transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+            <div class="flex items-center mb-6">
+                <h2 class="text-3xl md:text-4xl font-bold text-[#053830] flex items-center gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-[#FF9728]" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8c-1.657 0-3 1.343-3 3 0 2.5 3 6 3 6s3-3.5 3-6c0-1.657-1.343-3-3-3z" />
+                    </svg>
+                    Shape the Future with Us
+                </h2>
+            </div>
+            <p class="text-gray-700 leading-relaxed text-lg mb-10">
+                We’re always looking for passionate innovators to join our team and help shape the future.
+                Together, we can create meaningful change through technology and purpose-driven innovation.
+                Whether you’re an engineer, designer, or visionary — there’s a place for you at Propulsion Technology.
+            </p>
+            <a href="{% url 'home' %}#contact"
+                class="inline-block bg-[#053830] text-white px-10 py-4 rounded-xl font-semibold text-lg hover:bg-[#FF9728] hover:text-[#053830] transition-all duration-300 shadow-lg shadow-[#053830]/40 transform hover:scale-105 hover:-translate-y-1">
+                Contact Us
+            </a>
+        </section>
+
+        <!-- Why Join Us Section -->
+        <section
+            class="bg-white rounded-3xl shadow-xl p-10 md:p-14 border-l-4 border-[#06B6D4] transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+            <div class="flex items-center mb-6">
+                <h2 class="text-3xl md:text-4xl font-bold text-[#053830] flex items-center gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-[#06B6D4]" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4M7 12a5 5 0 0110 0 5 5 0 01-10 0z" />
+                    </svg>
+                    Why Join Propulsion Technology?
+                </h2>
+            </div>
+            <ul class="list-disc list-inside text-gray-700 text-lg leading-relaxed space-y-2">
+                <li>Work on cutting-edge projects that change lives globally.</li>
+                <li>Collaborate with a diverse team of passionate professionals.</li>
+                <li>Enjoy a culture that fosters creativity, inclusion, and growth.</li>
+                <li>Benefit from professional development and career advancement opportunities.</li>
+                <li>Make an impact with meaningful technology solutions.</li>
+            </ul>
+        </section>
+        <!-- After the Mission Section or where you want -->
+
+<section
+    class="bg-white rounded-3xl shadow-xl p-10 md:p-14 border-l-4 border-[#FF9728] mt-10">
+    <h2 class="text-3xl md:text-4xl font-bold text-[#053830] mb-6">Current Missions</h2>
+    <ul class="list-disc space-y-2 text-gray-700">
+        {% for mission in missions %}
+            <li><strong>{{ mission.title }}</strong>: {{ mission.description }}</li>
+        {% empty %}
+            <li>No current missions available.</li>
+        {% endfor %}
+    </ul>
+</section>
+
+
+        <!-- Testimonials Section -->
+        <section
+            class="bg-white rounded-3xl shadow-xl p-10 md:p-14 border-l-4 border-[#F59E0B] transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+            <div class="flex items-center mb-8">
+                <h2 class="text-3xl md:text-4xl font-bold text-[#053830] flex items-center gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-[#F59E0B]" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 8h10M7 12h8m-2 8h4a2 2 0 002-2v-6a2 2 0 00-2-2h-4v10z" />
+                    </svg>
+                    What Our Team Says
+                </h2>
+            </div>
+            <div class="space-y-8 text-gray-700 text-lg">
+                <blockquote class="border-l-4 border-[#F59E0B] pl-6 italic">
+                    "Joining Propulsion Technology was a turning point in my career. The projects are challenging, and the
+                    team is inspiring."
+                    <footer class="mt-2 font-semibold text-[#053830]">— Aditi M., Software Engineer</footer>
+                </blockquote>
+                <blockquote class="border-l-4 border-[#F59E0B] pl-6 italic">
+                    "The inclusive culture and continuous learning opportunities make Propulsion Technology a fantastic place
+                    to grow."
+                    <footer class="mt-2 font-semibold text-[#053830]">— Rajesh K., Product Designer</footer>
+                </blockquote>
+            </div>
+        </section>
+
+        <!-- Back to Home -->
+        <div class="text-center mt-16">
+            <a href="{% url 'home' %}"
+                class="inline-block bg-[#053830] text-white px-10 py-4 rounded-xl font-semibold text-lg hover:bg-[#FF9728] hover:text-[#053830] transition-all duration-300 shadow-lg shadow-[#053830]/40 transform hover:scale-105 hover:-translate-y-1">
+                Back to Home
+            </a>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#053830] text-white text-center py-10 mt-20 shadow-2xl">
+        <div class="max-w-6xl mx-auto px-6">
+            <p class="text-lg font-semibold">
+                © {{ now|date:"Y" }} <span class="text-[#FF9728]">Propulsion Technology</span>. All rights reserved.
+            </p>
+            <p class="text-sm text-gray-400 mt-2">Building the future, one innovation at a time.</p>
+        </div>
+    </footer>
+
+</body>
+
+</html>

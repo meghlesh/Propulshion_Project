@@ -1,0 +1,284 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Job Applications | Propulsion Admin</title>
+  <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#EAF4E0] font-sans text-[#053830]">
+
+<!-- Blur Loader -->
+<div id="blur-loader"
+     class="fixed inset-0 flex items-center justify-center bg-white/60 backdrop-blur-md z-[9999] hidden">
+  <div class="w-16 h-16 border-4 border-[#053830] border-t-transparent rounded-full animate-spin"></div>
+</div>
+
+  <!-- NAVBAR -->
+  <nav class="bg-[#053830] text-white p-5 flex justify-between items-center shadow-lg">
+    <h1 class="text-2xl font-bold">Manage Job Applications</h1>
+    <div>
+      <a href="{% url 'home' %}" class="text-[#FF9728] font-semibold hover:text-[#FFB857] mr-6 transition">Back To Home</a>
+      <a href="{% url 'admin_dashboard' %}" class="text-[#FF9728] font-semibold hover:text-[#FFB857] mr-6">Dashboard</a>
+      <a href="{% url 'admin_logout' %}" class="bg-[#FF9728] text-[#053830] px-5 py-1.5 rounded-xl font-semibold hover:bg-[#FFB857] transition">Logout</a>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="max-w-7xl mx-auto mt-10 p-8 bg-white rounded-3xl shadow-2xl">
+    <h2 class="text-3xl font-extrabold mb-8 text-center">All Job Applications</h2>
+
+    <!-- FILTERS -->
+    <div class="bg-[#EAF4E0] p-6 rounded-2xl shadow-inner mb-10">
+      <form method="get" class="grid md:grid-cols-4 gap-6 items-end">
+        <!-- Job Filter -->
+        <div>
+          <label class="block font-semibold mb-2">Filter by Job</label>
+          <select name="job" class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all">
+            <option value="">All Jobs</option>
+            {% for job in jobs %}
+              <option value="{{ job.id }}" {% if selected_job == job.id|stringformat:"s" %}selected{% endif %}>{{ job.title }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Date Range -->
+        <div>
+          <label class="block font-semibold mb-2">From</label>
+          <input type="date" name="start_date" value="{{ start_date }}" class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all">
+        </div>
+        <div>
+          <label class="block font-semibold mb-2">To</label>
+          <input type="date" name="end_date" value="{{ end_date }}" class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all">
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex justify-center md:justify-start gap-3">
+          <button type="submit" class="bg-[#053830] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#FF9728] hover:text-[#053830] transition-all shadow-lg transform hover:scale-[1.02]">
+            Apply Filters
+          </button>
+          <a href="{% url 'manage_applications' %}" class="bg-gray-300 text-[#053830] px-6 py-3 rounded-xl font-semibold hover:bg-gray-400 transition-all">
+            Reset
+          </a>
+        </div>
+      </form>
+    </div>
+
+    <!-- APPLICATION TABLE -->
+    {% if applications %}
+    <div class="overflow-x-auto mb-12">
+      <table class="min-w-full border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+        <thead class="bg-[#053830] text-white">
+          <tr>
+            <th class="px-6 py-3 text-left">Candidate Name</th>
+            <th class="px-6 py-3 text-left">Email</th>
+            <th class="px-6 py-3 text-left">Applied For</th>
+            <th class="px-6 py-3 text-left">Applied On</th>
+            <th class="px-6 py-3 text-center">Status</th>
+            <th class="px-6 py-3 text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          {% for app in applications %}
+          <tr class="hover:bg-[#EAF4E0] transition-all">
+            <td class="px-6 py-3 font-semibold">{{ app.full_name|default:app.candidate.username }}</td>
+            <td class="px-6 py-3">{{ app.email|default:app.candidate.email }}</td>
+            <td class="px-6 py-3">{{ app.job.title }}</td>
+            <td class="px-6 py-3">{{ app.applied_at|date:"M d, Y" }}</td>
+
+            <!-- STATUS -->
+            <td class="px-6 py-3 text-center">
+              <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="application_id" value="{{ app.id }}">
+                <select name="status" class="border rounded-xl px-3 py-1 text-sm" onchange="this.form.submit()">
+                  {% for s, label in app.STATUS_CHOICES %}
+                    <option value="{{ s }}" {% if app.status == s %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </form>
+            </td>
+
+            <!-- ACTIONS — FIXED (buttons won't move) -->
+            <td class="px-6 py-3">
+              <div class="flex items-center justify-center gap-4">
+                <button type="button" onclick="openPreviewModal('{{ app.id }}')"
+                  class="text-blue-600 font-semibold hover:text-blue-800">
+                  Preview
+                </button>
+
+                {% if app.resume %}
+                <a href="{{ app.resume.url }}" target="_blank"
+                   class="text-[#FF9728] font-semibold hover:text-[#053830]">
+                   View Resume
+                </a>
+                {% else %}
+                <span class="text-gray-400 italic">No resume</span>
+                {% endif %}
+              </div>
+            </td>
+
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center py-10 text-gray-500 font-medium bg-[#EAF4E0] rounded-xl shadow-inner">
+      No applications found yet.
+    </div>
+    {% endif %}
+  </main>
+
+  <!-- PREVIEW MODAL -->
+  <div id="previewModal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50 transition-opacity">
+    <div class="bg-white rounded-2xl w-full max-w-3xl p-6 relative shadow-2xl transform scale-95 transition-transform duration-200">
+      <button onclick="closePreviewModal()" class="absolute top-3 right-3 text-gray-600 hover:text-black text-lg">✕</button>
+      <h3 class="text-2xl font-bold text-[#053830] mb-4 border-b pb-2">Candidate Profile</h3>
+      <div id="previewContent" class="space-y-3 text-gray-700 text-sm">
+        <p class="text-center text-gray-400 italic">Loading...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PREVIEW SCRIPT -->
+  <script>
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function openPreviewModal(applicationId) {
+      const modal = document.getElementById('previewModal');
+      const content = document.getElementById('previewContent');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      content.innerHTML = "<p class='text-center text-gray-400 italic'>Loading...</p>";
+
+      fetch(`/dashboard/manage-applications/${applicationId}/preview/`)
+        .then(response => {
+          if (!response.ok) throw new Error("Failed to load");
+          return response.json();
+        })
+.then(data => {
+
+  const fullName = escapeHtml(data.full_name) || '—';
+  const email = escapeHtml(data.email) || '—';
+  const phone = escapeHtml(data.phone) || '—';
+  const gradYear = escapeHtml(data.graduation_year) || '—';
+  const cgpa = escapeHtml(data.graduation_percentage) || '—';
+  const keySkills = escapeHtml(data.key_skills) || '—';
+  const preferredDomain = escapeHtml(data.preferred_domain) || '—';
+  const coverLetter = escapeHtml(data.cover_letter) || '—';
+  const attachmentUrl = data.attachment_url || null;
+
+  // FIX EXPERIENCE HERE
+  let experienceText = '—';
+
+  if (data.experience && data.experience !== '—') {
+      experienceText = escapeHtml(data.experience);
+  } 
+  else if (data.raw_experience !== null && data.raw_experience !== undefined) {
+      experienceText = data.raw_experience + " year(s)";
+  } 
+  else if (data.experience_years) {
+      experienceText = escapeHtml(data.experience_years);
+  }
+
+  content.innerHTML = `
+    <div class="grid grid-cols-2 gap-6">
+      <div>
+        <h4 class="font-semibold text-gray-800 mb-2">Personal Details</h4>
+        <p><strong>Name:</strong> ${fullName}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Phone:</strong> ${phone}</p>
+      </div>
+      <div>
+        <h4 class="font-semibold text-gray-800 mb-2">Academic Details</h4>
+        <p><strong>Graduation Year:</strong> ${gradYear}</p>
+        <p><strong>CGPA:</strong> ${cgpa}</p>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <h4 class="font-semibold text-gray-800 mb-2">Professional Information</h4>
+      <p><strong>Key Skills:</strong> ${keySkills}</p>
+      <p><strong>Experience:</strong> ${experienceText}</p>
+      <p><strong>Preferred Domain:</strong> ${preferredDomain}</p>
+    </div>
+
+    <div class="mt-4">
+      <h4 class="font-semibold text-gray-800 mb-2">Cover Letter</h4>
+      <p class="bg-gray-50 p-3 rounded">${coverLetter}</p>
+    </div>
+
+    <div class="mt-5 border-t pt-3">
+      ${attachmentUrl ? `
+      <h4 class="font-semibold text-gray-800 mb-2">Attachment</h4>
+      <div class="flex items-center gap-3">
+        <a href="${escapeHtml(attachmentUrl)}" target="_blank"
+           class="text-[#FF9728] hover:text-[#053830] font-medium text-sm">📎 View Attachment</a>
+        <a href="${escapeHtml(attachmentUrl)}" download
+           class="bg-[#053830] text-white text-sm px-3 py-1 rounded-md hover:bg-[#065a44] transition">
+           ⬇️ Download
+        </a>
+        <button id="printBtn" class="bg-gray-200 text-gray-700 text-sm px-3 py-1 rounded-md hover:bg-gray-300 transition">
+           🖨️ Print
+        </button>
+      </div>` 
+      : `<p class='text-gray-500 text-sm'>No attachment uploaded.</p>`}
+    </div>
+  `;
+
+          if (attachmentUrl) {
+            const printBtn = document.getElementById('printBtn');
+            if (printBtn) {
+              printBtn.onclick = function() {
+                const w = window.open(attachmentUrl, '_blank');
+                if (!w) {
+                  alert("Popup blocked. Allow popups.");
+                  return;
+                }
+                w.addEventListener('load', () => { w.print(); });
+              };
+            }
+          }
+        })
+        .catch((err) => {
+          content.innerHTML = `<p class="text-center text-red-500">Error loading details.</p>`;
+        });
+    }
+
+    function closePreviewModal() {
+      const modal = document.getElementById('previewModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+  </script>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("blur-loader").classList.remove("hidden");
+  });
+
+  window.addEventListener("load", () => {
+      document.getElementById("blur-loader").classList.add("hidden");
+  });
+
+  const filterForm = document.querySelector("form[method='get']");
+  if (filterForm) {
+      filterForm.addEventListener("submit", () => {
+          document.getElementById("blur-loader").classList.remove("hidden");
+      });
+  }
+</script>
+
+</body>
+</html>

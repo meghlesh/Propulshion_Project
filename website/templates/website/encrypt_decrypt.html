@@ -1,0 +1,37 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Encryption & Decryption Tool</title>
+</head>
+<body>
+    <h1>Data Encryption and Decryption</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        <label for="data">Enter Text (for encryption) or Ciphertext (for decryption):</label><br>
+        <textarea name="data" id="data" rows="8" cols="60" required>{{ original_data }}</textarea><br><br>
+
+        <button type="submit" name="action" value="encrypt" style="padding: 10px; background-color: #4CAF50; color: white; border: none; cursor: pointer;">Encrypt Data</button>
+        <button type="submit" name="action" value="decrypt" style="padding: 10px; background-color: #f44336; color: white; border: none; cursor: pointer;">Decrypt Data</button>
+    </form>
+
+    <hr>
+
+    {% if error_message %}
+        <h2 style="color: red;">Error</h2>
+        <p>{{ error_message }}</p>
+    {% elif result %}
+        <h2>{{ operation }} Successful!</h2>
+        
+        <p><strong>Original Input:</strong></p>
+        <textarea rows="3" cols="60" readonly>{{ original_data }}</textarea>
+
+        <p><strong>{{ operation }} Result:</strong></p>
+        <textarea rows="8" cols="60" readonly>{{ result }}</textarea>
+
+    {% endif %}
+
+</body>
+</html>

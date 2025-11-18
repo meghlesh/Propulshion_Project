@@ -1,0 +1,114 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Account | Propulsion Tech</title>
+    <style>
+        /* RESET STYLES (necessary for email clients) */
+        body, table, td, a {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            font-family: 'Poppins', Arial, sans-serif;
+        }
+        table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+        img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; }
+        a { text-decoration: none; }
+
+        /* CUSTOM COLORS */
+        .primary-green { color: #053830 !important; }
+        .highlight-gold { color: #FF9728 !important; }
+        .accent-green-bg { background-color: #EAF4E0 !important; }
+
+        /* OTP BOX STYLE */
+        .otp-box {
+            display: inline-block;
+            padding: 15px 35px;
+            background-color: #EAF4E0;
+            color: #053830;
+            font-size: 34px;
+            font-weight: 800;
+            letter-spacing: 5px;
+            border-radius: 10px;
+            border: 2px solid #053830;
+        }
+
+        /* SHADOW EFFECT */
+        .card-shadow {
+            box-shadow: 0 4px 25px rgba(5, 56, 48, 0.15);
+        }
+    </style>
+</head>
+
+<body style="margin: 0; padding: 0; background-color: #F4F6F3; font-family: 'Poppins', sans-serif;">
+
+    <!-- MAIN CONTAINER -->
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #F4F6F3;">
+        <tr>
+            <td align="center" style="padding: 40px 15px;">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 620px; background-color: #ffffff; border-radius: 16px;" class="card-shadow">
+
+                    <!-- HEADER SECTION -->
+                    <tr>
+                        <td align="center" style="padding: 35px 20px 25px 20px; background-color: #053830; border-radius: 16px 16px 0 0;">
+                            <h1 style="margin: 0; color: #EAF4E0; font-size: 26px; letter-spacing: 2px; font-weight: 800;">
+                                PROPULSION TECH
+                            </h1>
+                            <p style="color: #FF9728; font-size: 15px; margin: 5px 0 0;">Secure Account Verification</p>
+                        </td>
+                    </tr>
+
+                    <!-- BODY CONTENT -->
+                    <tr>
+                        <td style="padding: 40px 35px 25px 35px; color: #262626; line-height: 1.6;">
+                            <h2 class="primary-green" style="margin: 0 0 15px; font-size: 24px; font-weight: 700;">
+                                Hello, {{ user_name }} 👋
+                            </h2>
+
+                            <p style="font-size: 15px; color: #444;">
+                                Welcome to <span class="highlight-gold">Propulsion Technology</span>!  
+                                To complete your registration as an <strong>{{ user_role }}</strong>, please use the following One-Time Password (OTP) to verify your account:
+                            </p>
+
+                            <!-- OTP BOX -->
+                            <p align="center" style="margin: 35px 0;">
+                                <span class="otp-box">{{ otp_code }}</span>
+                            </p>
+
+                            <p style="font-size: 14px; color: #555; margin-bottom: 20px;">
+                                ⏰ <strong>This OTP is valid for 5 minutes.</strong>  
+                                Please return to the verification page and enter this code to activate your account.
+                            </p>
+
+                            <p style="font-size: 13px; color: #777; margin-bottom: 10px;">
+                                If you did not initiate this registration, please ignore this email — your account will remain secure.
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- CALL TO ACTION BUTTON -->
+                    <tr>
+                        <td align="center" style="padding: 15px 35px 35px;">
+                            <a href="https://propulsiontech.in"
+                               style="display: inline-block; background-color: #053830; color: #ffffff; font-size: 15px; font-weight: 600; padding: 12px 28px; border-radius: 10px; text-decoration: none;">
+                                Visit Propulsion Tech
+                            </a>
+                        </td>
+                    </tr>
+
+                    <!-- FOOTER -->
+                    <tr>
+                        <td align="center" style="padding: 20px 35px 30px 35px; font-size: 12px; color: #666; border-top: 1px solid #EAEAEA;">
+                            <p style="margin: 5px 0;">&copy; 2025 <span class="primary-green">Propulsion Technology</span>. All Rights Reserved.</p>
+                            <p style="margin: 5px 0; color: #888;">Creating Digital Experiences that Inspire and Engage.</p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>
