@@ -1,0 +1,589 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Client Login | Propulsion</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  
+  <!-- Remix Icons -->
+  <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css'>
+  
+  <!-- Poppins Font -->
+  <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap'>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                fontFamily: {
+                    sans: ['Poppins', 'sans-serif'],
+                },
+                colors: {
+                    'primary-green': '#053830',
+                    'primary-green-dark': '#022c26',
+                    'highlight-gold': '#FF9728',
+                }
+            }
+        }
+    }
+  </script>
+
+  <style>
+    /* --- RESET & GLOBAL --- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+    
+    body {
+      width: 100%;
+      min-height: 100vh;
+      background: #052e26; /* Deep Green Base */
+      overflow-x: hidden; 
+      position: relative;
+    }
+
+    /* --- GLOBAL BACKGROUND EFFECTS (Covers Whole Screen) --- */
+    .background-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .bg-gradient {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, #052e26 0%, #0a4036 50%, #021f19 100%);
+        z-index: 2;
+        opacity: 0.85; /* Blend with the image below */
+    }
+
+    /* Background image */
+    .bg-image {
+        position: absolute;
+        inset: 0;
+        background-image: url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2670&auto=format&fit=crop'); /* Tech/Laptop image */
+        background-size: cover;
+        background-position: center;
+        z-index: 1;
+        opacity: 0.4;
+        filter: grayscale(40%) contrast(1.2); 
+    }
+
+    .grid-overlay {
+        position: absolute;
+        inset: 0;
+        opacity: 0.1;
+        background-image: linear-gradient(#4fd1c5 1px, transparent 1px), linear-gradient(90deg, #4fd1c5 1px, transparent 1px);
+        background-size: 40px 40px;
+        z-index: 3;
+    }
+
+    .scanlines {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+      background-size: 100% 4px, 6px 100%;
+      opacity: 0.3;
+      z-index: 4;
+    }
+
+    /* --- ANIMATIONS --- */
+    .floating-elements {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      z-index: 5;
+    }
+
+    .float-item {
+      position: absolute;
+      color: rgba(52, 211, 153, 0.15); /* Emerald tint */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      animation: floatFade 12s infinite ease-in-out;
+      opacity: 0;
+    }
+
+    /* Random positions for floating elements */
+    .f1 { top: 20%; left: 10%; animation-delay: 0s; font-size: 4rem; }
+    .f2 { top: 70%; left: 40%; animation-delay: 3s; font-size: 6rem; opacity: 0.05; }
+    .f3 { top: 15%; left: 80%; animation-delay: 5s; font-size: 3rem; }
+    .f4 { bottom: 20%; right: 10%; animation-delay: 2s; font-size: 5rem; }
+    .f5 { top: 50%; left: 5%; animation-delay: 7s; font-size: 2.5rem; }
+
+    /* Hide large floating elements on mobile AND tablets to prevent clutter */
+    @media (max-width: 1023px) {
+        .float-item { transform: scale(0.5); }
+        .f2, .f4, .f1 { display: none; } /* Hide more elements on single column view */
+    }
+
+    @keyframes floatFade {
+      0% { transform: translateY(30px) scale(0.9); opacity: 0; }
+      20% { opacity: 0.4; }
+      50% { transform: translateY(-30px) scale(1.1); opacity: 0.6; }
+      80% { opacity: 0.4; }
+      100% { transform: translateY(-60px) scale(0.9); opacity: 0; }
+    }
+
+    .data-pulse {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        background: #34d399;
+        border-radius: 50%;
+        animation: pulseDot 4s infinite;
+        opacity: 0;
+    }
+    .dp1 { top: 30%; left: 20%; animation-delay: 1s; }
+    .dp2 { top: 60%; left: 60%; animation-delay: 3s; }
+    .dp3 { top: 80%; right: 30%; animation-delay: 2s; }
+
+    @keyframes pulseDot {
+        0% { transform: scale(1); opacity: 0; }
+        50% { transform: scale(2); opacity: 0.5; }
+        100% { transform: scale(1); opacity: 0; }
+    }
+
+    /* --- MAIN LAYOUT --- */
+    .main-container {
+      position: relative;
+      z-index: 10;
+      min-height: 100vh;
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      /* FIX: Use flex-start + padding for mobile/tablet to prevent vertical clipping */
+      align-items: center;
+      justify-content: flex-start; 
+      padding: 40px 20px; 
+      gap: 40px;
+    }
+
+    /* FIX: Tablet specific adjustment (Surface Pro / iPad) */
+    @media (min-width: 768px) and (max-width: 1023px) {
+      .main-container {
+        padding: 60px 40px; /* More padding on tablet */
+        gap: 50px;
+      }
+    }
+
+    /* Desktop View */
+    @media (min-width: 1024px) {
+      .main-container {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center; /* Center vertically only on desktop where height is sufficient */
+        padding: 0 60px;
+        gap: 80px;
+      }
+    }
+
+    /* --- LEFT SIDE: TEXT --- */
+    .text-section {
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
+      color: white;
+      margin-top: 10px;
+    }
+
+    @media (min-width: 1024px) {
+        .text-section {
+            text-align: left;
+            width: 50%;
+            margin-top: 0;
+        }
+    }
+
+    .brand-logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        opacity: 0.9;
+    }
+    @media (min-width: 1024px) { .brand-logo { justify-content: flex-start; } }
+
+    .brand-logo i { font-size: 28px; color: #FF9728; }
+    .brand-logo span { font-size: 18px; font-weight: 700; letter-spacing: 2px; }
+
+    .hero-title {
+      font-size: 2.2rem; 
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 15px;
+      letter-spacing: -1px;
+    }
+
+    /* FIX: Adjust font scaling so tablet view isn't overwhelmed */
+    @media (min-width: 768px) { .hero-title { font-size: 3rem; } } 
+    @media (min-width: 1024px) { .hero-title { font-size: 4.5rem; } }
+
+    .gradient-text {
+      background: linear-gradient(to right, #FF9728, #ffb15e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      font-size: 1rem;
+      color: #D2E8B8;
+      font-weight: 300;
+      line-height: 1.5;
+      opacity: 0.8;
+      margin-bottom: 30px;
+      max-width: 90%;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    @media (min-width: 1024px) { .hero-desc { margin-left: 0; margin-right: 0; font-size: 1.1rem; } }
+
+    /* Mini Stats */
+    .stats-row {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(52, 211, 153, 0.3);
+    }
+    @media (min-width: 768px) { .stats-row { gap: 40px; padding-top: 30px; } }
+    @media (min-width: 1024px) { .stats-row { justify-content: flex-start; } }
+
+    .stat-item h4 { font-size: 10px; color: #34d399; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
+    .stat-item p { font-size: 18px; font-weight: 700; color: white; }
+    @media (min-width: 768px) {
+        .stat-item h4 { font-size: 12px; margin-bottom: 5px; }
+        .stat-item p { font-size: 24px; }
+    }
+
+
+    /* --- RIGHT SIDE: WHITE FORM --- */
+    .form-section {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      padding-bottom: 20px;
+    }
+    
+    @media (min-width: 1024px) {
+        .form-section { width: 45%; justify-content: flex-end; padding-bottom: 0; }
+    }
+
+    .form-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 30px; 
+      width: 100%;
+      max-width: 380px; 
+      position: relative;
+      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+      animation: slideUp 0.8s ease-out;
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(40px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Orange top accent */
+    .form-card::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 5px;
+        background: linear-gradient(to right, #FF9728, #ff7b00);
+    }
+
+    .form-header-text { margin-bottom: 25px; }
+    .form-sub { color: #9ca3af; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+    .form-title { color: #111827; font-size: 26px; font-weight: 700; }
+
+    /* Inputs (Light Theme) */
+    .input-group { position: relative; margin-bottom: 16px; } 
+    
+    .input-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 500;
+        color: #374151; 
+        margin-bottom: 6px;
+        margin-left: 4px;
+    }
+
+    .input-wrapper { position: relative; }
+
+    .input-wrapper input {
+      width: 100%;
+      height: 48px;  
+      background: #f9fafb; 
+      border: 1px solid #e5e7eb; 
+      border-radius: 10px;
+      padding: 0 45px 0 45px; 
+      color: #1f2937; 
+      font-size: 14px; 
+      transition: all 0.3s ease;
+    }
+
+    .input-wrapper input:focus {
+      outline: none;
+      border-color: #FF9728;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(255, 151, 40, 0.1);
+    }
+
+    .input-icon-left {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #9ca3af;
+      font-size: 18px;
+      transition: 0.3s;
+    }
+
+    .input-icon-right {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+        cursor: pointer;
+        font-size: 18px;
+    }
+
+    .input-wrapper input:focus ~ .input-icon-left { color: #FF9728; }
+
+    /* Checkbox & Links */
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      font-size: 12px;
+    }
+
+    .remember-me {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #4b5563;
+      cursor: pointer;
+    }
+    
+    .remember-me input {
+      accent-color: #FF9728;
+      width: 14px;
+      height: 14px;
+    }
+
+    .forgot-pass {
+      color: #ea580c;
+      text-decoration: none;
+      font-weight: 600;
+      transition: 0.3s;
+    }
+    .forgot-pass:hover { color: #c2410c; }
+
+    /* Button */
+    .login-btn {
+      width: 100%;
+      height: 48px; 
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #FF9728, #ea580c);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px -1px rgba(255, 151, 40, 0.3);
+    }
+
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(255, 151, 40, 0.4);
+    }
+
+    .back-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 20px;
+      font-size: 13px;
+      color: #6b7280;
+      text-decoration: none;
+      font-weight: 500;
+      transition: 0.3s;
+    }
+    .back-link:hover { color: #111827; }
+
+    /* Django Messages */
+    .django-message {
+      padding: 10px 12px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .msg-error { background: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c; }
+    .msg-success { background: #dcfce7; border: 1px solid #86efac; color: #15803d; }
+    .msg-info { background: #dbeafe; border: 1px solid #93c5fd; color: #1d4ed8; }
+
+  </style>
+</head>
+<body>
+
+  <!-- GLOBAL BACKGROUND LAYER -->
+  <div class="background-layer">
+    <div class="bg-image"></div>
+    <div class="bg-gradient"></div>
+    <div class="grid-overlay"></div>
+    <div class="scanlines"></div>
+    
+    <!-- Floating Animation Elements -->
+    <div class="floating-elements">
+       <div class="float-item f1"><i class="ri-bar-chart-box-line"></i></div>
+       <div class="float-item f2"><i class="ri-focus-3-line"></i></div>
+       <div class="float-item f3"><i class="ri-rocket-2-line"></i></div>
+       <div class="float-item f4"><i class="ri-search-eye-line"></i></div>
+       <div class="float-item f5"><i class="ri-cloud-windy-line"></i></div>
+       <!-- Pulsing Dots -->
+       <div class="data-pulse dp1"></div>
+       <div class="data-pulse dp2"></div>
+       <div class="data-pulse dp3"></div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTAINER (Z-Index above background) -->
+  <div class="main-container">
+    
+    <!-- LEFT SIDE: Branding & Text -->
+    <div class="text-section">
+      <div class="brand-logo">
+        <i class="ri-stack-line"></i>
+        <span>PROPULSION</span>
+      </div>
+      
+      <h1 class="hero-title">
+        Fuel Your <br>
+        <span class="gradient-text">Ambition</span>
+      </h1>
+      
+      <p class="hero-desc">
+        Access your dashboard to track performance, analyze data, and accelerate your digital growth.
+      </p>
+
+      <!-- Mini Stats Row -->
+      <div class="stats-row">
+        <div class="stat-item">
+            <h4>Sessions</h4>
+            <p>479K</p>
+        </div>
+        <div class="stat-item">
+            <h4>Bounce Rate</h4>
+            <p>40.6%</p>
+        </div>
+        <div class="stat-item">
+            <h4>Duration</h4>
+            <p>17m</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT SIDE: White Login Card -->
+    <div class="form-section">
+      <div class="form-card">
+        
+        <div class="form-header-text">
+            <div class="form-sub">Client Portal</div>
+            <div class="form-title">Welcome Back</div>
+        </div>
+
+        <!-- Django Messages -->
+        {% if messages %}
+          <div>
+            {% for message in messages %}
+              <div class="django-message {% if message.tags == 'error' %}msg-error{% elif message.tags == 'success' %}msg-success{% else %}msg-info{% endif %}">
+                <i class="ri-information-fill"></i> {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <!-- Form -->
+        <form method="POST">
+          {% csrf_token %}
+
+          <!-- Email -->
+          <div class="input-group">
+            <label class="input-label">Email Address</label>
+            <div class="input-wrapper">
+                <i class="ri-mail-line input-icon-left"></i>
+                <input type="email" name="email" required placeholder="name@company.com">
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="input-group">
+            <label class="input-label">Password</label>
+            <div class="input-wrapper">
+                <i class="ri-lock-line input-icon-left"></i>
+                <input type="password" name="password" id="password" required placeholder="Enter password">
+                <i class="ri-eye-off-line input-icon-right" id="togglePassword"></i>
+            </div>
+          </div>
+
+
+
+          <!-- Submit -->
+          <button type="submit" class="login-btn">
+            Log In to Dashboard
+          </button>
+
+          <!-- Back Link -->
+          <a href="/" class="back-link">
+            <i class="ri-arrow-left-line"></i> Return to Homepage
+          </a>
+
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const passInput = document.getElementById("password");
+    const passToggle = document.getElementById("togglePassword");
+
+    if(passToggle && passInput) {
+        passToggle.addEventListener("click", () => {
+        const type = passInput.getAttribute("type") === "password" ? "text" : "password";
+        passInput.setAttribute("type", type);
+        
+        passToggle.className = type === "password" 
+            ? "ri-eye-off-line input-icon-right" 
+            : "ri-eye-line input-icon-right";
+        });
+    }
+  </script>
+
+</body>
+</html>

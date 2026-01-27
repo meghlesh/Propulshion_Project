@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage About Us | Propulsion Technology</title>
-    <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+    <link rel="icon" type="image/png" href="{% static 'img/logo6.png'%}">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* This custom style block applies Tailwind classes to the raw HTML elements
@@ -82,31 +82,41 @@
                 {% csrf_token %}
 
                 <!-- Title - Full Width -->
-                <div>
-                    <label for="id_title" class="block font-semibold mb-2 text-[#053830]">Title *</label>
-                    {{ form.title }}
-                </div>
+                <!-- Title -->
+<div>
+    <label for="id_title" class="block font-semibold mb-2 text-[#053830]">Title <span class="text-red-600">*</span></label>
+    {{ form.title }}
+    <div class="text-right text-sm text-gray-600 mt-1">
+        <span id="count_title">0</span>/100
+    </div>
+</div>
 
-                <!-- Mission and Vision - Two-Column Layout -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Mission -->
-                    <div>
-                        <label for="id_mission" class="block font-semibold mb-2 text-[#053830]">Our Mission *</label>
-                        {{ form.mission }}
-                    </div>
+<!-- Mission -->
+<div>
+    <label for="id_mission" class="block font-semibold mb-2 text-[#053830]">Our Mission <span class="text-red-600">*</span></label>
+    {{ form.mission }}
+    <div class="text-right text-sm text-gray-600 mt-1">
+        <span id="count_mission">0</span>/1000
+    </div>
+</div>
 
-                    <!-- Vision -->
-                    <div>
-                        <label for="id_vision" class="block font-semibold mb-2 text-[#053830]">Our Vision *</label>
-                        {{ form.vision }}
-                    </div>
-                </div>
+<!-- Vision -->
+<div>
+    <label for="id_vision" class="block font-semibold mb-2 text-[#053830]">Our Vision <span class="text-red-600">*</span></label>
+    {{ form.vision }}
+    <div class="text-right text-sm text-gray-600 mt-1">
+        <span id="count_vision">0</span>/10000
+    </div>
+</div>
 
-                <!-- Story - Full Width (Large Text Area) -->
-                <div>
-                    <label for="id_story" class="block font-semibold mb-2 text-[#053830]">Our Story *</label>
-                    {{ form.story }}
-                </div>
+<!-- Story -->
+<div>
+    <label for="id_story" class="block font-semibold mb-2 text-[#053830]">Our Story <span class="text-red-600">*</span></label>
+    {{ form.story }}
+    <div class="text-right text-sm text-gray-600 mt-1">
+        <span id="count_story">0</span>/1000
+    </div>
+</div>
 
                 <!-- Save Button -->
                 <div class="flex justify-center pt-6">
@@ -150,6 +160,30 @@
       });
   }
 </script>
+<script>
+function applyLimit(fieldId, counterId, max) {
+    const field = document.getElementById(fieldId);
+    const counter = document.getElementById(counterId);
+
+    if (field) {
+        field.setAttribute("maxlength", max);
+
+        field.addEventListener("input", () => {
+            counter.innerText = field.value.length;
+        });
+
+        // Load existing count if data present
+        counter.innerText = field.value.length;
+    }
+}
+
+// Apply limits
+applyLimit("id_title", "count_title", 100);
+applyLimit("id_mission", "count_mission", 1000);
+applyLimit("id_vision", "count_vision", 10000);
+applyLimit("id_story", "count_story", 1000);
+</script>
+
 
 </body>
 </html>

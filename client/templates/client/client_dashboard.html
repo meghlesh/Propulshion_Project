@@ -1,0 +1,463 @@
+{% load static %}
+<!-- Removed humanize load to prevent TemplateSyntaxError if not installed -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Client Dashboard | Propulsion</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js for interactivity -->
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <!-- Google Fonts: Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary-green': '#053830',       // Dark Green (Sidebar, Buttons)
+                        'primary-green-hover': '#155C54', // Lighter Green for hovers
+                        'accent-green': '#D2E8B8',        // Light Green (Secondary Accent)
+                        'highlight-gold': '#FF9728',      // Orange Accent (Primary Accent)
+                        'gold-hover': '#e0851f',
+                    },
+                    screens: {
+                        'xs': '475px',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        
+        /* Glassmorphism Utilities */
+        .glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(5, 56, 48, 0.05);
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Loader Animations */
+        @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
+        /* Pulse for Live Indicator */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.33); opacity: 1; }
+            80%, 100% { opacity: 0; }
+        }
+        .pulse-ring::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0;
+            height: 100%; width: 100%;
+            background-color: #FF9728;
+            border-radius: 50%;
+            z-index: -1;
+            animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+
+        /* Mobile safe area spacing */
+        .safe-bottom {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* Prevent layout shift during loading */
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body x-data="{ mobileMenuOpen: false }" class="bg-[#e2e8f0] text-slate-800 min-h-screen flex overflow-x-hidden">
+
+    <!-- ✨ Page Loader -->
+    <div id="pageLoader" class="fixed inset-0 flex flex-col items-center justify-center bg-white/90 backdrop-blur-md z-[9999] transition-all duration-700">
+        <div class="relative">
+            <div class="w-20 h-20 border-[5px] border-primary-green/20 border-t-primary-green rounded-full animate-spin"></div>
+            <div class="absolute inset-2 w-16 h-16 border-[4px] border-highlight-gold/30 border-t-highlight-gold rounded-full animate-[spin_2.5s_linear_infinite]"></div>
+        </div>
+        <p class="mt-8 text-primary-green text-lg font-semibold tracking-wide animate-pulse">Loading Dashboard...</p>
+    </div>
+
+    <!-- 📱 MOBILE SIDEBAR OVERLAY -->
+    <template x-teleport="body">
+        <div x-show="mobileMenuOpen" x-cloak class="fixed inset-0 z-[100] md:hidden">
+            <!-- Backdrop -->
+            <div x-show="mobileMenuOpen" 
+                 x-transition:enter="transition-opacity ease-linear duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition-opacity ease-linear duration-300"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm"
+                 @click="mobileMenuOpen = false"></div>
+
+            <!-- Slide-out panel -->
+            <div x-show="mobileMenuOpen" 
+                 x-transition:enter="transition ease-in-out duration-300 transform"
+                 x-transition:enter-start="-translate-x-full"
+                 x-transition:enter-end="translate-x-0"
+                 x-transition:leave="transition ease-in-out duration-300 transform"
+                 x-transition:leave-start="translate-x-0"
+                 x-transition:leave-end="-translate-x-full"
+                 class="fixed inset-y-0 left-0 flex w-full max-w-xs flex-col bg-primary-green text-white shadow-xl">
+                
+                <div class="flex items-center justify-between px-6 py-6 border-b border-white/10">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center text-highlight-gold font-bold">P</div>
+                        <span class="font-bold text-lg">Propulsion</span>
+                    </div>
+                    <button type="button" class="text-gray-300 hover:text-white" @click="mobileMenuOpen = false">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+
+                <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+                    <a href="{% url 'client:client_dashboard' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl {% if request.resolver_match.url_name == 'client_dashboard' %}bg-primary-green-hover border-l-4 border-highlight-gold text-white{% else %}text-gray-300 hover:bg-primary-green-hover{% endif %}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                        <span class="font-medium">Dashboard</span>
+                    </a>
+                    <a href="{% url 'client:client_projects' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl {% if request.resolver_match.url_name == 'client_projects' %}bg-primary-green-hover border-l-4 border-highlight-gold text-white{% else %}text-gray-300 hover:bg-primary-green-hover{% endif %}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                        <span class="font-medium">Projects</span>
+                    </a>
+                    <a href="{% url 'client:client_personal_documents' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl {% if request.resolver_match.url_name == 'client_personal_documents' %}bg-primary-green-hover border-l-4 border-highlight-gold text-white{% else %}text-gray-300 hover:bg-primary-green-hover{% endif %}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9l-6-6H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                        <span class="font-medium">Documents</span>
+                    </a>
+                    <a href="{% url 'client:client_payments' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl {% if request.resolver_match.url_name == 'client_payments' %}bg-primary-green-hover border-l-4 border-highlight-gold text-white{% else %}text-gray-300 hover:bg-primary-green-hover{% endif %}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                        <span class="font-medium">Payments</span>
+                    </a>
+                </nav>
+
+                <div class="p-4 border-t border-white/5 safe-bottom">
+                    <a href="{% url 'client:client_logout' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-red-300 hover:bg-white/5 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                        <span class="font-medium">Logout</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- 💻 DESKTOP SIDEBAR -->
+   <aside class="w-72 bg-primary-green text-white flex flex-col relative z-20 shadow-2xl hidden lg:flex shrink-0">
+        <div class="absolute top-0 left-0 w-full h-64 bg-highlight-gold blur-[120px] opacity-10 pointer-events-none"></div>
+        <div class="p-8 z-10 flex items-center gap-3">
+            <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/10 backdrop-blur-sm text-highlight-gold font-extrabold text-xl shadow-lg shrink-0">P</div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight leading-none">Propulsion</h1>
+                <span class="text-[10px] text-gray-400 uppercase tracking-widest">Client Portal</span>
+            </div>
+        </div>
+
+        <nav class="flex-1 px-4 space-y-2 z-10 mt-2 overflow-y-auto custom-scrollbar">
+            <a href="{% url 'client:client_dashboard' %}" class="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all group {% if request.resolver_match.url_name == 'client_dashboard' %}bg-primary-green-hover border-l-4 border-highlight-gold text-white shadow-lg{% else %}text-gray-300 hover:bg-primary-green-hover hover:text-white{% endif %}">
+                <svg class="w-5 h-5 {% if request.resolver_match.url_name == 'client_dashboard' %}text-highlight-gold{% else %}group-hover:text-highlight-gold{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                <span class="font-medium">Dashboard</span>
+            </a>
+            <a href="{% url 'client:client_projects' %}" class="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all group {% if request.resolver_match.url_name == 'client_projects' %}bg-primary-green-hover border-l-4 border-highlight-gold text-white shadow-lg{% else %}text-gray-300 hover:bg-primary-green-hover hover:text-white{% endif %}">
+                <svg class="w-5 h-5 {% if request.resolver_match.url_name == 'client_projects' %}text-highlight-gold{% else %}group-hover:text-highlight-gold{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                <span class="font-medium">Projects</span>
+            </a>
+            <a href="{% url 'client:client_personal_documents' %}" class="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all group {% if request.resolver_match.url_name == 'client_personal_documents' %}bg-primary-green-hover border-l-4 border-highlight-gold text-white shadow-lg{% else %}text-gray-300 hover:bg-primary-green-hover hover:text-white{% endif %}">
+                <svg class="w-5 h-5 {% if request.resolver_match.url_name == 'client_personal_documents' %}text-highlight-gold{% else %}group-hover:text-highlight-gold{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9l-6-6H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                <span class="font-medium">Documents</span>
+            </a>
+            <a href="{% url 'client:client_payments' %}" class="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all group {% if request.resolver_match.url_name == 'client_payments' %}bg-primary-green-hover border-l-4 border-highlight-gold text-white shadow-lg{% else %}text-gray-300 hover:bg-primary-green-hover hover:text-white{% endif %}">
+                <svg class="w-5 h-5 {% if request.resolver_match.url_name == 'client_payments' %}text-highlight-gold{% else %}group-hover:text-highlight-gold{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+                <span class="font-medium">Payments</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 flex flex-col h-full relative overflow-hidden">
+        
+        <!-- Header -->
+        <header class="h-16 md:h-20 glass w-full flex items-center justify-between px-4 md:px-8 sticky top-0 z-30 transition-all">
+            <div class="flex items-center gap-4 flex-1">
+                <button @click="mobileMenuOpen = true" class="lg:hidden text-slate-500 hover:text-primary-green transition p-1 -ml-2">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+
+                <div class="hidden md:flex items-center gap-4 text-slate-400 w-full max-w-sm">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <input type="text" placeholder="Search projects, invoices..." class="bg-transparent border-none focus:ring-0 text-sm w-full placeholder-slate-400 focus:outline-none">
+                </div>
+                 <button class="md:hidden text-slate-500">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                 </button>
+            </div>
+            
+            <div class="flex items-center gap-4 md:gap-6">
+                <!-- Profile Dropdown -->
+                <div class="relative" x-data="{ userMenuOpen: false }">
+                    <div @click="userMenuOpen = !userMenuOpen" @click.outside="userMenuOpen = false" class="flex items-center gap-2 md:gap-3 cursor-pointer hover:bg-white p-1 md:p-1.5 md:pr-4 rounded-full transition border border-transparent hover:border-gray-200 select-none">
+                        <div class="w-8 h-8 md:w-9 md:h-9 bg-highlight-gold rounded-full shadow-md flex items-center justify-center text-white font-bold text-xs md:text-sm">
+                            {{ user.username|slice:":1"|upper|default:"J" }}
+                        </div>
+                        <div class="hidden sm:block">
+                            <p class="text-xs md:text-sm font-bold text-primary-green leading-tight truncate max-w-[100px]">{{ user.username|default:"Guest User" }}</p>
+                            <p class="text-[9px] md:text-[10px] text-slate-400 uppercase tracking-wider font-bold">Client</p>
+                        </div>
+                        <svg :class="{'rotate-180': userMenuOpen}" class="w-4 h-4 text-slate-400 transition-transform duration-200 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+
+                    <div x-show="userMenuOpen" x-cloak
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border border-slate-100 py-1 z-50 overflow-hidden origin-top-right">
+                         
+                        <div class="px-4 py-3 border-b border-slate-50 sm:hidden">
+                            <p class="text-sm font-bold text-slate-700 truncate">{{ user.username|default:"Guest User" }}</p>
+                            <p class="text-xs text-slate-400">{{ user.email|default:"user@example.com" }}</p>
+                        </div>
+                        <div class="px-4 py-3 border-b border-slate-50 hidden sm:block">
+                            <p class="text-xs text-slate-400 font-semibold uppercase">Account</p>
+                            <p class="text-sm font-bold text-slate-700 truncate">{{ user.email|default:"user@example.com" }}</p>
+                        </div>
+                        <a href="#" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-primary-green transition flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                            My Profile
+                        </a>
+                        <div class="h-px bg-slate-100 my-1"></div>
+                        <a href="{% url 'client:client_logout' %}" class="block px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition flex items-center gap-2 font-medium">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                            Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content Area -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth relative w-full">
+            <div class="absolute top-0 right-0 w-[80%] max-w-[500px] aspect-square bg-accent-green/20 rounded-full blur-[80px] -z-10 pointer-events-none opacity-60"></div>
+
+            <div class="max-w-7xl mx-auto space-y-6 md:space-y-10 pb-10">
+
+                <!-- Welcome Section -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+                    <div>
+                        <h2 class="text-2xl md:text-3xl font-extrabold text-[#053830] tracking-tight">Welcome, {{ welcome_name }} 👋</h2>
+                        <p class="text-slate-500 mt-2 font-medium text-sm md:text-base">Here's a quick look at your latest project updates and activity.</p>
+                    </div>
+                </div>
+
+                <!-- Bento Grid Layout -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Projects Widget -->
+                    <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 relative overflow-hidden group hover:shadow-2xl transition-all duration-300">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-accent-green/30 rounded-full -mr-10 -mt-10 transition group-hover:scale-110"></div>
+                        <div class="flex justify-between items-start relative z-10 mb-6">
+                            <div class="p-3 bg-accent-green/40 text-primary-green rounded-2xl">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                            </div>
+                        </div>
+                        <div class="relative z-10">
+                            <h3 class="text-4xl md:text-5xl font-black text-primary-green">{{ total_projects|default:"0" }}</h3>
+                            <p class="text-slate-500 font-semibold mt-1">Active Projects</p>
+                        </div>
+                        <div class="mt-6 flex flex-wrap gap-2">
+                            <span class="px-3 py-1.5 bg-primary-green/10 text-primary-green rounded-full text-[11px] font-bold border border-primary-green/20">{{ completed_projects|default:"0" }} Completed</span>
+                            <span class="px-3 py-1.5 bg-highlight-gold/10 text-yellow-700 rounded-full text-[11px] font-bold border border-highlight-gold/20">{{ ongoing_projects|default:"0" }} Ongoing</span>
+                        </div>
+                    </div>
+
+                    <!-- Task Status Widget -->
+                    <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 hover:shadow-2xl transition-all duration-300">
+                        <div class="flex justify-between items-center mb-8">
+                            <h3 class="text-lg font-bold text-slate-800">Task Overview</h3>
+                            <div class="p-2 bg-highlight-gold/10 text-highlight-gold rounded-xl">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                        </div>
+                        <div class="space-y-6">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-slate-600 text-sm font-semibold">Pending Review</span>
+                                    <span class="font-bold text-slate-800">{{ pending_review|default:"0" }}</span>
+                                </div>
+                                <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                                    <div class="bg-highlight-gold h-full rounded-full transition-all duration-1000" style="width: {{ pending_percent|default:'0' }}%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-slate-600 text-sm font-semibold">Completed</span>
+                                    <span class="font-bold text-slate-800">{{ approved_requests|default:"0" }}</span>
+                                </div>
+                                <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                                    <div class="bg-primary-green h-full rounded-full transition-all duration-1000" style="width: {{ completed_percent|default:'0' }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Financials Widget -->
+                    <div class="bg-primary-green text-white p-6 rounded-[2rem] shadow-2xl shadow-primary-green/40 relative overflow-hidden group sm:col-span-2 lg:col-span-1">
+                        <div class="absolute -bottom-12 -right-12 w-48 h-48 bg-highlight-gold opacity-20 rounded-full blur-3xl group-hover:opacity-30 transition duration-500"></div>
+                        <div class="flex justify-between items-center mb-6 relative z-10">
+                            <p class="text-gray-300 text-xs font-bold uppercase tracking-widest">Revenue Impact</p>
+                            <span class="p-2 bg-white/10 rounded-xl backdrop-blur-sm text-highlight-gold">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                            </span>
+                        </div>
+                        <h3 class="text-3xl md:text-4xl font-black mb-8 relative z-10 truncate tracking-tight">${{ total_revenue|floatformat:2|default:"0.00" }}</h3>
+                        <div class="space-y-4 relative z-10">
+                            <div class="flex justify-between text-sm border-b border-white/5 pb-3">
+                                <span class="text-gray-400 font-medium">Settled Funds</span>
+                                <span class="font-bold text-white">${{ total_paid|floatformat:0|default:"0" }}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-400 font-medium">Awaiting Action</span>
+                                <span class="text-highlight-gold font-bold">${{ pending_payment|floatformat:0|default:"0" }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Content Sections -->
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                    
+                    <!-- Recent Activity Table -->
+                    <div class="xl:col-span-2 bg-white rounded-[2rem] p-6 md:p-8 border border-slate-100 shadow-xl shadow-slate-200/50">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                            <h3 class="font-bold text-xl text-slate-800">Recent Projects</h3>
+                            <a href="{% url 'client:client_projects' %}" class="px-4 py-2 bg-slate-50 text-highlight-gold text-xs font-bold rounded-xl hover:bg-highlight-gold hover:text-white transition-all">View Full Portfolio</a>
+                        </div>
+                        <div class="overflow-x-auto -mx-6 px-6 sm:mx-0 sm:px-0">
+                            <table class="w-full min-w-[550px]">
+                                <thead class="text-left text-slate-400 text-[10px] uppercase tracking-[0.15em] border-b border-slate-50">
+                                    <tr>
+                                        <th class="pb-4 font-bold">Details</th>
+                                        <th class="pb-4 font-bold">Status</th>
+                                        <th class="pb-4 font-bold">Timeline</th>
+                                        <th class="pb-4 font-bold text-right">Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-sm font-medium text-slate-700">
+                                    {% for project in recent_projects %}
+                                    <tr class="group hover:bg-slate-50/80 transition-colors border-b border-slate-50/50 last:border-0">
+                                        <td class="py-5 flex items-center gap-4">
+                                            <div class="w-11 h-11 rounded-2xl bg-primary-green/5 text-primary-green flex items-center justify-center font-bold text-[10px] group-hover:bg-primary-green group-hover:text-white transition-all shrink-0">
+                                                {{ project.name|slice:":2"|upper }}
+                                            </div>
+                                            <div class="min-w-0">
+                                                <p class="font-bold text-slate-800 truncate max-w-[120px] sm:max-w-[200px]">{{ project.name }}</p>
+                                                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tight">ID: #{{ project.id }}</p>
+                                            </div>
+                                        </td>
+                                        <td class="py-5">
+                                            <span class="px-3 py-1 rounded-full text-[10px] font-bold whitespace-nowrap
+                                                {% if project.status == 'In Progress' %} bg-blue-50 text-blue-600
+                                                {% elif project.status == 'Completed' %} bg-emerald-50 text-emerald-600
+                                                {% else %} bg-orange-50 text-orange-600 {% endif %}">
+                                                {{ project.status }}
+                                            </span>
+                                        </td>
+                                        <td class="py-5 text-slate-500 text-xs font-semibold whitespace-nowrap">{{ project.end_date|default:project.start_date|date:"M d, Y" }}</td>
+                                        <td class="py-5 font-black text-right text-slate-900">${{ project.budget|default:"0.00" }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="py-12 text-center text-slate-400 italic">No project data currently available.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Performance Widget -->
+                    <div class="bg-gradient-to-br from-[#053830] to-[#0A4F44] rounded-[2rem] p-8 shadow-2xl shadow-primary-green/30 text-white relative overflow-hidden flex flex-col justify-between min-h-[350px]">
+                        <div class="absolute top-0 right-0 w-64 h-64 bg-highlight-gold blur-[100px] opacity-10 rounded-full -mr-20 -mt-20"></div>
+                        <div class="flex justify-between items-start z-10">
+                            <div>
+                                <h3 class="font-bold text-xl leading-tight">Growth<br>Insights</h3>
+                                <p class="text-[10px] font-bold text-emerald-300 uppercase tracking-widest mt-2">Marketing Channel Reach</p>
+                            </div>
+                            <div class="flex items-center gap-2 bg-black/20 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/5">
+                                <div class="relative w-2 h-2">
+                                    <div class="absolute w-2 h-2 bg-red-500 rounded-full"></div>
+                                    <div class="pulse-ring w-2 h-2 absolute"></div>
+                                </div>
+                                <span class="text-[9px] font-black tracking-[0.1em] uppercase text-red-400">Live Feed</span>
+                            </div>
+                        </div>
+
+                        <div class="z-10 mt-8">
+                            <div class="flex items-end gap-2 mb-1">
+                                <span class="text-5xl font-black tracking-tighter">24.5k</span>
+                                <span class="text-xs text-emerald-300 font-bold mb-2.5 flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                                    12.5%
+                                </span>
+                            </div>
+                            <p class="text-[10px] text-gray-400 uppercase tracking-[0.2em] font-bold">Total Reach Optimization</p>
+                            
+                            <div class="flex items-end gap-1.5 h-20 mt-8 w-full">
+                                <div class="flex-1 bg-white/10 rounded-t-md h-[30%] hover:h-[50%] hover:bg-highlight-gold/50 transition-all duration-300 cursor-help"></div>
+                                <div class="flex-1 bg-white/10 rounded-t-md h-[55%] hover:h-[70%] hover:bg-highlight-gold/50 transition-all duration-300 cursor-help"></div>
+                                <div class="flex-1 bg-white/10 rounded-t-md h-[40%] hover:h-[60%] hover:bg-highlight-gold/50 transition-all duration-300 cursor-help"></div>
+                                <div class="flex-1 bg-white/10 rounded-t-md h-[75%] hover:h-[85%] hover:bg-highlight-gold/50 transition-all duration-300 cursor-help"></div>
+                                <div class="flex-1 bg-highlight-gold rounded-t-md h-[90%] shadow-[0_0_20px_rgba(255,151,40,0.4)]"></div>
+                            </div>
+                        </div>
+
+                        <button class="mt-8 w-full py-4 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/5 backdrop-blur-md text-[11px] font-black uppercase tracking-widest text-white transition-all flex items-center justify-center gap-3 group z-10">
+                            Detailed Analytics
+                            <svg class="w-4 h-4 text-highlight-gold group-hover:translate-x-1.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 7l5 5-5 5M6 7l5 5-5 5"></path></svg>
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- Footer Navigation -->
+                <div class="flex justify-center mt-12 pb-6">
+                    <a href="{% url 'home' %}" class="group flex items-center gap-3 bg-[#053830] text-white px-10 py-4 rounded-2xl font-bold hover:bg-[#FF9728] hover:text-[#053830] transition-all shadow-xl shadow-[#053830]/20 transform hover:-translate-y-1">
+                        <svg class="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                        Back to Main Site
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Page Loader Logic
+        window.addEventListener("load", () => {
+          const loader = document.getElementById("pageLoader");
+          if (loader) {
+            loader.style.opacity = "0";
+            loader.style.transform = "scale(1.02)";
+            setTimeout(() => loader.style.display = "none", 800);
+          }
+        });
+    </script>
+
+</body>
+</html>

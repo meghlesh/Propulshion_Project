@@ -2,113 +2,217 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Edit Service | Propulsion Technology</title>
-    <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+    <link rel="icon" type="image/png" href="{% static 'img/logo6.png' %}" />
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
+    <style>
+      .emoji-font { font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif; font-size: 1.4rem; }
+      #thumbWrapper { position: relative; display: inline-block; border-radius: 8px; }
+      #thumbImg { width: 160px; height: 100px; object-fit: cover; border-radius: 8px; }
+      .thumb-remove { display: none; background: #e53935; color: #fff; font-size: 12px; padding: 4px 8px; border-radius: 8px; position: absolute; top: 6px; right: 6px; cursor: pointer; font-weight: 700; }
+      .thumb-remove.show { display: inline-block; }
+    </style>
 </head>
+
 <body class="bg-[#EAF4E0] font-sans text-[#053830]">
 
-    <!-- Navbar -->
-    <nav class="bg-[#053830] text-white p-5 flex justify-between items-center shadow-lg">
-        <h1 class="text-2xl font-bold">Edit Service</h1>
+<nav class="bg-[#053830] text-white p-5 flex justify-between items-center shadow-lg">
+    <h1 class="text-2xl font-bold">Edit Service</h1>
+    <div>
+        <a href="{% url 'manage_services' %}" class="text-[#FF9728] font-semibold hover:text-white mr-6">Back to Services</a>
+        <a href="{% url 'admin_logout' %}" class="bg-[#FF9728] text-[#053830] px-4 py-2 rounded-xl font-semibold hover:bg-white hover:text-[#053830] transition-all">Logout</a>
+    </div>
+</nav>
+
+<main class="max-w-3xl mx-auto mt-10 p-6 bg-white rounded-3xl shadow-2xl">
+    <h2 class="text-3xl font-extrabold mb-6 text-center">Edit {{ service.title }}</h2>
+
+    <form method="POST" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- Title -->
         <div>
-            <a href="{% url 'manage_services' %}" class="text-[#FF9728] font-semibold hover:text-white mr-6">Back to Services</a>
-            <a href="{% url 'admin_logout' %}" class="bg-[#FF9728] text-[#053830] px-4 py-2 rounded-xl font-semibold hover:bg-white hover:text-[#053830] transition-all">Logout</a>
+            <label class="block font-semibold mb-2">Title <span class="text-red-600">*</span></label>
+            <input type="text" id="title" name="title" maxlength="60" required
+                value="{{ service.title }}"
+                class="w-full border rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830]" />
+            <p id="titleCount" class="text-sm text-gray-500 mt-1"></p>
         </div>
-    </nav>
 
-    <!-- Edit Service Form -->
-    <main class="max-w-3xl mx-auto mt-10 p-6 bg-white rounded-3xl shadow-2xl">
-        <h2 class="text-3xl font-extrabold mb-6 text-center">Edit {{ service.title }}</h2>
+        <!-- Short Description -->
+        <div>
+            <label class="block font-semibold mb-2">Short Description <span class="text-red-600">*</span></label>
+            <textarea id="description" name="description" maxlength="100" rows="3" required
+                class="w-full border rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830]">{{ service.description }}</textarea>
+            <p id="descCount" class="text-sm text-gray-500 mt-1"></p>
+        </div>
 
-        <form method="POST" enctype="multipart/form-data" class="space-y-6">
-            {% csrf_token %}
+        <!-- Full Description -->
+        <div>
+            <label class="block font-semibold mb-2">Full Description<span class="text-red-600">*</span></label>
+            <textarea id="full_description" name="full_description" maxlength="250" rows="4"
+                class="w-full border rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830]">{{ service.full_description }}</textarea>
+            <p id="fullDescCount" class="text-sm text-gray-500 mt-1"></p>
+        </div>
 
-            <!-- Title -->
+        <!-- Icon & Order -->
+        <div class="grid md:grid-cols-2 gap-6">
             <div>
-                <label for="title" class="block font-semibold mb-2">Title</label>
-                <input type="text" id="title" name="title" value="{{ service.title }}" required
-                    class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all">
-            </div>
-
-            <!-- Short Description -->
-            <div>
-                <label for="description" class="block font-semibold mb-2">Short Description</label>
-                <textarea id="description" name="description" rows="3" required
-                    class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all">{{ service.description }}</textarea>
-            </div>
-
-            <!-- Full Description -->
-            <div>
-                <label for="full_description" class="block font-semibold mb-2">Full Description</label>
-                <textarea id="full_description" name="full_description" rows="5"
-                    class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all">{{ service.full_description }}</textarea>
-            </div>
-
-            <!-- Icon and Color -->
-            <div class="grid md:grid-cols-2 gap-6">
-                <div>
-                    <label for="icon" class="block font-semibold mb-2">Icon (Emoji)</label>
-                    <input type="text" id="icon" name="icon" value="{{ service.icon }}"
-                        class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all">
-                </div>
-
-                <div>
-                    <label for="color" class="block font-semibold mb-2">Color</label>
-                    <select id="color" name="color"
-                        class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all">
-                        <option value="accent-green" {% if service.color == 'accent-green' %}selected{% endif %}>Accent Green</option>
-                        <option value="highlight-gold" {% if service.color == 'highlight-gold' %}selected{% endif %}>Highlight Gold</option>
-                        <option value="card-bg" {% if service.color == 'card-bg' %}selected{% endif %}>Card Background</option>
-                        <option value="white" {% if service.color == 'white' %}selected{% endif %}>White</option>
-                    </select>
+                <label class="block font-semibold mb-2">Icon (emoji)<span class="text-red-600">*</span></label>
+                <div class="flex items-center gap-3">
+                    <input type="text" id="icon" name="icon" maxlength="4" value="{{ service.icon }}"
+                        class="flex-1 border rounded-xl px-4 py-2 emoji-font focus:ring-2 focus:ring-[#053830]" />
+                    <span id="iconPreview" class="emoji-font text-2xl"></span>
                 </div>
             </div>
-
-            <!-- Order -->
             <div>
-                <label for="order" class="block font-semibold mb-2">Order</label>
-                <input type="number" id="order" name="order" value="{{ service.order }}" min="0"
-                    class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all">
+                <label class="block font-semibold mb-2">Order<span class="text-red-600">*</span></label>
+                <input type="number" id="order" name="order" min="0" value="{{ service.order }}"
+                    class="w-full border rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830]" />
             </div>
+        </div>
 
-            <!-- Service Image -->
-            <div>
-                <label for="image" class="block font-semibold mb-2">Service Image</label>
+        <!-- Color -->
+        <div>
+            <label class="block font-semibold mb-2">Color</label>
+            <select name="color" class="w-full border rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830]">
+                <option value="accent-green" {% if service.color == 'accent-green' %}selected{% endif %}>Accent Green</option>
+                <option value="highlight-gold" {% if service.color == 'highlight-gold' %}selected{% endif %}>Highlight Gold</option>
+                <option value="card-bg" {% if service.color == 'card-bg' %}selected{% endif %}>Card Background</option>
+                <option value="white" {% if service.color == 'white' %}selected{% endif %}>White</option>
+            </select>
+        </div>
+
+        <!-- SLUG -->
+        <div>
+            <label class="block font-semibold mb-2">Slug<span class="text-red-600">*</span></label>
+            <input type="text" id="slug" name="slug" readonly
+                value="{{ service.slug }}"
+                class="w-full border bg-gray-100 px-4 py-2 text-gray-600 rounded-xl" />
+        </div>
+
+        <!-- Image Upload -->
+        <div>
+            <label class="block font-semibold mb-2">Service Image<span class="text-red-600">*</span></label>
+            <input type="file" id="image" name="image" accept="image/*"
+                class="w-full border rounded-xl px-4 py-2 bg-white" />
+
+            <p id="imageError" class="text-red-600 text-sm mt-1 hidden"></p>
+            <p id="file-name" class="mt-2 text-sm text-gray-600"></p>
+
+            <div id="thumbWrapper" class="mt-2 {% if not service.image %}hidden{% endif %}">
                 {% if service.image %}
-                    <img src="{{ service.image.url }}" alt="Current Image" class="h-32 rounded-lg mb-3 border">
+                    <img id="thumbImg" src="{{ service.image.url }}" />
+                {% else %}
+                    <img id="thumbImg" src="" />
                 {% endif %}
-                <input type="file" id="image" name="image" accept="image/*"
-                    class="w-full border border-gray-300 rounded-xl px-4 py-2 bg-white">
+                <button id="thumbRemove" type="button" class="thumb-remove">Remove</button>
             </div>
 
-            <!-- Slug -->
-            <div>
-                <label for="slug" class="block font-semibold mb-2">Slug</label>
-                <input type="text" id="slug" name="slug" value="{{ service.slug }}" readonly
-                    class="w-full border border-gray-300 rounded-xl px-4 py-2 bg-gray-100 text-gray-600">
-            </div>
+            <input type="hidden" name="remove_image" id="remove_image_flag" value="">
+        </div>
 
-            <!-- Update Button -->
-            <div class="flex justify-center mt-6">
-                <button type="submit"
-                    class="bg-[#053830] text-white px-8 py-3 rounded-xl font-semibold hover:bg-[#FF9728] hover:text-[#053830] transition-all shadow-lg shadow-[#053830]/40 transform hover:scale-[1.02] hover:-translate-y-1">
-                    Update Service
-                </button>
-            </div>
-        </form>
-    </main>
+        <!-- Submit button -->
+        <div class="flex justify-center mt-6">
+            <button type="submit"
+                class="bg-[#053830] text-white px-8 py-3 rounded-xl font-semibold hover:bg-[#FF9728] hover:text-[#053830] transition shadow-lg">
+                Update Service
+            </button>
+        </div>
+    </form>
+</main>
 
-    <script>
-        // Auto-generate slug on title edit
-        document.getElementById('title').addEventListener('input', function() {
-            const title = this.value.toLowerCase().trim();
-            document.getElementById('slug').value = title.replace(/[^a-z0-9]+/g, '-');
-        });
-    </script>
+<script>
+function bindCounter(inputId, counterId, max) {
+    const input = document.getElementById(inputId);
+    const counter = document.getElementById(counterId);
+    const update = () => counter.textContent = `${input.value.length} / ${max}`;
+    input.addEventListener('input', update);
+    update();
+}
+
+bindCounter("title", "titleCount", 60);
+bindCounter("description", "descCount", 100);
+bindCounter("full_description", "fullDescCount", 250);
+
+// Slug generation
+document.getElementById("title").addEventListener("input", e => {
+    document.getElementById("slug").value = e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+});
+
+// Icon preview & limit 1 emoji
+document.getElementById("icon").addEventListener("input", (e) => {
+    let value = e.target.value.trim();
+    let chars = [...value];
+    if (chars.length > 1) e.target.value = chars[0];
+    document.getElementById("iconPreview").textContent = [...e.target.value][0] ?? "";
+});
+
+// Image upload handling
+const imageInput = document.getElementById("image");
+const thumbWrapper = document.getElementById("thumbWrapper");
+const thumbImg = document.getElementById("thumbImg");
+const thumbRemove = document.getElementById("thumbRemove");
+const fileNameEl = document.getElementById("file-name");
+const removeFlag = document.getElementById("remove_image_flag");
+const imageError = document.getElementById("imageError");
+
+imageInput.addEventListener("change", () => {
+    const file = imageInput.files[0];
+    imageError.classList.add("hidden");
+    imageError.textContent = "";
+
+    if (!file) return;
+
+    const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
+    if (file.size > MAX_SIZE) {
+        imageError.textContent = "❌ File too large. Maximum allowed size is 5 MB.";
+        imageError.classList.remove("hidden");
+        imageInput.value = "";
+        thumbWrapper.classList.add("hidden");
+        fileNameEl.textContent = "";
+        removeFlag.value = "1";
+        return;
+    }
+
+    const url = URL.createObjectURL(file);
+    thumbImg.src = url;
+    thumbWrapper.classList.remove("hidden");
+    thumbRemove.classList.add("show");
+    fileNameEl.textContent = file.name;
+    removeFlag.value = "";
+});
+
+// Remove button
+thumbRemove.addEventListener("click", () => {
+    imageInput.value = "";
+    thumbWrapper.classList.add("hidden");
+    fileNameEl.textContent = "";
+    removeFlag.value = "1";
+});
+
+// Prevent form submission if invalid
+const form = document.querySelector("form");
+form.addEventListener("submit", (e) => {
+    if (imageError.textContent !== "") {
+        e.preventDefault();
+        alert("Please fix the errors before submitting the form.");
+        return false;
+    }
+
+    const requiredFields = ["title", "description", "full_description", "icon"];
+    for (let id of requiredFields) {
+        if (!document.getElementById(id).value.trim()) {
+            e.preventDefault();
+            alert("Please fill in all required fields.");
+            return false;
+        }
+    }
+});
+</script>
 
 </body>
 </html>

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Team | Propulsion Admin</title>
-    <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+    <link rel="icon" type="image/png" href="{% static 'img/logo6.png'%}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
@@ -19,7 +19,7 @@
 
     <!-- 🔹 Top Navbar -->
   <nav class="bg-[#053830] text-white p-5 flex justify-between items-center shadow-lg">
-    <h1 class="text-2xl font-bold">Manage Blog Posts</h1>
+    <h1 class="text-2xl font-bold">Manage Team</h1>
     <div>
       <a href="{% url 'home' %}" class="text-[#FF9728] font-semibold hover:text-[#FFB857] mr-6 transition">Back To Home</a>
       <a href="{% url 'admin_dashboard' %}" class="text-[#FF9728] font-semibold hover:text-[#FFB857] mr-6">Dashboard</a>
@@ -27,14 +27,19 @@
     </div>
   </nav>
     {% if messages %}
-  <div id="alertBox" 
-       class="fixed top-6 left-1/2 transform -translate-x-1/2 
-              bg-green-600 text-white px-6 py-3 rounded-xl 
-              font-semibold shadow-lg z-50 animate-fade-in">
-    {% for message in messages %}
-      {{ message }}
-    {% endfor %}
-  </div>
+    <div id="flash-msg-box">
+        {% for message in messages %}
+            {% if "deleted" in message.message|lower %}
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl shadow-md mb-6" role="alert">
+                    {{ message }}
+                </div>
+            {% else %}
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-xl shadow-md mb-6" role="alert">
+                    ✅ {{ message }}
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
 {% endif %}
 
 
@@ -73,11 +78,22 @@
             <p id="error-linkedin" class="text-red-600 text-sm mt-1 hidden">Please enter a valid LinkedIn URL (https://...)</p>
         </div>
 
-        <div class="md:col-span-2">
-            <input type="file" id="image" name="image" accept="image/*" 
-                class="border rounded-lg p-2 w-full focus:ring-2 focus:ring-[#053830] focus:border-[#053830]" required>
-            <p id="error-image" class="text-red-600 text-sm mt-1 hidden">Please upload a team member photo.</p>
-        </div>
+<div class="md:col-span-2">
+    <input type="file" id="image" name="image" accept="image/*" 
+        class="border rounded-lg p-2 w-full focus:ring-2 focus:ring-[#053830] focus:border-[#053830]" required>
+    <p id="error-image" class="text-red-600 text-sm mt-1 hidden">Please upload a team member photo.</p>
+
+    <!-- Add preview here -->
+    <div id="imagePreviewBox" class="hidden mt-2 flex items-center gap-2">
+        <p id="imageFileName" class="text-[12px] text-blue-600 underline font-medium"></p>
+
+        <!-- ❌ Remove button -->
+        <button id="removeImageBtn" type="button"
+            class="text-red-600 font-bold text-lg leading-none hover:text-red-800">
+            ✕
+        </button>
+    </div>
+</div>
     </div>
 
     <button type="submit" 
@@ -131,7 +147,9 @@
 
                 <!-- Edit Form -->
                 <div x-show="editing" class="space-y-3" x-cloak>
-                    <form method="POST" enctype="multipart/form-data" action="{% url 'edit_member' member.id %}">
+                    <!-- <form method="POST" enctype="multipart/form-data" action="{% url 'edit_member' member.id %}"> -->
+                      <form method="POST" enctype="multipart/form-data" action="{% url 'edit_member' member.id %}" data-member-id="{{ member.id }}">
+
                         {% csrf_token %}
                         <input type="text" name="name" value="{{ member.name }}" placeholder="Name" class="border rounded-lg p-2 w-full mb-2" required>
                         <input type="text" name="position" value="{{ member.position }}" placeholder="Position" class="border rounded-lg p-2 w-full mb-2" required>
@@ -304,6 +322,28 @@ function validateForm(event) {
     // ✅ If all fields valid — allow form submit
     document.getElementById("addMemberForm").submit();
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    const imgInput = document.getElementById("image");
+    const previewBox = document.getElementById("imagePreviewBox");
+    const fileNameText = document.getElementById("imageFileName");
+    const removeBtn = document.getElementById("removeImageBtn");
+
+    imgInput.addEventListener("change", () => {
+        const file = imgInput.files[0];
+        if (!file) return;
+
+        fileNameText.textContent = "Selected: " + file.name;
+        previewBox.classList.remove("hidden");
+    });
+
+    removeBtn.addEventListener("click", () => {
+        imgInput.value = "";
+        previewBox.classList.add("hidden");
+        fileNameText.textContent = "";
+    });
+});
+
 </script>
 <style>
 @keyframes shake {
@@ -312,7 +352,7 @@ function validateForm(event) {
   75% { transform: translateX(4px); }
 }
 .border-red-500 {
-  animation: shake 0.2s ease-in-out;
+  animation: shake 0.2s ease-in-out;
 }
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-10px); }
@@ -484,7 +524,7 @@ function previewNewImage(event, memberId) {
   } else {
     preview.classList.add("hidden");
     if (current) current.style.opacity = "1";
-  }
+  }
 }
 </script>
 
@@ -523,6 +563,219 @@ function previewNewImage(event, memberId) {
       });
   });
 </script>
+<script>
+    setTimeout(() => {
+        const msg = document.getElementById("flash-msg-box");
+        if (msg) {
+            msg.style.transition = "opacity 0.5s";
+            msg.style.opacity = "0";
+
+            setTimeout(() => msg.style.display = "none", 500);
+        }
+    }, 2000); // Hide after 1 second
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // Validation patterns same as Add Member form
+  const patterns = {
+    name: /^[A-Za-z\s]+$/,
+    position: /^[A-Za-z\s]+$/,
+    email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    linkedin: /^https:\/\/(www\.)?linkedin\.com\/.+$/
+  };
+
+  const messages = {
+    name: "Name can only contain letters and spaces.",
+    position: "Position can only contain letters and spaces.",
+    email: "Enter a valid email address.",
+    linkedin: "Enter a valid LinkedIn URL (must start with https://linkedin.com/)."
+  };
+
+  // Select all edit forms
+  const editForms = document.querySelectorAll("form[action*='edit_member']");
+  editForms.forEach(form => {
+    const inputs = form.querySelectorAll("input[name]");
+
+    // Create error message elements if not present
+    inputs.forEach(input => {
+      const id = input.name + "-error-" + form.dataset.memberId;
+      if (!form.querySelector("#" + id)) {
+        const p = document.createElement("p");
+        p.id = id;
+        p.className = "text-red-600 text-sm mt-1 hidden";
+        input.insertAdjacentElement("afterend", p);
+      }
+    });
+
+    // Add input event validation
+    inputs.forEach(input => {
+      input.addEventListener("input", () => {
+        const value = input.value.trim();
+        const pattern = patterns[input.name];
+        const errorEl = form.querySelector(`#${input.name}-error-${form.dataset.memberId}`);
+        if (!value || (pattern && !pattern.test(value))) {
+          errorEl.textContent = messages[input.name];
+          errorEl.classList.remove("hidden");
+          input.classList.add("border-red-500");
+        } else {
+          errorEl.classList.add("hidden");
+          input.classList.remove("border-red-500");
+        }
+      });
+    });
+
+    // Validate on submit
+    form.addEventListener("submit", (e) => {
+      let isValid = true;
+      inputs.forEach(input => {
+        const value = input.value.trim();
+        const pattern = patterns[input.name];
+        const errorEl = form.querySelector(`#${input.name}-error-${form.dataset.memberId}`);
+        if (!value || (pattern && !pattern.test(value))) {
+          errorEl.textContent = messages[input.name];
+          errorEl.classList.remove("hidden");
+          input.classList.add("border-red-500");
+          isValid = false;
+        } else {
+          errorEl.classList.add("hidden");
+          input.classList.remove("border-red-500");
+        }
+      });
+
+      if (!isValid) e.preventDefault();
+    });
+  });
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // Patterns and messages
+  const patterns = {
+    name: /^[A-Za-z\s]+$/,
+    position: /^[A-Za-z\s]+$/,
+    email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    linkedin: /^https:\/\/(www\.)?linkedin\.com\/.+$/
+  };
+
+  const messages = {
+    name: "Name can only contain letters and spaces.",
+    position: "Position can only contain letters and spaces.",
+    email: "Please enter a valid email address.",
+    linkedin: "Please enter a valid LinkedIn URL (must start with https://linkedin.com/)."
+  };
+
+  // Select all edit forms
+  const editForms = document.querySelectorAll("form[data-member-id]");
+  editForms.forEach(form => {
+    const memberId = form.dataset.memberId;
+    const inputs = form.querySelectorAll("input[name]");
+
+    // Add error message elements dynamically if not already
+    inputs.forEach(input => {
+      const id = input.name + "-error-" + memberId;
+      if (!form.querySelector("#" + id)) {
+        const p = document.createElement("p");
+        p.id = id;
+        p.className = "text-red-600 text-sm mt-1 hidden";
+        input.insertAdjacentElement("afterend", p);
+      }
+    });
+
+    // Live input validation
+    inputs.forEach(input => {
+      input.addEventListener("input", () => {
+        const value = input.value.trim();
+        const pattern = patterns[input.name];
+        const errorEl = form.querySelector(`#${input.name}-error-${memberId}`);
+
+        if (!value) {
+          // Field is empty
+          errorEl.textContent = messages[input.name];
+          errorEl.classList.remove("hidden");
+          input.classList.add("border-red-500");
+        } else if (pattern && !pattern.test(value)) {
+          // Field doesn't match pattern
+          errorEl.textContent = messages[input.name];
+          errorEl.classList.remove("hidden");
+          input.classList.add("border-red-500");
+        } else {
+          // Field is valid
+          errorEl.classList.add("hidden");
+          input.classList.remove("border-red-500");
+        }
+      });
+    });
+
+    // Validate on submit
+    form.addEventListener("submit", (e) => {
+      let isValid = true;
+
+      inputs.forEach(input => {
+        const value = input.value.trim();
+        const pattern = patterns[input.name];
+        const errorEl = form.querySelector(`#${input.name}-error-${memberId}`);
+
+        if (!value || (pattern && !pattern.test(value))) {
+          errorEl.textContent = messages[input.name];
+          errorEl.classList.remove("hidden");
+          input.classList.add("border-red-500");
+          isValid = false;
+        } else {
+          errorEl.classList.add("hidden");
+          input.classList.remove("border-red-500");
+        }
+      });
+
+      if (!isValid) {
+        e.preventDefault(); // Stop submission if any field is invalid
+        window.scrollTo({ top: form.offsetTop - 20, behavior: 'smooth' });
+      }
+    });
+  });
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const submitBtn = document.querySelector("#addMemberForm button[type='submit']");
+    const fields = [
+        { id: "name", pattern: /^[A-Za-z\s]+$/ },
+        { id: "position", pattern: /^[A-Za-z\s]+$/ },
+        { id: "email", pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ },
+        { id: "linkedin", pattern: /^https:\/\/(www\.)?linkedin\.com\/.+$/ }
+    ];
+    const imageInput = document.getElementById("image");
+
+    function checkFields() {
+        let valid = true;
+
+        fields.forEach(f => {
+            const input = document.getElementById(f.id).value.trim();
+
+            if (!input || !f.pattern.test(input)) valid = false;
+        });
+
+        // Image validation
+        if (!imageInput.files.length) valid = false;
+
+        // 🔥 Hide/Disable submit button when invalid
+        if (!valid) {
+            submitBtn.style.opacity = "0.4";
+            submitBtn.style.pointerEvents = "none";
+        } else {
+            submitBtn.style.opacity = "1";
+            submitBtn.style.pointerEvents = "auto";
+        }
+    }
+
+    // Live validation
+    fields.forEach(f => document.getElementById(f.id).addEventListener("input", checkFields));
+    imageInput.addEventListener("change", checkFields);
+
+    checkFields(); // initial check
+});
+</script>
+
 
 </body>
 </html>

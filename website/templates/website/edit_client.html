@@ -1,0 +1,301 @@
+{% load static %}
+{% load form_tags %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Edit Client | Propulsion Technology</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'primary-green': '#053830',
+            'accent-green': '#D2E8B8',
+            'highlight-gold': '#FF9728',
+            'dark-text': '#262626'
+          },
+          fontFamily: { sans: ['Poppins','sans-serif'] }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* loader overlay */
+    #blur-loader {
+      position: fixed; inset: 0;
+      background: rgba(255,255,255,0.75);
+      backdrop-filter: blur(4px);
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-spinner { display:inline-flex; align-items:center; gap:.6rem; }
+    .spinner { width:18px; height:18px; border:2px solid rgba(0,0,0,0.12); border-top-color: rgba(0,0,0,0.6); border-radius:50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .required-field::after { content: " *"; color:#000; }
+    .btn-disabled { opacity:.7; cursor:not-allowed !important; }
+  </style>
+</head>
+<body class="bg-gray-100 font-sans">
+
+  <!-- GLOBAL BLUR LOADER  -->
+  <div id="blur-loader" role="status" aria-hidden="true">
+    <div class="flex flex-col items-center">
+      <div class="w-16 h-16 border-4 border-[#053830] border-t-transparent rounded-full animate-spin"></div>
+      <div class="mt-4 text-[#053830] font-semibold">Processing...</div>
+    </div>
+  </div>
+
+  <!-- Top Bar -->
+  <nav class="bg-[#053830] text-white p-5 flex justify-between items-center shadow-lg">
+    <h1 class="text-2xl font-bold">Edit Client</h1>
+    <div class="flex items-center gap-4">
+      <a href="{% url 'manage_clients' %}" class="text-[#FF9728] font-semibold hover:text-[#FFB857] transition">Back To Clients</a>
+      <a href="{% url 'admin_dashboard' %}" class="text-[#FF9728] font-semibold hover:text-[#FFB857] transition">Dashboard</a>
+      <a href="{% url 'admin_logout' %}" class="bg-[#FF9728] text-[#053830] px-4 py-1.5 rounded-xl font-semibold hover:bg-[#FFB857] transition">Logout</a>
+    </div>
+  </nav>
+
+  <main class="max-w-4xl mx-auto py-10 px-6">
+
+    <!-- Heading & meta -->
+    <div class="mb-6 flex items-center justify-between gap-4">
+      <div>
+        <h2 class="text-3xl font-bold text-primary-green">Edit Client</h2>
+        <p class="text-sm text-gray-600 mt-1">Update client information and admin notes.</p>
+      </div>
+      <div class="text-sm text-gray-500">
+        Client ID: <span class="font-medium text-gray-800">{{ client.pk }}</span>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+      <div class="mb-4">
+        {% for message in messages %}
+          <div class="p-3 mb-2 rounded-lg text-sm
+            {% if message.tags == 'success' %} bg-green-100 text-green-800 border border-green-300
+            {% elif message.tags == 'error' %} bg-red-100 text-red-800 border border-red-300
+            {% else %} bg-gray-100 text-gray-800 border border-gray-300 {% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="bg-white p-6 rounded-2xl shadow-lg">
+      <form id="editClientForm" method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Full name -->
+          <label class="block">
+            <div class="text-xs text-gray-600 required-field">Full Name</div>
+            <input id="id_full_name" name="name" type="text"
+                   value="{{ client.user.get_full_name|default:client.user.username }}"
+                   maxlength="100"
+                   class="mt-1 border border-gray-300 rounded-lg w-full px-3 py-2 focus:ring-highlight-gold focus:border-highlight-gold"
+                   required aria-required="true" />
+            <p id="nameError" class="text-red-600 text-sm mt-1" style="display:none;"></p>
+            <p class="text-xs text-gray-400 mt-1 text-right"><span id="nameCount">0</span>/100</p>
+          </label>
+
+          <!-- Email -->
+          <!-- Email -->
+<label class="block">
+  <div class="text-xs text-gray-600 required-field">Email</div>
+  <input id="id_email" name="email" type="email"
+         value="{{ client.user.email }}"
+         maxlength="160"
+         class="mt-1 border border-gray-300 rounded-lg w-full px-3 py-2 focus:ring-highlight-gold focus:border-highlight-gold bg-gray-100 cursor-not-allowed"
+         readonly />
+  {% if form.email.errors %}
+    <p class="text-red-600 text-sm mt-1">{{ form.email.errors.0 }}</p>
+  {% endif %}
+</label>
+
+
+          <!-- Phone -->
+          <label class="block">
+            <div class="text-xs text-gray-600">Phone</div>
+            <input id="id_phone" name="phone" type="text" value="{{ client.phone }}"
+                   maxlength="30"
+                   class="mt-1 border border-gray-300 rounded-lg w-full px-3 py-2 focus:ring-highlight-gold focus:border-highlight-gold" />
+          </label>
+
+          <!-- Company -->
+          <label class="block">
+            <div class="text-xs text-gray-600">Company</div>
+            <input id="id_company" name="company_name" type="text" value="{{ client.company_name }}"
+                   maxlength="120"
+                   class="mt-1 border border-gray-300 rounded-lg w-full px-3 py-2 focus:ring-highlight-gold focus:border-highlight-gold" />
+          </label>
+        </div>
+
+        <!-- Website -->
+        <div class="mt-4">
+          <label class="block">
+            <div class="text-xs text-gray-600">Website</div>
+            <input id="id_website" name="website" type="url" value="{{ client.website }}" placeholder="https://example.com"
+                   class="mt-1 border border-gray-300 rounded-lg w-full px-3 py-2 focus:ring-highlight-gold focus:border-highlight-gold" />
+          </label>
+        </div>
+
+        <!-- Address -->
+        <div class="mt-4">
+          <label class="block">
+            <div class="text-xs text-gray-600">Address</div>
+            <textarea id="id_address" name="address" rows="3"
+                      class="mt-1 border border-gray-300 rounded-lg w-full px-3 py-2 focus:ring-highlight-gold focus:border-highlight-gold">{{ client.address }}</textarea>
+          </label>
+        </div>
+
+        <!-- Admin notes -->
+<div class="mt-6">
+  <label class="block">
+    <div class="text-xs font-medium text-gray-600">Admin Notes</div>
+    <div class="relative mt-2">
+      <textarea id="id_admin_notes" name="admin_notes" rows="5"
+          class="w-full px-4 py-3 border rounded-xl shadow-sm
+                 focus:ring-highlight-gold focus:border-highlight-gold transition resize-none"
+          placeholder="Write notes about meetings, discussions, project status, behaviour or reminders...">{{ client.admin_notes }}</textarea>
+
+      <!-- Character Count -->
+      <p class="text-right text-xs mt-1 text-gray-400">
+          <span id="noteCount">0</span>/500 characters
+      </p>
+    </div>
+  </label>
+</div>
+
+        <!-- Actions -->
+        <div class="mt-6 flex items-center gap-3">
+          <button id="saveBtn" type="submit"
+                  class="inline-flex items-center gap-2 bg-highlight-gold text-[#053830] px-4 py-2 rounded-xl font-semibold hover:bg-[#ffb857] transition">
+            <span id="saveBtnContent">Save Changes</span>
+          </button>
+
+          <a href="{% url 'client_detail' client.pk %}" class="text-sm text-gray-600 hover:underline">Cancel</a>
+
+          
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      const form = document.getElementById('editClientForm');
+      const name = document.getElementById('id_full_name');
+      const email = document.getElementById('id_email');
+      const nameError = document.getElementById('nameError');
+      const nameCount = document.getElementById('nameCount');
+      const saveBtn = document.getElementById('saveBtn');
+      const saveBtnContent = document.getElementById('saveBtnContent');
+      const blurLoader = document.getElementById('blur-loader');
+
+      // initialize name counter
+      function updateNameCount() {
+        const v = name.value || '';
+        nameCount.textContent = v.length;
+        if (v.length > 100) {
+          name.classList.add('border-red-500');
+          nameError.textContent = 'Name must be under 100 characters.';
+          nameError.style.display = 'block';
+        } else {
+          name.classList.remove('border-red-500');
+          nameError.textContent = '';
+          nameError.style.display = 'none';
+        }
+      }
+      updateNameCount();
+      name.addEventListener('input', updateNameCount);
+
+      function isValidEmail(e) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+      }
+
+      function setButtonLoading() {
+        if (!saveBtn) return;
+        saveBtn.classList.add('btn-disabled');
+        saveBtn.setAttribute('disabled', 'disabled');
+        saveBtnContent.innerHTML = '<span class="btn-spinner"><span class="spinner" aria-hidden="true"></span><span>Saving...</span></span>';
+        if (blurLoader) { blurLoader.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+      }
+
+      form.addEventListener('submit', function (e) {
+        let hasError = false;
+
+        // name validation
+        if (!name.value.trim() || name.value.trim().length < 2) {
+          nameError.textContent = 'Please provide a valid name.';
+          nameError.style.display = 'block';
+          name.focus();
+          hasError = true;
+        } else {
+          nameError.textContent = '';
+          nameError.style.display = 'none';
+        }
+
+        // email validation
+        if (!email.value.trim() || !isValidEmail(email.value.trim())) {
+          alert('Please provide a valid email address.');
+          email.focus();
+          hasError = true;
+        }
+
+        if (hasError) {
+          e.preventDefault();
+          return false;
+        }
+
+        // valid -> show loader & disable button, allow normal POST
+        setButtonLoading();
+      });
+
+      // Re-enable button when page loads (useful if server returned form with errors)
+      window.addEventListener('DOMContentLoaded', function () {
+        if (saveBtn) {
+          saveBtn.classList.remove('btn-disabled');
+          saveBtn.removeAttribute('disabled');
+          saveBtnContent.textContent = 'Save Changes';
+          if (blurLoader) { blurLoader.style.display = 'none'; document.body.style.overflow = ''; }
+        }
+      });
+
+      // Confirmation for delete
+      window.confirmDelete = function(evt, name) {
+        const msg = `Delete client "${name}"? This action cannot be undone. Proceed?`;
+        if (!confirm(msg)) {
+          if (evt && evt.preventDefault) evt.preventDefault();
+          return false;
+        }
+        if (blurLoader) { blurLoader.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+        return true;
+      };
+    })();
+  </script>
+
+  <script>
+    // live character count for notes box
+    const noteArea = document.getElementById("id_admin_notes");
+    const noteCount = document.getElementById("noteCount");
+
+    function updateNoteCount() {
+        noteCount.textContent = noteArea.value.length;
+    }
+
+    noteArea.addEventListener("input", updateNoteCount);
+    updateNoteCount(); // load existing length
+</script>
+</body>
+</html>

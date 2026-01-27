@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: 'Poppins', sans-serif; background: #FDECEC; padding: 20px; color: #5A0C0C; }
+    .container { background: white; padding: 25px; border-radius: 18px; max-width: 600px; margin: auto; 
+                 box-shadow: 0 4px 14px rgba(0,0,0,0.1); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2 style="color:#B91C1C;">❌ Expert Registration Rejected</h2>
+
+    <p>Hello {{ user_name }},</p>
+
+    <p>Your expert registration request has been <strong>rejected</strong>.</p>
+
+    <p><strong>Reason:</strong> {{ details.Reason }}</p>
+
+    <p style="margin-top: 25px; font-size: 14px;">
+      — Propulsion Technology Team
+    </p>
+  </div>
+</body>
+</html>

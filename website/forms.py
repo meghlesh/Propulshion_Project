@@ -9,6 +9,8 @@ import datetime
 from .validators import validate_name, validate_cgpa, validate_graduation_year
 from django.utils.timezone import is_naive, make_aware, get_current_timezone
 from django.utils import timezone
+from django import forms
+from client.models import Project, ClientProfile, ProjectDocument, Payment
 
 
 
@@ -139,11 +141,9 @@ class ScheduleDemoForm(forms.ModelForm):
             )
 
         return cleaned
-class JobApplicationForm(forms.ModelForm):
 
-    # =======================
-    # Custom Form Fields
-    # =======================
+class JobApplicationForm(forms.ModelForm):
+  
     full_name = forms.CharField(
         required=True,
         label="Full Name",
@@ -375,6 +375,9 @@ def clean_experience(self):
                 raise ValidationError("Only PDF, DOC, or DOCX files are allowed.")
         return attachment
 
+
+
+
 #   CANDIDATE REGISTER FORM  
 class CandidateRegisterForm(forms.ModelForm):
     first_name_legal = forms.CharField(label="First Name (Legal) *", max_length=100, required=True, validators=[validate_name])
@@ -388,6 +391,12 @@ class CandidateRegisterForm(forms.ModelForm):
     country = forms.CharField(label="Country *", required=True)
     state = forms.CharField(label="State *", required=True)
     city = forms.CharField(label="City *", required=True)
+    pincode = forms.CharField(
+    label="Pincode *",
+    max_length=6,
+    required=True,
+    widget=forms.TextInput(attrs={'placeholder': 'Enter 6-digit pincode'})
+    )
     school = forms.CharField(label="School / University *", max_length=150, required=True)
 
     password = forms.CharField(
@@ -413,6 +422,15 @@ class CandidateRegisterForm(forms.ModelForm):
         if len(phone) < 10:
             raise ValidationError("Enter a valid 10-digit phone number.")
         return phone
+    
+    def clean_pincode(self):
+        pincode = self.cleaned_data.get("pincode", "").strip()
+
+        if not pincode.isdigit():
+            raise ValidationError("Pincode must contain only digits.")
+        if len(pincode) != 6:
+            raise ValidationError("Pincode must be exactly 6 digits.")
+        return pincode
 
     def clean(self):
         cleaned_data = super().clean()
@@ -574,3 +592,55 @@ class ClientFeedbackForm(forms.ModelForm):
         if not re.match(r'^[A-Za-z\s.,!?]+$', fb):
             raise forms.ValidationError("Feedback should contain only letters and basic punctuation, no numbers.")
         return fb
+    
+
+
+
+
+class AssignProjectForm(forms.ModelForm):
+    client = forms.ModelChoiceField(
+        queryset=ClientProfile.objects.all(),
+        label="Select Client",
+        empty_label="-- Select Client --",
+        widget=forms.Select(attrs={
+            "class": "w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-slate-700"
+        })
+    )
+
+    brief = forms.FileField(required=False, label="Brief Document")
+    amount_total = forms.DecimalField(label="Total Amount", required=False)
+    amount_paid = forms.DecimalField(label="Amount Paid", required=False)
+
+    class Meta:
+        model = Project
+        fields = [
+            "client",
+            "project_name",
+            "description",
+            "deliverables",
+            "progress",
+            "start_date",
+            "end_date",
+            "status",
+            "brief",
+        ]
+        widgets = {
+            "start_date": forms.DateInput(
+                format='%d-%m-%Y',
+                attrs={"autocomplete": "off", "class": "date-input"}
+            ),
+            "end_date": forms.DateInput(
+                format='%d-%m-%Y',
+                attrs={"autocomplete": "off", "class": "date-input"}
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Date formats
+        self.fields['start_date'].input_formats = ['%d-%m-%Y']
+        self.fields['end_date'].input_formats = ['%d-%m-%Y']
+
+        # 🔥 FIX FOR DEFAULT STATUS
+        self.fields["status"].initial = "New"

@@ -1,0 +1,452 @@
+{% load static %}
+{% load form_tags %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Client Details | Propulsion Admin</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Alpine.js -->
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        heading: ['"Outfit"', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            DEFAULT: '#053830', // Deep Green
+                            light: '#155C54',
+                            dark: '#022620',
+                        },
+                        gold: {
+                            DEFAULT: '#FF9728', // Highlight Gold
+                            light: '#FFB05C',
+                            dim: '#C67011',
+                        },
+                        surface: '#F3F4F6',
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Outfit', sans-serif; }
+        
+        .glass-nav {
+            background: rgba(5, 56, 48, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Loader */
+        #blur-loader { position: fixed; inset:0; background: rgba(255,255,255,0.75); backdrop-filter: blur(4px); z-index:9999; display:none; align-items:center; justify-content:center; }
+    </style>
+</head>
+
+<body class="bg-[#f0f2f5] text-slate-800 min-h-screen flex flex-col selection:bg-gold selection:text-white">
+
+    <!-- GLOBAL LOADER -->
+    <div id="blur-loader">
+        <div class="flex flex-col items-center">
+            <div class="w-14 h-14 border-4 border-[#053830] border-t-transparent rounded-full animate-spin"></div>
+            <div class="mt-3 text-[#053830] font-semibold">Processing...</div>
+        </div>
+    </div>
+
+    <!-- ===========================
+          TOP NAVIGATION BAR
+    ============================ -->
+    <nav class="glass-nav text-white sticky top-0 z-50 shadow-lg" x-data="{ mobileMenuOpen: false }">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                
+                <!-- Brand -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-gold font-heading font-extrabold text-xl backdrop-blur-sm border border-white/10 shadow-lg shadow-black/20">P</div>
+                    <div>
+                        <h1 class="font-heading font-bold text-xl tracking-tight leading-none">Propulsion</h1>
+                        <p class="text-[10px] text-white/50 uppercase tracking-[0.2em] font-semibold">Admin Panel</p>
+                    </div>
+                </div>
+
+                <!-- Desktop Links -->
+                <div class="hidden md:flex items-center gap-8">
+                   <a href="{% url 'manage_clients' %}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gold text-primary-dark hover:bg-white hover:text-primary transition font-bold text-sm shadow-lg shadow-gold/20">
+                        <i class="ph-bold ph-arrow-left group-hover:-translate-x-1 transition-transform"></i> Back to Clients
+                    </a>
+                    <a href="{% url 'admin_dashboard' %}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gold text-primary-dark hover:bg-white hover:text-primary transition font-bold text-sm shadow-lg shadow-gold/20">Back To Dashboard</a>
+                    
+                    <div class="h-5 w-px bg-white/10"></div> <!-- Divider -->
+                    
+                
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden p-2 text-slate-300 hover:text-white rounded-lg">
+                    <i class="ph-bold ph-list text-2xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Dropdown -->
+        <div x-show="mobileMenuOpen" 
+             @click.away="mobileMenuOpen = false"
+             x-transition
+             class="md:hidden border-t border-white/10 bg-primary-dark">
+            <div class="px-4 py-4 space-y-3">
+                <a href="{% url 'manage_clients' %}" class="block px-4 py-2 rounded-lg hover:bg-white/10 text-slate-300 hover:text-white font-medium">Clients</a>
+                <a href="{% url 'admin_dashboard' %}" class="block px-4 py-2 rounded-lg hover:bg-white/10 text-slate-300 hover:text-white font-medium">Dashboard</a>
+                <a href="{% url 'admin_logout' %}" class="block px-4 py-2 rounded-lg bg-red-500/20 text-red-300 font-medium">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ===========================
+             MAIN CONTENT
+    ============================ -->
+    <main class="flex-grow p-4 md:p-10 relative">
+        
+        <!-- Background Pattern -->
+        <div class="absolute inset-0 z-0 opacity-30 pointer-events-none" style="background-image: radial-gradient(#053830 0.5px, transparent 0.5px); background-size: 24px 24px;"></div>
+
+        <div class="max-w-6xl mx-auto relative z-10 space-y-8 animate-fade-in-up">
+
+            <!-- Django Messages -->
+            {% if messages %}
+                <div class="space-y-3">
+                {% for message in messages %}
+                    <div class="p-4 rounded-xl border-l-4 shadow-sm flex items-center gap-3 bg-white
+                        {% if message.tags == 'success' %}border-green-500 text-green-700
+                        {% elif message.tags == 'error' %}border-red-500 text-red-700
+                        {% else %}border-blue-500 text-slate-700{% endif %}">
+                        
+                        {% if message.tags == 'success' %}<i class="ph-fill ph-check-circle text-xl"></i>
+                        {% elif message.tags == 'error' %}<i class="ph-fill ph-warning-circle text-xl"></i>
+                        {% else %}<i class="ph-fill ph-info text-xl"></i>{% endif %}
+                        
+                        <p class="font-medium text-sm">{{ message }}</p>
+                    </div>
+                {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Client Hero Card -->
+            <div class="bg-primary text-white p-6 md:p-10 rounded-3xl shadow-2xl relative overflow-hidden border border-white/10">
+                <!-- Abstract Shapes -->
+                <div class="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+                <div class="absolute bottom-0 left-0 w-64 h-64 bg-gold/10 rounded-full -ml-10 -mb-10 blur-3xl"></div>
+
+                <div class="relative z-10 flex flex-col md:flex-row justify-between items-start gap-8">
+                    <div class="flex items-start gap-6">
+                        <!-- Profile Initials -->
+                        <div class="w-24 h-24 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-gold font-heading font-extrabold text-4xl shadow-xl">
+                            {{ client.user.first_name|default:client.user.username|slice:":1"|upper }}
+                        </div>
+                        
+                        <div class="pt-1">
+                            <h1 class="text-3xl md:text-5xl font-bold font-heading leading-tight text-white mb-2">
+                                {{ client.user.get_full_name|default:client.user.username }}
+                            </h1>
+                            <div class="flex flex-wrap items-center gap-4 text-slate-300 text-sm">
+                                <span class="flex items-center gap-1.5"><i class="ph-fill ph-user"></i> {{ client.user.username }}</span>
+                                <span class="w-1 h-1 bg-white/30 rounded-full"></span>
+                                <span class="flex items-center gap-1.5"><i class="ph-fill ph-calendar-blank"></i> Joined: {% if client.date_created %}{{ client.date_created|date:"M d, Y" }}{% else %}{{ client.user.date_joined|date:"M d, Y" }}{% endif %}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions & Status -->
+                    <div class="flex flex-col items-end gap-4 w-full md:w-auto">
+                        <!-- Payment Status Badge -->
+                            <div class="px-5 py-2.5 rounded-xl backdrop-blur-md border font-bold text-sm flex items-center gap-2 shadow-lg
+    {% if client.payment_status == 'Paid' %}
+        bg-green-500/20 border-green-400/30 text-green-300
+    {% elif client.payment_status == 'Partial' or client.payment_status == 'Pending' %}
+        bg-gold/20 border-gold/30 text-gold
+    {% elif client.payment_status == 'Not Assigned' %}
+        bg-slate-500/20 border-slate-300/30 text-slate-200
+    {% else %}
+        bg-red-500/20 border-red-400/30 text-red-300
+    {% endif %}">
+
+    {% if client.payment_status == 'Paid' %}
+        <i class="ph-fill ph-check-circle text-lg"></i> Paid Account
+
+    {% elif client.payment_status == 'Partial' %}
+        <i class="ph-fill ph-hourglass-high text-lg"></i> Partially Paid
+
+    {% elif client.payment_status == 'Pending' %}
+        <i class="ph-fill ph-warning-octagon text-lg"></i> Payment Pending
+
+    {% elif client.payment_status == 'Not Assigned' %}
+        <i class="ph-fill ph-info text-lg"></i> No Project Assigned
+
+    {% else %}
+        <i class="ph-fill ph-warning-octagon text-lg"></i> Outstanding Payment
+    {% endif %}
+</div>
+
+
+
+                        <div class="flex gap-3 mt-2">
+                            <a href="{% url 'edit_client' client.pk %}" class="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-sm font-semibold transition border border-white/10 flex items-center gap-2 group">
+                                <i class="ph-bold ph-pencil-simple group-hover:-translate-y-0.5 transition-transform"></i> Edit Profile
+                            </a>
+                            
+                            <form action="{% url 'delete_client' client.pk %}" method="post" onsubmit="return confirmDeleteClient(event, '{{ client.user.get_full_name|default:client.user.username }}')">
+                                {% csrf_token %}
+                                <button type="submit" {% if remaining_amount > 0 %}disabled{% endif %}
+                                    class="px-5 py-2.5 rounded-xl text-sm font-semibold transition border flex items-center gap-2
+                                    {% if remaining_amount > 0 %} bg-white/5 text-slate-500 border-transparent cursor-not-allowed
+                                    {% else %} bg-red-500/20 hover:bg-red-500/30 text-red-200 border-red-500/30 hover:border-red-500/50 {% endif %}">
+                                    <i class="ph-bold ph-trash"></i> Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <!-- Left Column: Details -->
+                <div class="lg:col-span-2 space-y-8">
+                    
+                    <!-- Info Card -->
+                    <div class="glass-card p-8 rounded-3xl">
+                        <div class="flex items-center gap-4 mb-8">
+                            <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                                <i class="ph-bold ph-identification-card text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-800 font-heading">Contact Information</h3>
+                                <p class="text-sm text-slate-500">Personal and company details</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12">
+                            <!-- Email -->
+                            <div class="group">
+                                <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">Email Address</label>
+                                <a href="mailto:{{ client.user.email }}" class="flex items-center gap-2 font-medium text-slate-700 hover:text-primary transition text-lg">
+                                    <i class="ph ph-envelope-simple text-gold group-hover:scale-110 transition-transform"></i>
+                                    {{ client.user.email|default:"—" }}
+                                </a>
+                            </div>
+
+                            <!-- Phone -->
+                            <div class="group">
+                                <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">Phone Number</label>
+                                <div class="flex items-center gap-2 font-medium text-slate-700 text-lg">
+                                    <i class="ph ph-phone text-gold group-hover:scale-110 transition-transform"></i>
+                                    {{ client.phone|default:"—" }}
+                                </div>
+                            </div>
+
+                            <!-- Company -->
+                            <div class="group">
+                                <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">Company</label>
+                                <div class="flex items-center gap-2 font-medium text-slate-700 text-lg">
+                                    <i class="ph ph-buildings text-gold group-hover:scale-110 transition-transform"></i>
+                                    {{ client.company_name|default:"—" }}
+                                </div>
+                            </div>
+
+                            <!-- Website -->
+                            <div class="group">
+                                <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">Website</label>
+                                {% if client.website %}
+                                    <a href="{{ client.website }}" target="_blank" class="flex items-center gap-2 font-medium text-primary hover:underline text-lg">
+                                        <i class="ph ph-globe text-gold group-hover:scale-110 transition-transform"></i>
+                                        {{ client.website }}
+                                    </a>
+                                {% else %}
+                                    <div class="flex items-center gap-2 font-medium text-slate-400 text-lg">
+                                        <i class="ph ph-globe"></i> —
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Address -->
+                            <div class="md:col-span-2 group">
+                                <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">Office Address</label>
+                                <div class="flex items-start gap-2 font-medium text-slate-700 text-lg">
+                                    <i class="ph ph-map-pin text-gold mt-1 group-hover:scale-110 transition-transform"></i>
+                                    {{ client.address|default:"—" }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Admin Notes -->
+                    <div class="glass-card p-8 rounded-3xl relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 w-40 h-40 bg-yellow-50 rounded-full -mr-16 -mt-16 opacity-50 group-hover:scale-110 transition-transform duration-700"></div>
+                        
+                        <div class="flex items-center gap-4 mb-6 relative z-10">
+                            <div class="w-10 h-10 rounded-full bg-gold/10 text-gold flex items-center justify-center">
+                                <i class="ph-bold ph-notepad text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-800 font-heading">Admin Notes</h3>
+                        </div>
+                        
+                        <div class="relative z-10 bg-white/60 border border-slate-200 rounded-2xl p-6 shadow-inner">
+                            {% if client.admin_notes %}
+                                <p class="text-slate-700 whitespace-pre-line leading-relaxed">{{ client.admin_notes }}</p>
+                            {% else %}
+                                <p class="text-slate-400 italic text-sm flex items-center gap-2">
+                                    <i class="ph ph-info"></i> No administrative notes recorded for this client.
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right Column: Financials & Activity -->
+                <div class="space-y-8">
+                    
+                    <!-- Financial Summary -->
+                    <div class="glass-card p-8 rounded-3xl border-t-8 {% if remaining_amount > 0 %}border-gold{% else %}border-green-500{% endif %} shadow-xl">
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center">
+                                <i class="ph-bold ph-wallet text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-800 font-heading">Financial Overview</h3>
+                        </div>
+
+                        <div class="space-y-4">
+                            <!-- Status Row -->
+                          <div class="flex justify-between items-center p-4 bg-slate-50/80 rounded-2xl">
+    <span class="text-sm font-semibold text-slate-500">Payment Status</span>
+
+    {% if client.payment_status == "Paid" %}
+        <span class="text-xs font-bold px-3 py-1 bg-green-100 text-green-700 rounded-full tracking-wide">
+            COMPLETED
+        </span>
+
+    {% elif client.payment_status == "Partial" %}
+        <span class="text-xs font-bold px-3 py-1 bg-orange-100 text-orange-700 rounded-full tracking-wide">
+            PARTIAL
+        </span>
+
+    {% elif client.payment_status == "Not Assigned" %}
+        <span class="text-xs font-bold px-3 py-1 bg-slate-100 text-slate-600 rounded-full tracking-wide">
+            NOT ASSIGNED
+        </span>
+
+    {% else %}
+        <span class="text-xs font-bold px-3 py-1 bg-red-100 text-red-700 rounded-full tracking-wide">
+            OUTSTANDING
+        </span>
+    {% endif %}
+</div>
+
+                            <!-- Amount Block -->
+                            <div class="p-6 bg-gradient-to-br from-white to-slate-50 border border-slate-100 rounded-2xl shadow-sm text-center">
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Total Due Amount</p>
+                                <h2 class="text-4xl font-bold font-heading {% if remaining_amount > 0 %}text-gold{% else %}text-green-600{% endif %}">
+                                    ₹{{ remaining_amount }}
+                                </h2>
+                                {% if remaining_amount > 0 %}
+                                    <p class="text-xs text-red-400 mt-2 font-medium">Action Required</p>
+                                {% else %}
+                                    <p class="text-xs text-green-400 mt-2 font-medium">No Dues Pending</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity Log -->
+                    {% if client_activity %}
+                    <div class="glass-card p-8 rounded-3xl">
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                                <i class="ph-bold ph-clock-counter-clockwise text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-800 font-heading">Recent Activity</h3>
+                        </div>
+
+                        <div class="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                            <ul class="relative border-l-2 border-slate-200 ml-3 space-y-8 pb-2">
+                                {% for act in client_activity %}
+                                <li class="pl-6 relative">
+                                    <!-- Timeline Dot -->
+                                    <span class="absolute -left-[9px] top-1.5 w-4 h-4 bg-white border-4 border-primary rounded-full shadow-sm"></span>
+                                    
+                                    <div class="text-sm font-medium text-slate-700 leading-snug">{{ act.summary }}</div>
+                                    <div class="text-xs text-slate-400 mt-1.5 font-semibold flex items-center gap-1">
+                                        <i class="ph-fill ph-calendar"></i> {{ act.timestamp|date:"M d, Y" }} 
+                                        <span class="mx-1">•</span> 
+                                        {{ act.timestamp|date:"H:i" }}
+                                    </div>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        function confirmDeleteClient(evt, name){
+            const msg = `Delete client "${name}"?\n\nThis will permanently remove their user account, payment records, and project history. This action cannot be undone.`;
+            if (!confirm(msg)) {
+                evt.preventDefault ? evt.preventDefault() : null;
+                return false;
+            }
+            // Show global loader for visual feedback
+            const blur = document.getElementById('blur-loader');
+            if (blur) blur.style.display = 'flex';
+            return true;
+        }
+    </script>
+</body>
+</html>

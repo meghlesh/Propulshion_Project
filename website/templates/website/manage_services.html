@@ -6,35 +6,20 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Manage Services | Propulsion Technology</title>
-  <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+  <link rel="icon" type="image/png" href="{% static 'img/logo6.png'%}">
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
     /* ensure emoji-capable fonts are available for preview & inputs */
     .emoji-font {
       font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", "Segoe UI Symbol", system-ui, sans-serif;
-      /* slightly larger so emoji look nice */
       font-size: 1.4rem;
       line-height: 1;
       vertical-align: middle;
     }
-
-    /* small styling to position preview next to input */
-    .icon-preview {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 38px;
-      min-height: 38px;
-      margin-left: 0.5rem;
-      border-radius: 0.5rem;
-      background: rgba(5,56,48,0.03);
-      border: 1px solid rgba(5,56,48,0.06);
-      padding: 4px;
+    #image-preview {
+        transition: opacity 0.3s ease;
     }
-
-    /* small helper for hidden visually but accessible */
-    .sr-only { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
   </style>
 </head>
 <body class="bg-[#EAF4E0] font-sans text-[#053830]">
@@ -58,19 +43,21 @@
   <main class="max-w-6xl mx-auto mt-10 p-6 bg-white rounded-3xl shadow-2xl">
     <h2 class="text-3xl font-extrabold mb-6 text-center text-[#053830]">Service Inventory</h2>
 
-    {% if messages %}
-      {% for message in messages %}
-        {% if "deleted" in message.message|lower %}
-          <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl shadow-md mb-6" role="alert">
-             {{ message }}
-          </div>
-        {% else %}
-          <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-xl shadow-md mb-6" role="alert">
-              ✅ {{ message }}
-          </div>
-        {% endif %}
-      {% endfor %}
-    {% endif %}
+{% if messages %}
+    <div id="flash-message-wrapper">
+        {% for message in messages %}
+            {% if "deleted" in message.message|lower %}
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl shadow-md mb-6" role="alert">
+                    {{ message }}
+                </div>
+            {% else %}
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-xl shadow-md mb-6" role="alert">
+                    ✅ {{ message }}
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endif %}
 
     <!-- Service Table Container -->
     <div class="mb-6">
@@ -129,11 +116,11 @@
         <div class="grid md:grid-cols-2 gap-6">
           <!-- Title -->
           <div>
-            <label for="title" class="block font-semibold mb-2">Title</label>
-            <input type="text" id="title" name="title" maxlength="50" required
+            <label for="title" class="block font-semibold mb-2">Title <span class="text-red-600">*</span> </label>
+            <input type="text" id="title" name="title" maxlength="40" required
                    value="{{ form_values.title|default:'' }}"
                    class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all">
-            <p id="titleCount" class="text-sm text-gray-500 mt-1">0 / 50</p>
+            <p id="titleCount" class="text-sm text-gray-500 mt-1">0 / 40</p>
           </div>
 
           <!-- Color -->
@@ -151,7 +138,7 @@
 
         <!-- Short Description -->
         <div>
-          <label for="description" class="block font-semibold mb-2">Short Description</label>
+          <label for="description" class="block font-semibold mb-2">Short Description <span class="text-red-600">*</span> </label>
           <textarea id="description" name="description" rows="3" maxlength="100" required
                     class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all"
                     placeholder="Enter a short summary of the service">{{ form_values.description|default:'' }}</textarea>
@@ -160,7 +147,7 @@
 
         <!-- Full Description -->
         <div>
-          <label for="full_description" class="block font-semibold mb-2">Full Description</label>
+          <label for="full_description" class="block font-semibold mb-2">Full Description <span class="text-red-600">*</span> </label>
           <textarea id="full_description" name="full_description" rows="4" maxlength="250"
                     class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all"
                     placeholder="Enter detailed information about this service">{{ form_values.full_description|default:'' }}</textarea>
@@ -170,7 +157,7 @@
         <div class="grid md:grid-cols-2 gap-6">
           <!-- Icon -->
           <div>
-            <label for="icon" class="block font-semibold mb-2">Icon (single char)</label>
+            <label for="icon" class="block font-semibold mb-2">Icon (single char) <span class="text-red-600">*</span></label>
             <div class="flex items-center space-x-3">
               <input
                 type="text"
@@ -179,6 +166,7 @@
                 maxlength="4"
                 placeholder="e.g. 💡"
                 value="{{ form_values.icon|default:'' }}"
+                required
                 class="flex-1 border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all emoji-font"
               />
               <div
@@ -192,7 +180,7 @@
 
           <!-- Order -->
           <div>
-            <label for="order" class="block font-semibold mb-2">Order</label>
+            <label for="order" class="block font-semibold mb-2">Order <span class="text-red-600">*</span> </label>
             <input
               type="number"
               id="order"
@@ -204,49 +192,37 @@
           </div>
         </div>
 
-        <!-- Image Upload with Preview (side-by-side preview button + remove) -->
+        <!-- NEW IMAGE SECTION (MATCHING PORTFOLIO) -->
         <div>
-          <label for="image" class="block font-semibold mb-2">Service Image</label>
+          <label for="image" class="block font-semibold mb-2">Service Image <span class="text-red-600">*</span></label>
+          
+          <!-- Image Input -->
+          <input 
+            id="image" 
+            type="file" 
+            name="image" 
+            accept=".jpg,.jpeg,.png,.gif,.webp" 
+            class="w-full border border-gray-300 rounded-xl px-4 py-2 bg-white focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all"
+            data-existing-url="{{ form_values.image_url|default:'' }}"
+          >
+          
+          <p id="service-file-name" class="text-sm text-gray-600 mt-1">{{ form_values.image_name|default:'' }}</p>
+          <p id="image-error" class="text-red-600 text-sm hidden mt-1"></p>
+          <p class="text-gray-500 text-xs mt-1">Allowed formats: JPG, JPEG, PNG, WEBP (Max 5 MB)</p>
 
-          <div class="flex items-center gap-3">
-            <!-- File input (flex-grow so it matches other inputs) -->
-            <input type="file" id="image" name="image" accept="image/*"
-                   data-existing-url="{{ form_values.image_url|default:'' }}"
-                   class="flex-grow border border-gray-300 rounded-xl px-4 py-2 bg-white focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all"
-            />
-
-            <!-- Preview Button styled to match inputs -->
-            <button type="button" id="previewBtn"
-                    class="px-4 py-2 rounded-xl border border-gray-200 bg-white text-sm font-semibold shadow-sm disabled:opacity-60 disabled:cursor-not-allowed transition"
-                    disabled>
-              Preview
-            </button>
-
-            <!-- ❌ REMOVE IMAGE (Option B: delete old image as well) -->
-            <button type="button" id="removeImageBtn"
-                    class="text-red-600 text-xl font-bold hidden hover:text-red-800 transition"
-                    title="Remove selected image and clear existing saved image">
-              &times;
-            </button>
+          <!-- Preview Container: Hidden by default -->
+          <div id="image-preview-container" class="mt-4 hidden">
+            <img id="image-preview" src="" class="h-36 rounded-xl shadow border object-cover">
+            <button id="remove-image-btn" type="button" class="bg-red-600 text-white text-xs px-2 py-1 rounded-md mt-2">Remove</button>
           </div>
 
-          <div class="flex items-start gap-4 mt-3">
-            <!-- filename / helper text -->
-            <p id="file-name" class="text-sm text-gray-600 mt-1">{{ form_values.image_name|default:'' }}</p>
-
-            <!-- thumbnail (optional) -->
-            <div id="thumbWrapper" class="mt-1 hidden">
-              <img id="thumbImg" src="" alt="thumbnail" class="w-40 h-24 object-cover rounded-md border border-gray-200 shadow-sm" />
-            </div>
-          </div>
-
-          <!-- Hidden flag so backend knows to remove old image on submit (Option B) -->
+          <!-- Hidden flag to signal removal to backend if needed -->
           <input type="hidden" id="remove_image_flag" name="remove_image" value="">
         </div>
 
         <!-- Slug -->
         <div>
-          <label for="slug" class="block font-semibold mb-2">Slug (Auto-generated)</label>
+          <label for="slug" class="block font-semibold mb-2">Slug (Auto-generated) <span class="text-red-600">*</span> </label>
           <input type="text" id="slug" name="slug" readonly
                  value="{{ form_values.slug|default:'' }}"
                  class="w-full border border-gray-300 rounded-xl px-4 py-2 bg-gray-100 text-gray-600">
@@ -262,25 +238,9 @@
       </form>
     </div>
 
-
-
   </main>
 
-  <!-- Centered Modal for image preview -->
-  <div id="imageModal" class="fixed inset-0 hidden z-50 flex items-center justify-center">
-    <!-- overlay -->
-    <div id="imageModalOverlay" class="absolute inset-0 bg-black bg-opacity-60"></div>
-
-    <!-- centered content -->
-    <div class="relative z-10 max-w-4xl mx-auto w-[90%]">
-      <button id="closeImageModal" class="absolute -top-4 -right-4 bg-[#053830] text-white rounded-full w-9 h-9 flex items-center justify-center text-xl shadow-lg">×</button>
-      <div class="bg-transparent flex justify-center items-center">
-        <img id="imageModalImg" src="" alt="Full image preview" class="max-h-[80vh] w-auto rounded-md shadow-2xl" />
-      </div>
-    </div>
-  </div>
-
-  <!-- Data holder for JS (safe, no template tags inside external script) -->
+  <!-- Data holder for JS -->
   <div id="service-meta" data-total="{{ services|length|default:0 }}" style="display:none"></div>
 
   <!-- Scripts -->
@@ -326,7 +286,7 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     // Counters
-    bindCounter('title', 'titleCount', 50);
+    bindCounter('title', 'titleCount', 40);
     bindCounter('description', 'descCount', 100);
     bindCounter('full_description', 'fullDescCount', 250);
 
@@ -340,185 +300,113 @@
       });
     }
 
-    // File input preview + preview modal wiring (centered modal)
-    const imageInput = document.getElementById('image');
-    const fileNameEl = document.getElementById('file-name');
-    const previewBtn = document.getElementById('previewBtn');
-    const thumbWrapper = document.getElementById('thumbWrapper');
-    const thumbImg = document.getElementById('thumbImg');
-    const modal = document.getElementById('imageModal');
-    const modalOverlay = document.getElementById('imageModalOverlay');
-    const modalImg = document.getElementById('imageModalImg');
-    const closeModalBtn = document.getElementById('closeImageModal');
-    const removeBtn = document.getElementById('removeImageBtn');
+    /* --- NEW IMAGE HANDLING LOGIC (From Portfolio) --- */
+    const imageInput = document.getElementById("image");
+    const fileNameEl = document.getElementById("service-file-name");
+    const errorEl = document.getElementById("image-error");
+    const previewContainer = document.getElementById("image-preview-container");
+    const previewImage = document.getElementById("image-preview");
+    const removeBtn = document.getElementById("remove-image-btn");
     const removeFlagInput = document.getElementById('remove_image_flag');
 
-    // Add error display element
-    let imageError = document.getElementById('imageError');
-    if (!imageError) {
-      imageError = document.createElement('p');
-      imageError.id = 'imageError';
-      imageError.className = 'text-red-600 text-sm mt-1 hidden';
-      imageInput.insertAdjacentElement('afterend', imageError);
+    // 1. Check for existing image (from server rendering)
+    let existingUrl = imageInput ? (imageInput.getAttribute('data-existing-url') || '') : '';
+    
+    // Safety check for Preview Environment:
+    // If 'existingUrl' contains raw Django template braces "{{", treat it as empty.
+    if (existingUrl.includes('{{')) {
+        existingUrl = "";
     }
 
-    let currentObjectUrl = null;
-
-    // existing values (from server)
-    const existingUrl = imageInput ? (imageInput.getAttribute('data-existing-url') || '') : '';
-    const existingName = "{{ form_values.image_name|default:'' }}";
-    // Helper: enable preview UI
-    function enablePreview(url, filename) {
-      previewBtn.disabled = false;
-      if (thumbImg) {
-        thumbImg.src = url;
-        thumbWrapper.classList.remove('hidden');
-      }
-      if (fileNameEl && filename) {
-        fileNameEl.textContent = filename;
-      }
-      if (modalImg) modalImg.src = url;
-    }
-
-    // Helper: disable preview UI
-    function disablePreview() {
-      previewBtn.disabled = true;
-      thumbWrapper.classList.add('hidden');
-      if (thumbImg) thumbImg.src = '';
-      if (fileNameEl) fileNameEl.textContent = '';
-      if (modalImg) modalImg.src = '';
-      if (currentObjectUrl) {
-        URL.revokeObjectURL(currentObjectUrl);
-        currentObjectUrl = null;
-      }
-    }
-
-    // Reset selection and clear remove flag (used when user selects a new file AFTER removing)
-    function resetRemoveFlag() {
-      if (removeFlagInput) removeFlagInput.value = '';
-    }
-
-    // FULL RESET (used by Remove button - Option B)
-    function resetAllImageSelectionAndMarkRemoved() {
-      // Clear the actual file input. Setting value to '' is the standard approach.
-      try {
-        imageInput.value = "";
-      } catch (e) {
-        // some browsers require wrapping in form reset; we handle the basic case
-        const form = imageInput && imageInput.form;
-        if (form) form.reset();
-      }
-
-      // Hide/clear preview UI
-      disablePreview();
-
-      // Mark the remove flag so backend knows to delete saved image (Option B)
-      if (removeFlagInput) removeFlagInput.value = '1';
-
-      // Show remove button only if we want to allow un-do? For Option B, keep remove button hidden after removal
-      removeBtn.classList.add('hidden');
-
-      // Update existingUrl to empty so enabling preview won't bring back old image automatically
-      // (we keep the variable for JS; it doesn't change server-side automatically)
-      // Note: existingUrl is const; we cannot reassign, so instead we just keep behavior to not re-enable existing preview
-      // Provide user feedback
-      fileNameEl.textContent = '';
-    }
-
-    // Initialize state: if there is an existing image URL, show preview and show remove button
-    if (existingUrl) {
-      enablePreview(existingUrl, existingName || 'Saved image');
-      // If editing and an image exists, show remove button (so user can remove old image)
-      removeBtn.classList.remove('hidden');
-      // ensure remove flag is empty initially
-      resetRemoveFlag();
+    // Initialize: if we have a valid existing URL and NO new file selected yet, show it
+    if (existingUrl && (!imageInput.files || imageInput.files.length === 0)) {
+        previewImage.src = existingUrl;
+        previewContainer.classList.remove("hidden");
+        if(removeFlagInput) removeFlagInput.value = "";
     } else {
-      disablePreview();
-      resetRemoveFlag();
+        // Ensure strictly hidden if no URL
+        if(previewContainer) previewContainer.classList.add("hidden");
     }
 
-    // When user selects a file
-    if (imageInput && fileNameEl) {
-      imageInput.addEventListener('change', function () {
-        const file = this.files && this.files[0];
-        imageError.classList.add('hidden');
-        imageError.textContent = '';
+    let imageValid = true;
 
-        if (!file) {
-          // No file selected (user cleared selection using native control)
-          // If there was an existing saved image originally, keep showing it (unless user previously removed via remove button)
-          // We'll check remove flag
-          if (removeFlagInput && removeFlagInput.value === '1') {
-            // user had explicitly removed image -> keep cleared state
-            disablePreview();
-            removeBtn.classList.add('hidden');
-          } else if (existingUrl) {
-            // show existing saved image again
-            enablePreview(existingUrl, existingName || 'Saved image');
-            removeBtn.classList.remove('hidden');
-          } else {
-            disablePreview();
-          }
-          return;
-        }
+    if (imageInput) {
+        imageInput.addEventListener("change", function () {
+            const file = this.files[0];
+            const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+            const maxSizeMB = 5;
 
-        // A new file was selected -> any remove flag should be cleared (user chose new image)
-        resetRemoveFlag();
+            // Reset UI
+            imageValid = true;
+            errorEl.classList.add("hidden");
+            previewContainer.classList.add("hidden");
+            previewImage.src = "";
+            fileNameEl.textContent = "";
+            
+            // If user cancels selection
+            if (!file) {
+                // If we had an existing image and user cancelled, we revert to existing image? 
+                if (existingUrl) {
+                    previewImage.src = existingUrl;
+                    previewContainer.classList.remove("hidden");
+                    if(removeFlagInput) removeFlagInput.value = "";
+                }
+                return;
+            }
 
-        // Validation: Only allow JPG, PNG, GIF & max 10 MB
-        const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
-        const fileExt = file.name.split('.').pop().toLowerCase();
-        if (!validTypes.includes(file.type) && !['jpg', 'jpeg', 'png', 'gif'].includes(fileExt)) {
-          imageError.textContent = '❌ Invalid file type. Only JPG, PNG, and GIF are allowed.';
-          imageError.classList.remove('hidden');
-          this.value = '';
-          disablePreview();
-          return;
-        }
+            // Validate Type
+            if (!validTypes.includes(file.type)) {
+                errorEl.textContent = "❌ Invalid file type. Upload JPG, PNG, GIF or WEBP.";
+                errorEl.classList.remove("hidden");
+                imageValid = false;
+                this.value = ""; // clear input
+                return;
+            }
 
-        if (file.size > 10 * 1024 * 1024) {
-          imageError.textContent = '❌ File too large. Maximum allowed size is 10 MB.';
-          imageError.classList.remove('hidden');
-          this.value = '';
-          disablePreview();
-          return;
-        }
+            // Validate Size
+            const sizeMB = file.size / (1024 * 1024);
+            if (sizeMB > maxSizeMB) {
+                errorEl.textContent = `❌ File too large (${sizeMB.toFixed(2)}MB). Max 5MB allowed.`;
+                errorEl.classList.remove("hidden");
+                imageValid = false;
+                this.value = ""; // clear input
+                return;
+            }
 
-        // Clean up previous object URL
-        if (currentObjectUrl) {
-          URL.revokeObjectURL(currentObjectUrl);
-        }
-        currentObjectUrl = URL.createObjectURL(file);
-        enablePreview(currentObjectUrl, `Selected: ${file.name}`);
-
-        // Show remove button (user may remove newly selected image)
-        removeBtn.classList.remove('hidden');
-      });
+            // Show Preview
+            fileNameEl.textContent = `Selected: ${file.name}`;
+            const reader = new FileReader();
+            reader.onload = e => {
+                previewImage.src = e.target.result;
+                previewContainer.classList.remove("hidden");
+                // Reset remove flag because we are uploading a new one
+                if(removeFlagInput) removeFlagInput.value = "";
+            };
+            reader.readAsDataURL(file);
+        });
     }
 
-    // Preview modal open
-    previewBtn.addEventListener('click', function () {
-      if (!modalImg.src) return;
-      modal.classList.remove('hidden');
-      closeModalBtn.focus();
-    });
+    if (removeBtn) {
+        removeBtn.addEventListener("click", () => {
+            // Clear input
+            imageInput.value = "";
+            // Hide preview
+            previewImage.src = "";
+            previewContainer.classList.add("hidden");
+            fileNameEl.textContent = "";
+            errorEl.classList.add("hidden");
+            imageValid = true;
 
-    function closeModal() {
-      modal.classList.add('hidden');
+            // Set remove flag so backend knows to delete the image
+            if(removeFlagInput) removeFlagInput.value = "1";
+        });
     }
-    closeModalBtn.addEventListener('click', closeModal);
-    modalOverlay.addEventListener('click', closeModal);
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
-        closeModal();
-      }
-    });
 
-    // Remove image button behavior (Option B) - remove both selected and existing saved image
-    removeBtn.addEventListener('click', function () {
-      // Mark for removal and clear UI
-      resetAllImageSelectionAndMarkRemoved();
-    });
+    // Expose imageValid to global scope or attach to form for submit validation
+    window.isServiceImageValid = () => imageValid;
+
+    /* --- END IMAGE LOGIC --- */
+
 
     // Icon input handling (single emoji or char)
     const iconInput = document.getElementById('icon');
@@ -587,13 +475,62 @@
 
   // Show loader when submitting Add Service Form
   const serviceForm = document.getElementById("add-service-form");
-  if (serviceForm) {
-      serviceForm.addEventListener("submit", () => {
-          const bl = document.getElementById("blur-loader");
-          if (bl) bl.classList.remove("hidden");
-      });
-  }
+
+if (serviceForm) {
+  serviceForm.addEventListener("submit", function (e) {
+    let isValid = true; // assume valid
+
+    // Reset previous image errors (generic alert handled here, specific field errors handled by listener)
+    const imageError = document.getElementById("image-error");
+
+    // Get all required inputs
+    const title = document.getElementById("title").value.trim();
+    const description = document.getElementById("description").value.trim();
+    const fullDesc = document.getElementById("full_description").value.trim();
+    const order = document.getElementById("order").value;
+    const imageInput = document.getElementById("image");
+    const iconInput = document.getElementById("icon");
+    
+    // Validate text fields
+    if (!title || !description || !fullDesc || !order) {
+      alert("❌ Please fill in all required fields.");
+      isValid = false;
+    }
+
+    // Ensure icon is provided (this field is now compulsory)
+    const iconVal = iconInput ? (iconInput.value || '').trim() : '';
+    if (!iconVal) {
+      alert("❌ Please enter an icon (single character or emoji).");
+      if (iconInput) iconInput.focus();
+      isValid = false;
+    }
+
+    // Check strict image validity from our custom validator
+    if (window.isServiceImageValid && !window.isServiceImageValid()) {
+        isValid = false;
+    }
+
+    // Prevent submission if invalid
+    if (!isValid) {
+      e.preventDefault();
+      return false;
+    }
+
+    // Show loader if valid
+    const loader = document.getElementById("blur-loader");
+    if (loader) loader.classList.remove("hidden");
+  });
+}
+
 </script>
+
+<script>
+    setTimeout(() => {
+        const box = document.getElementById("flash-message-wrapper");
+        if (box) box.style.display = "none";
+    }, 2000);
+</script>
+
 
 </body>
 </html>

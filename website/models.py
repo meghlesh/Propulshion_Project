@@ -22,6 +22,7 @@ class CandidateProfile(models.Model):
     country = models.CharField("Country", max_length=100)
     state = models.CharField("State", max_length=100)
     city = models.CharField("City", max_length=100)
+    pincode = models.CharField("Pincode", max_length=6, blank=True, null=True)
 
     school = models.CharField("School / Institution", max_length=150, blank=True, null=True)
 
@@ -71,7 +72,7 @@ class Service(models.Model):
         ('card-bg', 'Card Background'),
     ]
 
-    title = models.CharField(max_length=50)
+    title = models.CharField(max_length=40)
     description = models.TextField(max_length=100)
     full_description = models.TextField(null=True, blank=True, max_length=250)
 
@@ -87,8 +88,8 @@ class Service(models.Model):
         """Model-level validation."""
         super().clean()
         # Title length is enforced by max_length, but we keep a friendly check
-        if self.title and len(self.title) > 50:
-            raise ValidationError({'title': 'Title must be 50 characters or fewer.'})
+        if self.title and len(self.title) > 40:
+            raise ValidationError({'title': 'Title must be 40 characters or fewer.'})
 
         if self.description and len(self.description) > 100:
             raise ValidationError({'description': 'Short description must be 100 characters or fewer.'})

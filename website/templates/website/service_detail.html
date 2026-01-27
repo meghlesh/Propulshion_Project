@@ -1,85 +1,154 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{{ service.title }} | Propulsion Technology</title>
-  <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+  <link rel="icon" type="image/png" href="{% static 'img/logo6.png'%}">
 
   <!-- Tailwind & Alpine -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+<style>
+    [x-cloak] { display: none !important; }
+</style>
+
+ <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
   <!-- You can add any additional head scripts/styles here -->
   <style>
     /* Fade-in animation for modals */
     @keyframes fade-in {
-      from { opacity: 0; transform: scale(0.95); }
-      to   { opacity: 1; transform: scale(1); }
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
     }
-    .animate-fade-in { animation: fade-in 0.25s ease-out forwards; }
+
+    .animate-fade-in {
+      animation: fade-in 0.25s ease-out forwards;
+    }
 
     /* subtle shake for invalid inputs */
     @keyframes shake {
-      0%,100%{ transform: translateX(0); }
-      25%{ transform: translateX(-4px); }
-      75%{ transform: translateX(4px); }
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      25% {
+        transform: translateX(-4px);
+      }
+
+      75% {
+        transform: translateX(4px);
+      }
     }
-    .border-red-500 { animation: shake 0.12s ease-in-out; }
-    input.border-red-500, textarea.border-red-500 {
+
+    .border-red-500 {
+      animation: shake 0.12s ease-in-out;
+    }
+
+    input.border-red-500,
+    textarea.border-red-500 {
       border-color: #f87171 !important;
-      box-shadow: 0 0 0 3px rgba(248,113,113,0.06);
+      box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.06);
     }
 
     /* Small helper for accessibility/hide */
-    [x-cloak] { display:none; }
+    [x-cloak] {
+      display: none;
+    }
 
     /* Extra safety for very small screens (foldables) */
     @media (max-width: 450px) {
-      main { padding: 1rem !important; margin: 0.5rem !important; }
-      input, select, textarea { font-size: 13px !important; padding: 6px 10px !important; }
-      label { font-size: 12px !important; }
-      .modal-content { padding: 1rem !important; }
+      main {
+        padding: 1rem !important;
+        margin: 0.5rem !important;
+      }
+
+      input,
+      select,
+      textarea {
+        font-size: 13px !important;
+        padding: 6px 10px !important;
+      }
+
+      label {
+        font-size: 12px !important;
+      }
+
+      .modal-content {
+        padding: 1rem !important;
+      }
+    }
+
+  p, .text-block {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    
+}
+
+.break-words {
+    word-break: break-word;
+}
+  </style>
+  <style>
+    #expertSuccess p {
+      color: #166534 !important;
+      /* Tailwind green-800 */
+      background-color: #dcfce7 !important;
+      /* green-100 */
     }
   </style>
+
 </head>
 
-<body class="bg-gradient-to-b from-[#F9FAFB] via-[#F3F7F2] to-[#E8F0EB] text-[#053830] font-sans" x-data="{ showDemoModal: false }">
+<body class="bg-gradient-to-b from-[#F9FAFB] via-[#F3F7F2] to-[#E8F0EB] text-[#053830] font-sans"
+  x-data="{ showDemoModal: false }">
 
-<div id="blur-loader"
-     class="fixed inset-0 flex items-center justify-center bg-white/70 backdrop-blur-md z-[9999] hidden">
+  <div id="blur-loader"
+    class="fixed inset-0 flex items-center justify-center bg-white/70 backdrop-blur-md z-[9999] hidden">
 
-  <!-- Updated thin smooth loader -->
-  <div class="w-14 h-14 rounded-full border-4 border-gray-300 border-t-[#053830] animate-spin"></div>
+    <!-- Updated thin smooth loader -->
+    <div class="w-14 h-14 rounded-full border-4 border-gray-300 border-t-[#053830] animate-spin"></div>
 
-</div>
+  </div>
 
   <!-- ============================
        NAVBAR
        ============================ -->
   <nav class="bg-[#053830] text-white p-5 flex justify-between items-center shadow-lg sticky top-0 z-40">
-        <!-- Left Side: Title -->
-        <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">Propulsion Technology</h1>
-        
-        <!-- Right Side: Buttons (ensured by justify-between) -->
-        <div class="flex items-center gap-4">
-            <!-- Back Button -->
-            <a href="javascript:history.back()"
-                class="bg-[#FF9728] px-5 py-2 rounded-xl text-[#053830] font-semibold hover:bg-white hover:text-[#053830] transition-all shadow-md hover:shadow-lg">
-                ← Back
-            </a>
-            <!-- Home Button -->
-        <a href="{% url 'home' %}"
-          class="bg-[#FF9728] px-5 py-2 rounded-xl text-[#053830] font-semibold hover:bg-white hover:text-[#053830] transition-all shadow-md hover:shadow-lg">
-            Back to Home
-        </a>
-        </div>
-    </nav>
+    <!-- Left Side: Title -->
+    <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">Propulsion Technology</h1>
+
+    <!-- Right Side: Buttons (ensured by justify-between) -->
+    <div class="flex items-center gap-4">
+      <!-- Back Button -->
+      <a href="javascript:history.back()"
+        class="bg-[#FF9728] px-5 py-2 rounded-xl text-[#053830] font-semibold hover:bg-white hover:text-[#053830] transition-all shadow-md hover:shadow-lg">
+        ← Back
+      </a>
+      <!-- Home Button -->
+      <a href="{% url 'home' %}"
+        class="bg-[#FF9728] px-5 py-2 rounded-xl text-[#053830] font-semibold hover:bg-white hover:text-[#053830] transition-all shadow-md hover:shadow-lg">
+        Back to Home
+      </a>
+    </div>
+  </nav>
   <!-- ============================
        MAIN: SERVICE DETAILS
        ============================ -->
-  <main class="max-w-5xl mx-auto mt-12 p-8 md:p-12 bg-white rounded-3xl shadow-2xl border border-gray-100 transition-transform duration-300 hover:scale-[1.01]">
+  <main
+    class="max-w-5xl mx-auto mt-12 p-8 md:p-12 bg-white rounded-3xl shadow-2xl border border-gray-100 transition-transform duration-300 hover:scale-[1.01]">
 
     <!-- Title / Icon -->
     <div class="flex flex-col items-center text-center mb-8">
@@ -93,29 +162,30 @@
     <!-- Optional main image -->
     {% if service.image %}
     <div class="mb-10">
-      <img src="{{ service.image.url }}" alt="{{ service.title }}" class="w-full h-80 object-cover rounded-3xl shadow-lg ring-4 ring-[#FF9728]/20">
+      <img src="{{ service.image.url }}" alt="{{ service.title }}"
+        class="w-full h-80 object-cover rounded-3xl shadow-lg ring-4 ring-[#FF9728]/20">
     </div>
     {% endif %}
 
     <!-- Short Description -->
     <div class="text-center max-w-3xl mx-auto">
-      <p class="text-lg text-gray-700 mb-6 font-medium leading-relaxed">
-        {{ service.description }}
-      </p>
-      <p class="text-gray-600 leading-relaxed mb-10">
-        {{ service.full_description|linebreaks }}
-      </p>
+<p class="text-lg text-gray-700 mb-6 font-medium leading-relaxed break-words">
+    {{ service.description }}
+</p>
+
+<p class="text-gray-600 leading-relaxed mb-10 break-words">
+    {{ service.full_description|linebreaks }}
+</p>
     </div>
 
     <!-- Buttons -->
     <div class="flex flex-col md:flex-row justify-center items-center gap-6 mt-8">
       <button @click="showDemoModal = true"
-              class="bg-[#FF9728] text-[#053830] px-10 py-3 rounded-xl font-semibold text-lg hover:bg-[#053830] hover:text-white transition-all duration-300 shadow-lg shadow-[#FF9728]/40 transform hover:scale-105 hover:-translate-y-1">
-        Schedule a Demo
+class="bg-[#053830] text-white px-10 py-3 rounded-xl font-semibold text-lg hover:bg-[#FF9728] hover:text-[#053830] transition-all duration-300 shadow-lg shadow-[#053830]/40 transform hover:scale-105 hover:-translate-y-1">        Schedule a Demo
       </button>
 
       <button onclick="openExpertForm('{{ service.slug }}')"
-              class="bg-[#053830] text-white px-10 py-3 rounded-xl font-semibold text-lg hover:bg-[#FF9728] hover:text-[#053830] transition-all duration-300 shadow-lg shadow-[#053830]/40 transform hover:scale-105 hover:-translate-y-1">
+        class="bg-[#053830] text-white px-10 py-3 rounded-xl font-semibold text-lg hover:bg-[#FF9728] hover:text-[#053830] transition-all duration-300 shadow-lg shadow-[#053830]/40 transform hover:scale-105 hover:-translate-y-1">
         Ask an Expert
       </button>
     </div>
@@ -125,66 +195,81 @@
   <!-- ============================
        SCHEDULE DEMO MODAL
        ============================ -->
-  <div x-show="showDemoModal"
-       x-cloak
-       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-all duration-300 ease-in-out">
+ <div x-show="showDemoModal" x-cloak
+     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-all duration-300 ease-in-out ">
 
     <div @click.away="showDemoModal = false"
-         class="modal-content bg-white w-full max-w-md p-5 rounded-2xl shadow-xl relative border-t-4 border-[#FF9728] animate-fade-in min-h-[300px]">
+      class="modal-content bg-white w-full max-w-md p-5 rounded-2xl shadow-xl relative border-t-4 border-[#FF9728] animate-fade-in min-h-[300px]">
 
       <button @click="showDemoModal = false"
-              class="absolute top-2 right-3 text-gray-500 hover:text-[#FF9728] transition text-2xl font-bold">&times;</button>
+        class="absolute top-2 right-3 text-gray-500 hover:text-[#FF9728] transition text-2xl font-bold">&times;</button>
 
       <h2 class="text-2xl font-extrabold mb-4 text-center text-[#053830]">Schedule a Demo</h2>
 
       <!-- Server success box (visible if success context true) -->
-<!-- Server success box -->
-<div id="scheduleSuccess" 
-     class="hidden min-h-[120px] flex flex-col justify-center mt-4">
+      <!-- Server success box -->
+      <div id="scheduleSuccess" class="hidden min-h-[120px] flex flex-col justify-center mt-4">
 
-    <p class="bg-green-100 text-green-800 p-3 rounded-lg text-sm font-medium text-center">
-        🎉 Your demo is scheduled successfully! Our expert will contact you shortly.
-    </p>
+        <p class="bg-green-100 !text-green-800 p-3 rounded-lg text-sm font-medium text-center">
+          🎉 Your demo is scheduled successfully! Our expert will contact you shortly.
+        </p>
 
-    <div class="mt-4 flex justify-center">
-        <button onclick="closeDemoModal()"
-                class="px-5 py-2 bg-[#053830] text-white rounded-xl hover:bg-[#0b261f] transition">
-            Your demo is scheduled successfully! Our expert will contact you shortly 
-        </button>
-    </div>
-</div>
+
+        <div class="mt-4 flex justify-center">
+          <button onclick="closeDemoModal()"
+            class="px-5 py-2 text-green-600 border border-green-600 rounded-xl hover:bg-green-50 transition font-medium">
+            ✔ Your demo is scheduled successfully! Our expert will contact you shortly
+          </button>
+        </div>
+      </div>
 
       <!-- Generic server error box -->
-      <div id="schedule_server_error" class="hidden bg-red-100 text-red-800 p-3 rounded-lg text-center font-medium mb-3"></div>
+      <div id="schedule_server_error"
+        class="hidden bg-red-100 text-red-800 p-3 rounded-lg text-center font-medium mb-3"></div>
+
+     
+      <div>
+        {% for message in messages %}
+        <div class="mb-3 px-4 py-3 rounded-lg font-medium  
+      {% if 'success' in message.tags %}bg-green-100 text-green-800
+      {% elif 'error' in message.tags or 'danger' in message.tags %}bg-red-100 text-red-800
+      {% elif 'warning' in message.tags %}bg-yellow-100 text-yellow-800
+      {% else %}bg-blue-100 text-blue-800{% endif %}">
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+
+
 
       <!-- Always render the form; hide it server-side only if success is true -->
       <form id="scheduleDemoForm" method="POST" action="{% url 'schedule_demo' %}"
-            class="space-y-3 {% if success %}hidden{% endif %}" onsubmit="return validateDate()">
+        class="space-y-3 {% if success %}hidden{% endif %}" onsubmit="return validateDate()">
         {% csrf_token %}
         <input type="hidden" name="service_title" value="{{ service.title }}">
         <input type="hidden" name="service_slug" value="{{ service.slug }}">
 
         <!-- Name -->
         <div>
-          <label class="block text-sm font-semibold mb-1">Name</label>
-          <input id="fullName" name="name" type="text" required
-                 class="w-full border rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-highlight-gold focus:outline-none">
+          <label class="block text-sm font-semibold mb-1">Name *</label>
+          <input id="fullName" name="name" type="text" maxlength="50" required
+            class="w-full border rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-highlight-gold focus:outline-none">
           <span id="fullNameError" class="text-red-600 text-xs mt-1"></span>
         </div>
 
         <!-- Email -->
         <div>
-          <label class="block text-sm font-semibold mb-1">Email</label>
+          <label class="block text-sm font-semibold mb-1">Email *</label>
           <input id="emailField" name="email" type="email" required
-                 class="w-full border rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-highlight-gold focus:outline-none">
+            class="w-full border rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-highlight-gold focus:outline-none">
           <span id="emailError" class="text-red-600 text-xs mt-1"></span>
         </div>
 
         <!-- Phone -->
         <div>
-          <label class="block text-sm font-semibold mb-1">Phone</label>
+          <label class="block text-sm font-semibold mb-1">Phone *</label>
           <input id="phoneNumber" name="phone" type="text" maxlength="10" required
-                 class="w-full border rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-highlight-gold focus:outline-none">
+            class="w-full border rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-highlight-gold focus:outline-none">
           <span id="phoneError" class="text-red-600 text-xs mt-1"></span>
         </div>
 
@@ -192,27 +277,34 @@
         <div>
           <label class="block text-sm font-semibold mb-1">Company / Service</label>
           <input type="text" name="company" value="{{ service.title }}" readonly
-                 class="w-full border rounded-lg px-3 py-1.5 text-sm bg-gray-100 text-gray-700 cursor-not-allowed">
+            class="w-full border rounded-lg px-3 py-1.5 text-sm bg-gray-100 text-gray-700 cursor-not-allowed">
         </div>
 
         <!-- Message -->
         <div>
-          <label class="block text-sm font-semibold mb-1">Message</label>
-          <textarea name="message" rows="2"
-                    class="w-full border rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-[#FF9728] focus:outline-none"></textarea>
+          <label class="block text-sm font-semibold mb-1">Message *</label>
+
+          <textarea id="msgField" name="message" rows="2" maxlength="300" required
+            class="w-full border rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-[#FF9728] focus:outline-none"></textarea>
+
+          <div class="flex justify-between mt-1">
+            <p id="msgError" class="text-red-600 text-xs hidden">Message is required.</p>
+            <p id="msgCount" class="text-gray-500 text-xs">0 / 300</p>
+          </div>
         </div>
+
 
         <!-- Preferred Date -->
         <div>
-          <label class="block text-sm font-semibold mb-1">Preferred Demo Date & Time</label>
+          <label class="block text-sm font-semibold mb-1">Preferred Demo Date & Time *</label>
           <input id="scheduled_date" name="scheduled_date" type="datetime-local" required
-                 class="w-full border rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-[#FF9728] focus:outline-none">
+            class="w-full border rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-[#FF9728] focus:outline-none">
           <p id="dateError" class="text-red-600 text-xs mt-1 hidden">Please choose a future date and time.</p>
         </div>
 
         <!-- Submit -->
         <button type="submit" id="scheduleSubmitBtn"
-                class="w-full bg-[#FF9728] text-[#053830] py-2 rounded-lg font-semibold text-base hover:bg-[#053830] hover:text-white transition-all shadow-md">
+          class="w-full bg-[#FF9728] text-[#053830] py-2 rounded-lg font-semibold text-base hover:bg-[#053830] hover:text-white transition-all shadow-md">
           Submit Request
         </button>
       </form>
@@ -223,17 +315,24 @@
        ASK AN EXPERT MODAL (NEW)
        ============================ -->
   <div id="expertModal" class="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center hidden z-50">
-    <div class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-md relative border-t-4 border-[#FF9728] animate-fade-in modal-content">
+    <div
+      class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-md relative border-t-4 border-[#FF9728] animate-fade-in modal-content">
       <h2 class="text-2xl font-bold mb-2 text-[#053830] text-center">Ask an Expert</h2>
       <p class="text-sm text-gray-600 mb-4 text-center">Share your question and our expert will get back to you.</p>
 
       <!-- Success message placeholder -->
       <div id="expertSuccess" class="hidden text-center">
-        <p class="bg-green-100 text-green-800 p-3 rounded-lg text-sm font-medium">✅ Your query has been submitted successfully!</p>
+        <p class="px-5 py-2 text-green-600 border border-green-600 rounded-xl hover:bg-green-50 transition font-medium">
+          ✅ Your query has been submitted successfully!
+        </p>
         <div class="mt-3 flex justify-center">
-          <button onclick="closeExpertForm()" class="px-4 py-2 bg-[#053830] text-white rounded-md hover:bg-[#0b261f] transition">Close</button>
+          <button onclick="closeExpertForm()"
+            class="px-4 py-2 bg-[#053830] text-white rounded-md hover:bg-[#0b261f] transition">
+            Close
+          </button>
         </div>
       </div>
+
 
       <!-- Expert form -->
       <form id="expertForm" method="POST" action="{% url 'ask_expert' %}" class="space-y-4">
@@ -242,39 +341,55 @@
 
         <!-- Full Name -->
         <div>
-          <label class="block text-sm font-medium mb-1">Full Name</label>
-          <input type="text" name="name" id="expertName" required class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-[#FF9728] focus:border-[#FF9728]">
+          <label class="block text-sm font-medium mb-1">Full Name *</label>
+          <input type="text" name="name" id="expertName" maxlength="50" required
+            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-[#FF9728] focus:border-[#FF9728]">
           <p id="expert_name_error" class="text-red-600 text-xs mt-1 hidden"></p>
         </div>
 
         <!-- Email -->
         <div>
-          <label class="block text-sm font-medium mb-1">Email</label>
-          <input type="text" name="email" id="expertEmail" required autocomplete="off" spellcheck="false" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-[#FF9728] focus:border-[#FF9728]">
+          <label class="block text-sm font-medium mb-1">Email *</label>
+          <input type="text" name="email" id="expertEmail" required autocomplete="off" spellcheck="false"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-[#FF9728] focus:border-[#FF9728]">
           <p id="expert_email_error" class="text-red-600 text-xs mt-1 hidden"></p>
         </div>
 
         <!-- Phone (optional) -->
         <div>
           <label class="block text-sm font-medium mb-1">Phone (optional)</label>
-          <input type="text" name="phone" id="expertPhone" maxlength="10" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-[#FF9728] focus:border-[#FF9728]">
+          <input type="text" name="phone" id="expertPhone" maxlength="10" 
+            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-[#FF9728] focus:border-[#FF9728]">
           <p id="expert_phone_error" class="text-red-600 text-xs mt-1 hidden"></p>
         </div>
 
         <!-- Question -->
         <div>
-          <label class="block text-sm font-medium mb-1">Your Question</label>
-          <textarea name="message" id="expertMessage" rows="3" required class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-[#FF9728] focus:border-[#FF9728]"></textarea>
-          <p id="expert_message_error" class="text-red-600 text-xs mt-1 hidden"></p>
+          <label class="block text-sm font-medium mb-1">Your Question *</label>
+
+          <textarea name="message" id="expertMessage" rows="3" required maxlength="300"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-[#FF9728] focus:border-[#FF9728]"></textarea>
+
+          <!-- Live counter -->
+          <div class="flex justify-between items-center mt-1">
+            <p id="expert_message_error" class="text-red-600 text-xs hidden"></p>
+            <p id="expert_message_counter" class="text-gray-500 text-xs">0/300</p>
+          </div>
         </div>
 
+
         <div class="flex justify-end gap-3">
-          <button type="button" onclick="closeExpertForm()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition">Cancel</button>
-          <button type="submit" id="expertSubmitBtn" class="px-4 py-2 bg-[#FF9728] text-white rounded-md hover:bg-[#E6831F] transition">Submit</button>
+          <button type="button" onclick="closeExpertForm()"
+            class="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition">Cancel</button>
+          <button type="submit" class="bg-[#FF9728] text-white px-4 py-2 rounded-md">
+            Submit
+          </button>
+
         </div>
       </form>
 
-      <button onclick="closeExpertForm()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+      <button onclick="closeExpertForm()"
+        class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
     </div>
   </div>
 
@@ -282,676 +397,1196 @@
        UNIFIED & DEDUPED JS
        ============================ -->
   <script>
-  /* Utility: open/close Expert modal */
-  function openExpertForm(slug) {
-    const el = document.getElementById('serviceSlugInput');
-    if (el) el.value = slug;
-    const modal = document.getElementById('expertModal');
-    if (modal) modal.classList.remove('hidden');
-    setTimeout(() => {
-      const name = document.getElementById('expertName');
-      if (name) name.focus();
-    }, 120);
-  }
-
-  function closeExpertForm() {
-    const modal = document.getElementById('expertModal');
-    if (modal) modal.classList.add('hidden');
-
-    setTimeout(() => {
-      const form = document.getElementById('expertForm');
-      if (form) {
-        form.reset();
-        clearExpertErrors();
-        form.classList.remove('hidden');
-      }
-      const success = document.getElementById('expertSuccess');
-      if (success) success.classList.add('hidden');
-    }, 150);
-  }
-
-  /* Schedule demo and Ask Expert handlers (single DOMContentLoaded) */
-  document.addEventListener("DOMContentLoaded", function () {
-    // Common elements for schedule demo
-    const dateInput = document.getElementById("scheduled_date");
-    const dateError = document.getElementById("dateError");
-    const fullNameInput = document.getElementById("fullName");
-    const fullNameError = document.getElementById("fullNameError");
-    const scheduleEmail = document.getElementById("emailField");
-    const scheduleEmailError = document.getElementById("emailError");
-    const schedulePhone = document.getElementById("phoneNumber");
-    const schedulePhoneError = document.getElementById("phoneError");
-    const scheduleDemoForm = document.getElementById("scheduleDemoForm");
-    const scheduleSubmitBtn = document.getElementById("scheduleSubmitBtn");
-
-    // Demo error box (inserted before submit)
-    let demoErrorBox = document.getElementById("scheduleDemoErrorBox");
-    if (!demoErrorBox && scheduleSubmitBtn && scheduleSubmitBtn.parentNode) {
-      demoErrorBox = document.createElement("p");
-      demoErrorBox.id = "scheduleDemoErrorBox";
-      demoErrorBox.className = "text-red-600 text-sm mt-2 text-center hidden";
-      scheduleSubmitBtn.parentNode.insertBefore(demoErrorBox, scheduleSubmitBtn);
+    /* Utility: open/close Expert modal */
+    function openExpertForm(slug) {
+      const el = document.getElementById('serviceSlugInput');
+      if (el) el.value = slug;
+      const modal = document.getElementById('expertModal');
+      if (modal) modal.classList.remove('hidden');
+      setTimeout(() => {
+        const name = document.getElementById('expertName');
+        if (name) name.focus();
+      }, 120);
     }
 
-    /* DATE VALIDATIONS */
-    if (dateInput) {
-      function showDateError(text) {
-        dateError.textContent = text;
-        dateError.classList.remove("hidden");
-        dateInput.classList.add("border-red-500");
-      }
-      function hideDateError() {
-        dateError.textContent = "";
-        dateError.classList.add("hidden");
-        dateInput.classList.remove("border-red-500");
-      }
+    function closeExpertForm() {
+      const modal = document.getElementById('expertModal');
+      if (modal) modal.classList.add('hidden');
 
-      function sanitizeYear(value) {
-        if (!value) return "";
-        const match = value.match(/^(\d+)-(.*)$/);
-        if (match && match[1].length > 4) {
-          const year = match[1].slice(0, 4);
-          return year + "-" + match[2];
+      setTimeout(() => {
+        const form = document.getElementById('expertForm');
+        if (form) {
+          form.reset();
+          clearExpertErrors();
+          form.classList.remove('hidden');
         }
-        return value;
-      }
-
-      function validateDateValue(value) {
-        if (!value) {
-          showDateError("Please choose a date and time.");
-          return false;
-        }
-        const pattern = /^(\d{4})-\d{2}-\d{2}T\d{2}:\d{2}$/;
-        if (!pattern.test(value)) {
-          showDateError("Invalid format — use YYYY-MM-DD HH:MM.");
-          return false;
-        }
-        const year = value.slice(0,4);
-        if (!/^\d{4}$/.test(year)) {
-          showDateError("Year must contain exactly 4 digits (e.g., 2025).");
-          return false;
-        }
-        const selected = new Date(value);
-        const now = new Date();
-        if (selected <= now) {
-          showDateError("Please choose a future date and time.");
-          return false;
-        }
-        hideDateError();
-        return true;
-      }
-
-      dateInput.addEventListener("input", function () {
-        const cleaned = sanitizeYear(dateInput.value);
-        if (cleaned !== dateInput.value) dateInput.value = cleaned;
-        validateDateValue(dateInput.value);
-      });
-
-      dateInput.addEventListener("paste", function (e) {
-        e.preventDefault();
-        const pasted = (e.clipboardData || window.clipboardData).getData("text");
-        const cleaned = sanitizeYear(pasted);
-        dateInput.value = cleaned;
-        validateDateValue(dateInput.value);
-      });
-
-      window.validateDate = function () {
-        const cleaned = sanitizeYear(dateInput.value);
-        dateInput.value = cleaned;
-        return validateDateValue(dateInput.value);
-      };
+        const success = document.getElementById('expertSuccess');
+        if (success) success.classList.add('hidden');
+      }, 150);
     }
 
-    /* NAME VALIDATION (schedule) */
-    if (fullNameInput) {
-      fullNameInput.addEventListener("input", function () {
-        const v = fullNameInput.value;
-        if (v.startsWith(" ")) {
-          fullNameError.textContent = "Name cannot start with a space.";
-          fullNameError.classList.remove("hidden");
-          fullNameInput.classList.add("border-red-500");
-          return;
-        }
-        const namePattern = /^[A-Za-z]+(?:[ A-Za-z]+)*$/;
-        if (v.trim() === "") {
-          fullNameError.textContent = "Full Name is required.";
-          fullNameError.classList.remove("hidden");
-          fullNameInput.classList.add("border-red-500");
-        } else if (!namePattern.test(v)) {
-          fullNameError.textContent = "Use letters and spaces only (no numbers/symbols).";
-          fullNameError.classList.remove("hidden");
-          fullNameInput.classList.add("border-red-500");
-        } else {
-          fullNameError.textContent = "";
-          fullNameError.classList.add("hidden");
-          fullNameInput.classList.remove("border-red-500");
-        }
-      });
-    }
+    /* Schedule demo and Ask Expert handlers (single DOMContentLoaded) */
+    document.addEventListener("DOMContentLoaded", function () {
+      // Common elements for schedule demo
+      const dateInput = document.getElementById("scheduled_date");
+      const dateError = document.getElementById("dateError");
+      const fullNameInput = document.getElementById("fullName");
+      const fullNameError = document.getElementById("fullNameError");
+      const scheduleEmail = document.getElementById("emailField");
+      const scheduleEmailError = document.getElementById("emailError");
+      const schedulePhone = document.getElementById("phoneNumber");
+      const schedulePhoneError = document.getElementById("phoneError");
+      const scheduleDemoForm = document.getElementById("scheduleDemoForm");
+      const scheduleSubmitBtn = document.getElementById("scheduleSubmitBtn");
 
-    /* EMAIL VALIDATION (schedule) */
-    if (scheduleEmail) {
-      scheduleEmail.addEventListener("input", function () {
-        const v = scheduleEmail.value.trim();
-        const simple = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
-        if (v === "") {
-          scheduleEmailError.textContent = "Email is required.";
-          scheduleEmail.classList.add("border-red-500");
-        } else if (!v.includes("@")) {
-          scheduleEmailError.textContent = "Email must contain '@'.";
-          scheduleEmail.classList.add("border-red-500");
-        } else if (!simple.test(v)) {
-          scheduleEmailError.textContent = "Enter a valid email address (e.g. name@example.com).";
-          scheduleEmail.classList.add("border-red-500");
-        } else {
-          scheduleEmailError.textContent = "";
-          scheduleEmail.classList.remove("border-red-500");
+      // Demo error box (inserted before submit)
+      let demoErrorBox = document.getElementById("scheduleDemoErrorBox");
+      if (!demoErrorBox && scheduleSubmitBtn && scheduleSubmitBtn.parentNode) {
+        demoErrorBox = document.createElement("p");
+        demoErrorBox.id = "scheduleDemoErrorBox";
+        demoErrorBox.className = "text-red-600 text-sm mt-2 text-center hidden";
+        scheduleSubmitBtn.parentNode.insertBefore(demoErrorBox, scheduleSubmitBtn);
+      }
+
+      /* DATE VALIDATIONS */
+      if (dateInput) {
+        function showDateError(text) {
+          dateError.textContent = text;
+          dateError.classList.remove("hidden");
+          dateInput.classList.add("border-red-500");
         }
-      });
-    }
-
-    /* PHONE VALIDATION (schedule) */
-    if (schedulePhone) {
-      schedulePhone.addEventListener("input", function () {
-        schedulePhone.value = schedulePhone.value.replace(/\D/g, "");
-        const v = schedulePhone.value;
-        if (v === "") {
-          schedulePhoneError.textContent = "Phone number is required.";
-          schedulePhone.classList.add("border-red-500");
-        } else if (!/^\d+$/.test(v)) {
-          schedulePhoneError.textContent = "Only digits are allowed.";
-          schedulePhone.classList.add("border-red-500");
-        } else if (v.length !== 10) {
-          schedulePhoneError.textContent = "Enter exactly 10 digits.";
-          schedulePhone.classList.add("border-red-500");
-        } else {
-          schedulePhoneError.textContent = "";
-          schedulePhone.classList.remove("border-red-500");
-        }
-      });
-    }
-
-    /* Robust Schedule Demo AJAX submit (replace previous logic) */
-    if (scheduleDemoForm) {
-      scheduleDemoForm.addEventListener("submit", async function (e) {
-        e.preventDefault();
-
-        // Validate date again before sending
-        if (dateInput && !window.validateDate()) {
-          return;
+        function hideDateError() {
+          dateError.textContent = "";
+          dateError.classList.add("hidden");
+          dateInput.classList.remove("border-red-500");
         }
 
-        // clear previous field errors
-        const clearFieldErrors = () => {
-          const ids = ['fullNameError','emailError','phoneError','dateError'];
-          ids.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) { el.textContent = ''; el.classList.add('hidden'); }
-          });
-          // remove border-red from inputs
-          ['fullName','emailField','phoneNumber','scheduled_date'].forEach(id => {
-            const inp = document.getElementById(id);
-            if (inp) inp.classList.remove('border-red-500');
-          });
-          const serverErr = document.getElementById('schedule_server_error');
-          if (serverErr) { serverErr.classList.add('hidden'); serverErr.textContent = ''; }
+        function sanitizeYear(value) {
+          if (!value) return "";
+          const match = value.match(/^(\d+)-(.*)$/);
+          if (match && match[1].length > 4) {
+            const year = match[1].slice(0, 4);
+            return year + "-" + match[2];
+          }
+          return value;
+        }
+
+        function validateDateValue(value) {
+          if (!value) {
+            showDateError("Please choose a date and time.");
+            return false;
+          }
+          const pattern = /^(\d{4})-\d{2}-\d{2}T\d{2}:\d{2}$/;
+          if (!pattern.test(value)) {
+            showDateError("Invalid format — use YYYY-MM-DD HH:MM.");
+            return false;
+          }
+          const year = value.slice(0, 4);
+          if (!/^\d{4}$/.test(year)) {
+            showDateError("Year must contain exactly 4 digits (e.g., 2025).");
+            return false;
+          }
+          const selected = new Date(value);
+          const now = new Date();
+          if (selected <= now) {
+            showDateError("Please choose a future date and time.");
+            return false;
+          }
+          hideDateError();
+          return true;
+        }
+
+        dateInput.addEventListener("input", function () {
+          const cleaned = sanitizeYear(dateInput.value);
+          if (cleaned !== dateInput.value) dateInput.value = cleaned;
+          validateDateValue(dateInput.value);
+        });
+
+        dateInput.addEventListener("paste", function (e) {
+          e.preventDefault();
+          const pasted = (e.clipboardData || window.clipboardData).getData("text");
+          const cleaned = sanitizeYear(pasted);
+          dateInput.value = cleaned;
+          validateDateValue(dateInput.value);
+        });
+
+        window.validateDate = function () {
+          const cleaned = sanitizeYear(dateInput.value);
+          dateInput.value = cleaned;
+          return validateDateValue(dateInput.value);
         };
-        clearFieldErrors();
+      }
 
-        if (demoErrorBox) { demoErrorBox.classList.add("hidden"); demoErrorBox.textContent = ""; }
+      /* NAME VALIDATION (schedule) */
+      if (fullNameInput) {
+        fullNameInput.addEventListener("input", function () {
+          const v = fullNameInput.value;
+          if (v.startsWith(" ")) {
+            fullNameError.textContent = "Name cannot start with a space.";
+            fullNameError.classList.remove("hidden");
+            fullNameInput.classList.add("border-red-500");
+            return;
+          }
+          const namePattern = /^[A-Za-z]+(?:[ A-Za-z]+)*$/;
+          if (v.trim() === "") {
+            fullNameError.textContent = "Full Name is required.";
+            fullNameError.classList.remove("hidden");
+            fullNameInput.classList.add("border-red-500");
+          } else if (!namePattern.test(v)) {
+            fullNameError.textContent = "Use letters and spaces only (no numbers/symbols).";
+            fullNameError.classList.remove("hidden");
+            fullNameInput.classList.add("border-red-500");
+          } else {
+            fullNameError.textContent = "";
+            fullNameError.classList.add("hidden");
+            fullNameInput.classList.remove("border-red-500");
+          }
+        });
+      }
 
-        // Loader ON
-        const loader = document.getElementById("blur-loader");
-        if (loader) loader.classList.remove("hidden");
+      /* EMAIL VALIDATION (schedule) */
+      if (scheduleEmail) {
+        scheduleEmail.addEventListener("input", function () {
+          const v = scheduleEmail.value.trim();
+          const simple = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+          if (v === "") {
+            scheduleEmailError.textContent = "Email is required.";
+            scheduleEmail.classList.add("border-red-500");
+          } else if (!v.includes("@")) {
+            scheduleEmailError.textContent = "Email must contain '@'.";
+            scheduleEmail.classList.add("border-red-500");
+          } else if (!simple.test(v)) {
+            scheduleEmailError.textContent = "Enter a valid email address (e.g. name@example.com).";
+            scheduleEmail.classList.add("border-red-500");
+          } else {
+            scheduleEmailError.textContent = "";
+            scheduleEmail.classList.remove("border-red-500");
+          }
+        });
+      }
 
-        const btn = scheduleSubmitBtn || scheduleDemoForm.querySelector("button[type='submit']");
-        const originalBtnText = btn ? btn.textContent : "Submit";
-        if (btn) { btn.disabled = true; btn.textContent = "Submitting..."; }
+      /* PHONE VALIDATION (schedule) */
+      // Note: Duplicate Logic removed from here to prevent conflicts with the 
+      // dedicated validation script below (around line 1113). 
+      // The script below handles UI state and error messages more comprehensively.
 
-        try {
-          const response = await fetch(scheduleDemoForm.action, {
-            method: "POST",
-            body: new FormData(scheduleDemoForm),
-            headers: { "X-Requested-With": "XMLHttpRequest" }
-          });
+      /* Robust Schedule Demo AJAX submit (replace previous logic) */
+      if (scheduleDemoForm) {
+        scheduleDemoForm.addEventListener("submit", async function (e) {
+          e.preventDefault();
 
-          // Try parse json, fallback to text (HTML)
-          let data = null;
-          let text = null;
-          try {
-            data = await response.json();
-          } catch (err) {
-            try { text = await response.text(); } catch (err2) { text = null; }
+          // Validate date again before sending
+          if (dateInput && !window.validateDate()) {
+            return;
           }
 
-          console.log("Schedule demo response:", { status: response.status, ok: response.ok, data, text });
+          // clear previous field errors
+          const clearFieldErrors = () => {
+            const ids = ['fullNameError', 'emailError', 'phoneError', 'dateError'];
+            ids.forEach(id => {
+              const el = document.getElementById(id);
+              if (el) { el.textContent = ''; el.classList.add('hidden'); }
+            });
+            // remove border-red from inputs
+            ['fullName', 'emailField', 'phoneNumber', 'scheduled_date'].forEach(id => {
+              const inp = document.getElementById(id);
+              if (inp) inp.classList.remove('border-red-500');
+            });
+            const serverErr = document.getElementById('schedule_server_error');
+            if (serverErr) { serverErr.classList.add('hidden'); serverErr.textContent = ''; }
+          };
+          clearFieldErrors();
 
-          if (response.ok && data && (data.success === true || data.success == "true")) {
+          if (demoErrorBox) { demoErrorBox.classList.add("hidden"); demoErrorBox.textContent = ""; }
 
-    // Hide form
-    scheduleDemoForm.classList.add("hidden");
+          // Loader ON
+          const loader = document.getElementById("blur-loader");
+          if (loader) loader.classList.remove("hidden");
 
-    // Show success box
-    const box = document.getElementById("scheduleSuccess");
-    if (box) {
-        box.classList.remove("hidden");
+          const btn = scheduleSubmitBtn || scheduleDemoForm.querySelector("button[type='submit']");
+          const originalBtnText = btn ? btn.textContent : "Submit";
+          if (btn) { btn.disabled = true; btn.textContent = "Submitting..."; }
 
-        // Put server message if present
-        if (data.message) {
-            box.querySelector("p").textContent = data.message;
-        }
-    }
+          try {
+            const response = await fetch(scheduleDemoForm.action, {
+              method: "POST",
+              body: new FormData(scheduleDemoForm),
+              headers: { "X-Requested-With": "XMLHttpRequest" }
+            });
 
-    if (btn) btn.style.display = "none";
-}else {
-            // If server returned field errors in JSON, map them to spans
-            if (data && data.form_errors) {
-              // form_errors from Django get_json_data is { field: [{message, code}, ...], ... }
-              const errs = data.form_errors;
-              // Helper to set error text & mark input red
-              const setFieldError = (fieldName, message) => {
-                const map = {
-                  'name': 'fullNameError',
-                  'email': 'emailError',
-                  'phone': 'phoneError',
-                  'scheduled_date': 'dateError',
-                  'company': null,
-                  'message': null
+            // Try parse json, fallback to text (HTML)
+            let data = null;
+            let text = null;
+            try {
+              data = await response.json();
+            } catch (err) {
+              try { text = await response.text(); } catch (err2) { text = null; }
+            }
+
+            console.log("Schedule demo response:", { status: response.status, ok: response.ok, data, text });
+
+            if (response.ok && data && (data.success === true || data.success == "true")) {
+
+              // Hide form
+              scheduleDemoForm.classList.add("hidden");
+
+              // Show success box
+              const box = document.getElementById("scheduleSuccess");
+              if (box) {
+                box.classList.remove("hidden");
+
+                // Put server message if present
+                if (data.message) {
+                  box.querySelector("p").textContent = data.message;
+                }
+              }
+
+              if (btn) btn.style.display = "none";
+            } else {
+              // If server returned field errors in JSON, map them to spans
+              if (data && data.form_errors) {
+                // form_errors from Django get_json_data is { field: [{message, code}, ...], ... }
+                const errs = data.form_errors;
+                // Helper to set error text & mark input red
+                const setFieldError = (fieldName, message) => {
+                  const map = {
+                    'name': 'fullNameError',
+                    'email': 'emailError',
+                    'phone': 'phoneError',
+                    'scheduled_date': 'dateError',
+                    'company': null,
+                    'message': null
+                  };
+                  const spanId = map[fieldName];
+                  if (spanId) {
+                    const el = document.getElementById(spanId);
+                    if (el) {
+                      el.textContent = message;
+                      el.classList.remove('hidden');
+                    }
+                  }
+                  // add border-red to input if exists
+                  const inputMap = {
+                    'name': 'fullName',
+                    'email': 'emailField',
+                    'phone': 'phoneNumber',
+                    'scheduled_date': 'scheduled_date'
+                  };
+                  const inpId = inputMap[fieldName];
+                  if (inpId) {
+                    const inp = document.getElementById(inpId);
+                    if (inp) inp.classList.add('border-red-500');
+                  }
                 };
-                const spanId = map[fieldName];
-                if (spanId) {
-                  const el = document.getElementById(spanId);
-                  if (el) {
-                    el.textContent = message;
-                    el.classList.remove('hidden');
+
+                Object.keys(errs).forEach(field => {
+                  try {
+                    const arr = errs[field];
+                    if (Array.isArray(arr) && arr.length) {
+                      const msg = arr.map(it => it.message).join(" ");
+                      setFieldError(field, msg);
+                    } else {
+                      setFieldError(field, String(errs[field]));
+                    }
+                  } catch (setErr) {
+                    console.warn("Error mapping form error:", setErr);
+                  }
+                });
+
+                // Show aggregated message if provided
+                if (data.error || data.message) {
+                  if (demoErrorBox) {
+                    demoErrorBox.textContent = "⚠ " + (data.error || data.message);
+                    demoErrorBox.classList.remove("hidden");
                   }
                 }
-                // add border-red to input if exists
-                const inputMap = {
-                  'name': 'fullName',
-                  'email': 'emailField',
-                  'phone': 'phoneNumber',
-                  'scheduled_date': 'scheduled_date'
-                };
-                const inpId = inputMap[fieldName];
-                if (inpId) {
-                  const inp = document.getElementById(inpId);
-                  if (inp) inp.classList.add('border-red-500');
+              } else if (data && (data.error || data.message)) {
+                // JSON with a general error
+                const msg = data.error || data.message;
+                const serverErr = document.getElementById('schedule_server_error');
+                if (serverErr) {
+                  serverErr.textContent = msg;
+                  serverErr.classList.remove('hidden');
+                } else if (demoErrorBox) {
+                  demoErrorBox.textContent = "⚠ " + msg;
+                  demoErrorBox.classList.remove("hidden");
                 }
-              };
-
-              Object.keys(errs).forEach(field => {
-                try {
-                  const arr = errs[field];
-                  if (Array.isArray(arr) && arr.length) {
-                    const msg = arr.map(it => it.message).join(" ");
-                    setFieldError(field, msg);
-                  } else {
-                    setFieldError(field, String(errs[field]));
-                  }
-                } catch (setErr) {
-                  console.warn("Error mapping form error:", setErr);
-                }
-              });
-
-              // Show aggregated message if provided
-              if (data.error || data.message) {
+              } else if (!response.ok) {
+                // Non-2xx status
                 if (demoErrorBox) {
-                  demoErrorBox.textContent = "⚠ " + (data.error || data.message);
+                  demoErrorBox.textContent = "⚠ Server error: " + response.status + ". Please try again.";
+                  demoErrorBox.classList.remove("hidden");
+                }
+              } else if (text && /success|thank you|scheduled/i.test(text)) {
+                // Server returned an HTML page that looks like success -> treat as success
+                scheduleDemoForm.classList.add("hidden");
+                const successBox = document.getElementById("schedule_success");
+                if (successBox) {
+                  successBox.textContent = "🎉 Your demo is scheduled successfully!";
+                  successBox.classList.remove("hidden");
+                }
+                if (btn) btn.style.display = "none";
+              } else {
+                // Generic fallback
+                if (demoErrorBox) {
+                  demoErrorBox.textContent = "⚠ Something went wrong. Check console/network for details.";
                   demoErrorBox.classList.remove("hidden");
                 }
               }
-            } else if (data && (data.error || data.message)) {
-              // JSON with a general error
-              const msg = data.error || data.message;
-              const serverErr = document.getElementById('schedule_server_error');
-              if (serverErr) {
-                serverErr.textContent = msg;
-                serverErr.classList.remove('hidden');
-              } else if (demoErrorBox) {
-                demoErrorBox.textContent = "⚠ " + msg;
-                demoErrorBox.classList.remove("hidden");
-              }
-            } else if (!response.ok) {
-              // Non-2xx status
-              if (demoErrorBox) {
-                demoErrorBox.textContent = "⚠ Server error: " + response.status + ". Please try again.";
-                demoErrorBox.classList.remove("hidden");
-              }
-            } else if (text && /success|thank you|scheduled/i.test(text)) {
-              // Server returned an HTML page that looks like success -> treat as success
-              scheduleDemoForm.classList.add("hidden");
-              const successBox = document.getElementById("schedule_success");
-              if (successBox) {
-                successBox.textContent = "🎉 Your demo is scheduled successfully!";
-                successBox.classList.remove("hidden");
-              }
-              if (btn) btn.style.display = "none";
-            } else {
-              // Generic fallback
-              if (demoErrorBox) {
-                demoErrorBox.textContent = "⚠ Something went wrong. Check console/network for details.";
-                demoErrorBox.classList.remove("hidden");
-              }
             }
+          } catch (err) {
+            console.error("AJAX schedule error:", err);
+            if (demoErrorBox) {
+              demoErrorBox.textContent = "⚠ Network error. Please try again.";
+              demoErrorBox.classList.remove("hidden");
+            }
+          } finally {
+            setTimeout(() => { const loaderEl = document.getElementById("blur-loader"); if (loaderEl) loaderEl.classList.add("hidden"); }, 300);
+            if (btn) { btn.disabled = false; btn.textContent = originalBtnText; }
           }
-        } catch (err) {
-          console.error("AJAX schedule error:", err);
-          if (demoErrorBox) {
-            demoErrorBox.textContent = "⚠ Network error. Please try again.";
-            demoErrorBox.classList.remove("hidden");
-          }
-        } finally {
-          setTimeout(() => { const loaderEl = document.getElementById("blur-loader"); if (loaderEl) loaderEl.classList.add("hidden"); }, 300);
-          if (btn) { btn.disabled = false; btn.textContent = originalBtnText; }
-        }
-      });
-    }
+        });
+      }
 
-    /* ---------------------------
-       Ask Expert: validations & submit
-       --------------------------- */
-    const expertName = document.getElementById('expertName');
-    const expertEmail = document.getElementById('expertEmail');
-    const expertPhone = document.getElementById('expertPhone');
-    const expertMessage = document.getElementById('expertMessage');
-    const expertForm = document.getElementById('expertForm');
-    const submitBtn = document.getElementById('expertSubmitBtn');
+      /* ---------------------------
+          Ask Expert: validations & submit
+          --------------------------- */
+      const expertName = document.getElementById('expertName');
+      const expertEmail = document.getElementById('expertEmail');
+      const expertPhone = document.getElementById('expertPhone');
+      const expertMessage = document.getElementById('expertMessage');
+      const expertForm = document.getElementById('expertForm');
+      const submitBtn = document.getElementById('expertSubmitBtn');
 
-    function clearExpertErrors() {
-      const ids = ['expert_name_error','expert_email_error','expert_phone_error','expert_message_error'];
-      ids.forEach(id => {
+      function clearExpertErrors() {
+        const ids = ['expert_name_error', 'expert_email_error', 'expert_phone_error', 'expert_message_error'];
+        ids.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) { el.textContent = ''; el.classList.add('hidden'); }
+        });
+        ['expertName', 'expertEmail', 'expertPhone', 'expertMessage'].forEach(id => {
+          const inp = document.getElementById(id);
+          if (inp) inp.classList.remove('border-red-500');
+        });
+      }
+
+      function setError(id, text) {
         const el = document.getElementById(id);
-        if (el) { el.textContent = ''; el.classList.add('hidden'); }
-      });
-      ['expertName','expertEmail','expertPhone','expertMessage'].forEach(id => {
-        const inp = document.getElementById(id);
-        if (inp) inp.classList.remove('border-red-500');
-      });
-    }
-
-    function setError(id, text) {
-      const el = document.getElementById(id);
-      if (el) {
-        el.textContent = text;
-        el.classList.remove('hidden');
-      }
-    }
-
-    function validateExpertFormFields() {
-      let valid = true;
-
-      // Name
-      const nameInput = document.getElementById('expertName');
-      const nameVal = nameInput ? nameInput.value : '';
-      if (!nameVal.trim()) {
-        setError('expert_name_error', 'Full Name is required.');
-        if (nameInput) nameInput.classList.add('border-red-500');
-        valid = false;
-      } else if (nameVal.startsWith(' ')) {
-        setError('expert_name_error', 'Name cannot start with a space.');
-        if (nameInput) nameInput.classList.add('border-red-500');
-        valid = false;
-      } else if (!/^[A-Za-z]+(?:[ A-Za-z]+)*$/.test(nameVal)) {
-        setError('expert_name_error', 'Use letters and spaces only (no numbers or symbols).');
-        if (nameInput) nameInput.classList.add('border-red-500');
-        valid = false;
-      } else {
-        const el = document.getElementById('expert_name_error'); if (el) { el.textContent=''; el.classList.add('hidden'); }
-        if (nameInput) nameInput.classList.remove('border-red-500');
-      }
-
-      // Email
-      const emailInput = document.getElementById('expertEmail');
-      const emailVal = emailInput ? emailInput.value.trim() : '';
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
-      if (!emailVal) {
-        setError('expert_email_error', 'Email is required.');
-        if (emailInput) emailInput.classList.add('border-red-500');
-        valid = false;
-      } else if (!emailRegex.test(emailVal)) {
-        setError('expert_email_error', 'Enter a valid email address.');
-        if (emailInput) emailInput.classList.add('border-red-500');
-        valid = false;
-      } else {
-        const el = document.getElementById('expert_email_error'); if (el) { el.textContent=''; el.classList.add('hidden'); }
-        if (emailInput) emailInput.classList.remove('border-red-500');
-      }
-
-      // Phone (optional)
-      const phoneInput = document.getElementById('expertPhone');
-      const phoneVal = phoneInput ? phoneInput.value.trim() : '';
-      if (phoneVal) {
-        if (!/^\d+$/.test(phoneVal)) {
-          setError('expert_phone_error', 'Phone must contain digits only.');
-          if (phoneInput) phoneInput.classList.add('border-red-500');
-          valid = false;
-        } else if (phoneVal.length !== 10) {
-          setError('expert_phone_error', 'Enter exactly 10 digits.');
-          if (phoneInput) phoneInput.classList.add('border-red-500');
-          valid = false;
-        } else {
-          const el = document.getElementById('expert_phone_error'); if (el) { el.textContent=''; el.classList.add('hidden'); }
-          if (phoneInput) phoneInput.classList.remove('border-red-500');
+        if (el) {
+          el.textContent = text;
+          el.classList.remove('hidden');
         }
-      } else {
-        const el = document.getElementById('expert_phone_error'); if (el) { el.textContent=''; el.classList.add('hidden'); }
-        if (phoneInput) phoneInput.classList.remove('border-red-500');
       }
 
-      // Message
-      const msgInput = document.getElementById('expertMessage');
-      const msgVal = msgInput ? msgInput.value.trim() : '';
-      if (!msgVal) {
-        setError('expert_message_error', 'Please enter your question or message.');
-        if (msgInput) msgInput.classList.add('border-red-500');
-        valid = false;
-      } else {
-        const el = document.getElementById('expert_message_error'); if (el) { el.textContent=''; el.classList.add('hidden'); }
-        if (msgInput) msgInput.classList.remove('border-red-500');
-      }
+      function validateExpertFormFields() {
+        let valid = true;
 
-      return valid;
-    }
-
-    // Live listeners for Expert fields
-    if (expertName) {
-      expertName.addEventListener('input', function () {
-        const cleaned = expertName.value.replace(/[^A-Za-z\s]/g, '');
-        if (cleaned !== expertName.value) expertName.value = cleaned;
-        clearExpertErrors();
-        if (expertName.value.startsWith(' ')) {
+        // Name
+        const nameInput = document.getElementById('expertName');
+        const nameVal = nameInput ? nameInput.value : '';
+        if (!nameVal.trim()) {
+          setError('expert_name_error', 'Full Name is required.');
+          if (nameInput) nameInput.classList.add('border-red-500');
+          valid = false;
+        } else if (nameVal.startsWith(' ')) {
           setError('expert_name_error', 'Name cannot start with a space.');
-          expertName.classList.add('border-red-500');
-        } else if (!/^[A-Za-z]+(?:[ A-Za-z]+)*$/.test(expertName.value) && expertName.value.trim() !== '') {
+          if (nameInput) nameInput.classList.add('border-red-500');
+          valid = false;
+        } else if (!/^[A-Za-z]+(?:[ A-Za-z]+)*$/.test(nameVal)) {
           setError('expert_name_error', 'Use letters and spaces only (no numbers or symbols).');
-          expertName.classList.add('border-red-500');
+          if (nameInput) nameInput.classList.add('border-red-500');
+          valid = false;
         } else {
-          const el = document.getElementById('expert_name_error'); if (el) { el.textContent=''; el.classList.add('hidden'); }
-          expertName.classList.remove('border-red-500');
+          const el = document.getElementById('expert_name_error'); if (el) { el.textContent = ''; el.classList.add('hidden'); }
+          if (nameInput) nameInput.classList.remove('border-red-500');
         }
-      });
-    }
 
-    if (expertEmail) {
-      expertEmail.addEventListener('input', function () {
-        expertEmail.value = expertEmail.value.trim();
+        // Email
+        const emailInput = document.getElementById('expertEmail');
+        const emailVal = emailInput ? emailInput.value.trim() : '';
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
-        if (!emailRegex.test(expertEmail.value)) {
+        if (!emailVal) {
+          setError('expert_email_error', 'Email is required.');
+          if (emailInput) emailInput.classList.add('border-red-500');
+          valid = false;
+        } else if (!emailRegex.test(emailVal)) {
           setError('expert_email_error', 'Enter a valid email address.');
-          expertEmail.classList.add('border-red-500');
+          if (emailInput) emailInput.classList.add('border-red-500');
+          valid = false;
         } else {
-          const el = document.getElementById('expert_email_error'); if (el) { el.textContent=''; el.classList.add('hidden'); }
-          expertEmail.classList.remove('border-red-500');
-        }
-      });
-    }
-
-    if (expertPhone) {
-      expertPhone.addEventListener('input', function () {
-        const cleaned = expertPhone.value.replace(/\D/g, '').slice(0, 10);
-        if (cleaned !== expertPhone.value) expertPhone.value = cleaned;
-        if (expertPhone.value && !/^\d{10}$/.test(expertPhone.value)) {
-          setError('expert_phone_error', 'Enter exactly 10 digits.');
-          expertPhone.classList.add('border-red-500');
-        } else {
-          const el = document.getElementById('expert_phone_error'); if (el) { el.textContent=''; el.classList.add('hidden'); }
-          expertPhone.classList.remove('border-red-500');
-        }
-      });
-
-      expertPhone.addEventListener('paste', function (e) {
-        const paste = (e.clipboardData || window.clipboardData).getData('text');
-        if (!/^\d+$/.test(paste)) {
-          e.preventDefault();
-        }
-      });
-    }
-
-    if (expertMessage) {
-      expertMessage.addEventListener('input', function () {
-        if (expertMessage.value.trim() === '') {
-          setError('expert_message_error', 'Please enter your question or message.');
-          expertMessage.classList.add('border-red-500');
-        } else {
-          const el = document.getElementById('expert_message_error'); if (el) { el.textContent=''; el.classList.add('hidden'); }
-          expertMessage.classList.remove('border-red-500');
-        }
-      });
-    }
-
-    // Expert form submit (AJAX)
-    if (expertForm) {
-      expertForm.addEventListener('submit', async function (e) {
-        e.preventDefault();
-        clearExpertErrors();
-
-        const ok = validateExpertFormFields();
-        if (!ok) {
-          const firstInvalid = document.querySelector('.border-red-500');
-          if (firstInvalid) {
-            firstInvalid.focus();
-            firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-          return false;
+          const el = document.getElementById('expert_email_error'); if (el) { el.textContent = ''; el.classList.add('hidden'); }
+          if (emailInput) emailInput.classList.remove('border-red-500');
         }
 
-        if (submitBtn) {
-          submitBtn.disabled = true;
-          submitBtn.textContent = 'Submitting...';
-        }
-        // show loader
-        const loader = document.getElementById("blur-loader");
-        if (loader) loader.classList.remove("hidden");
+        // Phone (optional)
+        const phoneInput = document.getElementById('expertPhone');
+        const phoneVal = phoneInput ? phoneInput.value.trim() : '';
 
-        try {
-          const response = await fetch(expertForm.action, {
-            method: 'POST',
-            body: new FormData(expertForm),
-            headers: {
-              'X-Requested-With': 'XMLHttpRequest'
-            }
-          });
+        if (phoneVal) {
+          if (!/^\d+$/.test(phoneVal)) {
+            setError('expert_phone_error', 'Phone must contain digits only.');
+            phoneInput.classList.add('border-red-500');
+            valid = false;
 
-          if (response.ok) {
-            expertForm.classList.add('hidden');
-            const success = document.getElementById('expertSuccess');
-            if (success) success.classList.remove('hidden');
+          } else if (phoneVal.length < 8 || phoneVal.length > 12) {
+            setError('expert_phone_error', 'Phone number must be 8 to 12 digits.');
+            phoneInput.classList.add('border-red-500');
+            valid = false;
+
           } else {
-            try {
-              const data = await response.json();
-              const msg = data.detail || data.message || 'Something went wrong. Please try again.';
-              alert('⚠ ' + msg);
-            } catch (err) {
-              alert('⚠ Something went wrong. Please try again.');
-            }
+            const el = document.getElementById('expert_phone_error');
+            if (el) { el.textContent = ''; el.classList.add('hidden'); }
+            phoneInput.classList.remove('border-red-500');
           }
-        } catch (err) {
-          console.error(err);
-          alert('⚠ Network error. Please try again later.');
-        } finally {
-          if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Submit';
-          }
-          setTimeout(() => { if (loader) loader.classList.add("hidden"); }, 300);
+        } else {
+          const el = document.getElementById('expert_phone_error');
+          if (el) { el.textContent = ''; el.classList.add('hidden'); }
+          phoneInput.classList.remove('border-red-500');
         }
 
-        return false;
-      }, false);
-    }
+        // Message
+        const msgInput = document.getElementById('expertMessage');
+        const msgVal = msgInput ? msgInput.value.trim() : '';
+        if (!msgVal) {
+          setError('expert_message_error', 'Please enter your question or message.');
+          if (msgInput) msgInput.classList.add('border-red-500');
+          valid = false;
+        } else {
+          const el = document.getElementById('expert_message_error'); if (el) { el.textContent = ''; el.classList.add('hidden'); }
+          if (msgInput) msgInput.classList.remove('border-red-500');
+        }
 
-  }); // end DOMContentLoaded
+        return valid;
+      }
 
-  // Show loader when DOM starts and hide when window load fires
-  document.addEventListener("DOMContentLoaded", () => {
+      // Live listeners for Expert fields
+      if (expertName) {
+        expertName.addEventListener('input', function () {
+          const cleaned = expertName.value.replace(/[^A-Za-z\s]/g, '');
+          if (cleaned !== expertName.value) expertName.value = cleaned;
+          clearExpertErrors();
+          if (expertName.value.startsWith(' ')) {
+            setError('expert_name_error', 'Name cannot start with a space.');
+            expertName.classList.add('border-red-500');
+          } else if (!/^[A-Za-z]+(?:[ A-Za-z]+)*$/.test(expertName.value) && expertName.value.trim() !== '') {
+            setError('expert_name_error', 'Use letters and spaces only (no numbers or symbols).');
+            expertName.classList.add('border-red-500');
+          } else {
+            const el = document.getElementById('expert_name_error'); if (el) { el.textContent = ''; el.classList.add('hidden'); }
+            expertName.classList.remove('border-red-500');
+          }
+        });
+      }
+
+      if (expertEmail) {
+        expertEmail.addEventListener('input', function () {
+          expertEmail.value = expertEmail.value.trim();
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+          if (!emailRegex.test(expertEmail.value)) {
+            setError('expert_email_error', 'Enter a valid email address.');
+            expertEmail.classList.add('border-red-500');
+          } else {
+            const el = document.getElementById('expert_email_error'); if (el) { el.textContent = ''; el.classList.add('hidden'); }
+            expertEmail.classList.remove('border-red-500');
+          }
+        });
+      }
+
+      if (expertPhone) {
+        expertPhone.addEventListener('input', function () {
+
+          // Allow only digits + limit to 12 digits
+          const cleaned = expertPhone.value.replace(/\D/g, '').slice(0, 10);
+          if (cleaned !== expertPhone.value) expertPhone.value = cleaned;
+
+          // Validation: must be 8–12 digits
+          if (expertPhone.value && (expertPhone.value.length < 10 || expertPhone.value.length > 10)) {
+            setError('expert_phone_error', 'Phone number must be 8 to 10 digits.');
+            expertPhone.classList.add('border-red-500');
+          } else {
+            const el = document.getElementById('expert_phone_error');
+            if (el) { el.textContent = ''; el.classList.add('hidden'); }
+            expertPhone.classList.remove('border-red-500');
+          }
+        });
+
+        expertPhone.addEventListener('paste', function (e) {
+          const paste = (e.clipboardData || window.clipboardData).getData('text');
+          if (!/^\d+$/.test(paste)) {
+            e.preventDefault();
+          }
+        });
+      }
+
+
+      if (expertMessage) {
+        expertMessage.addEventListener('input', function () {
+          if (expertMessage.value.trim() === '') {
+            setError('expert_message_error', 'Please enter your question or message.');
+            expertMessage.classList.add('border-red-500');
+          } else {
+            const el = document.getElementById('expert_message_error'); if (el) { el.textContent = ''; el.classList.add('hidden'); }
+            expertMessage.classList.remove('border-red-500');
+          }
+        });
+      }
+
+      // Expert form submit (AJAX)
+      if (expertForm) {
+        expertForm.addEventListener('submit', async function (e) {
+          e.preventDefault();
+          clearExpertErrors();
+
+          const ok = validateExpertFormFields();
+          if (!ok) {
+            const firstInvalid = document.querySelector('.border-red-500');
+            if (firstInvalid) {
+              firstInvalid.focus();
+              firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            return false;
+          }
+
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+          }
+          // show loader
+          const loader = document.getElementById("blur-loader");
+          if (loader) loader.classList.remove("hidden");
+
+          try {
+            const response = await fetch(expertForm.action, {
+              method: 'POST',
+              body: new FormData(expertForm),
+              headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+              }
+            });
+
+            if (response.ok) {
+              expertForm.classList.add('hidden');
+              const success = document.getElementById('expertSuccess');
+              if (success) success.classList.remove('hidden');
+            } else {
+              try {
+                const data = await response.json();
+                const msg = data.detail || data.message || 'Something went wrong. Please try again.';
+                alert('⚠ ' + msg);
+              } catch (err) {
+                alert('⚠ Something went wrong. Please try again.');
+              }
+            }
+          } catch (err) {
+            console.error(err);
+            alert('⚠ Network error. Please try again later.');
+          } finally {
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Submit';
+            }
+
+            setTimeout(() => { if (loader) loader.classList.add("hidden"); }, 300);
+          }
+
+          return false;
+        }, false);
+      }
+
+    }); // end DOMContentLoaded
+
+    // Show loader when DOM starts and hide when window load fires
+    document.addEventListener("DOMContentLoaded", () => {
       const blur = document.getElementById("blur-loader");
       if (blur) blur.classList.remove("hidden");
-  });
+    });
 
-  window.addEventListener("load", () => {
+    window.addEventListener("load", () => {
       const blur = document.getElementById("blur-loader");
       if (blur) blur.classList.add("hidden");
-  });
+    });
 
-  // Utility: set demo service into the company field
-  function setDemoService(serviceName) {
+    // Utility: set demo service into the company field
+    function setDemoService(serviceName) {
       const companyInput = document.querySelector("input[name='company']");
       if (companyInput) {
-          companyInput.value = serviceName;
+        companyInput.value = serviceName;
       }
-  }
+    }
   </script>
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const successMessages = document.querySelectorAll(".bg-green-100, .text-green-800, .success-message");
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const successMessages = document.querySelectorAll(".bg-green-100, .text-green-800, .success-message");
 
-    if (successMessages.length > 0) {
-        setTimeout(() => {
-            successMessages.forEach(msg => {
-                msg.style.transition = "opacity 0.6s ease";
-                msg.style.opacity = "0";
+     
 
-                setTimeout(() => msg.remove(), 600);
-            });
-        }, 4000); // auto-close after 4 seconds
-    }
+      function closeDemoModal() {
+        const modal = document.querySelector('[x-data] [x-show]');
+        const scheduleModal = document.getElementById("scheduleSuccess").closest(".fixed");
 
-    function closeDemoModal() {
-    const modal = document.querySelector('[x-data] [x-show]');
-    const scheduleModal = document.getElementById("scheduleSuccess").closest(".fixed");
+        if (scheduleModal) scheduleModal.classList.add("hidden");
 
-    if (scheduleModal) scheduleModal.classList.add("hidden");
+        const form = document.getElementById("scheduleDemoForm");
+        if (form) form.reset();
 
-    const form = document.getElementById("scheduleDemoForm");
-    if (form) form.reset();
+        document.getElementById("scheduleSuccess").classList.remove("hidden");
+      }
 
-    document.getElementById("scheduleSuccess").classList.remove("hidden");
-}
+      // Debug helper: log presence of form & success box
+      const form = document.getElementById('scheduleDemoForm');
+      const successBox = document.getElementById('schedule_success');
+      console.log("Schedule form present:", !!form, "Form classes:", form ? form.className : null);
+      console.log("Success box present and classes:", !!successBox, successBox ? successBox.className : null);
+    });
+  </script>
 
-    // Debug helper: log presence of form & success box
-    const form = document.getElementById('scheduleDemoForm');
-    const successBox = document.getElementById('schedule_success');
-    console.log("Schedule form present:", !!form, "Form classes:", form ? form.className : null);
-    console.log("Success box present and classes:", !!successBox, successBox ? successBox.className : null);
-});
-</script>
+
 
   <!-- ============================
        Additional styles (end of file)
        ============================ -->
   <style>
     /* small visual niceties duplicated near the end for clarity */
-    @keyframes fade-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-    .animate-fade-in { animation: fade-in 0.25s ease-out forwards; }
-    @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-4px);} 75%{transform:translateX(4px);} }
-    .border-red-500 { animation: shake 0.12s ease-in-out; }
-    input.border-red-500, textarea.border-red-500 {
+    @keyframes fade-in {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .animate-fade-in {
+      animation: fade-in 0.25s ease-out forwards;
+    }
+
+    @keyframes shake {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      25% {
+        transform: translateX(-4px);
+      }
+
+      75% {
+        transform: translateX(4px);
+      }
+    }
+
+    .border-red-500 {
+      animation: shake 0.12s ease-in-out;
+    }
+
+    input.border-red-500,
+    textarea.border-red-500 {
       border-color: #f87171 !important;
-      box-shadow: 0 0 0 3px rgba(248,113,113,0.06);
+      box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.06);
     }
   </style>
 
+  <script>
+    (function () {
+      const textarea = document.getElementById("expertMessage");
+      const error = document.getElementById("expert_message_error");
+      const counter = document.getElementById("expert_message_counter");
+      const MAX = 300;
+
+      function updateMessageValidation() {
+        let val = textarea.value;
+
+        // Enforce max length on paste
+        if (val.length > MAX) {
+          val = val.substring(0, MAX);
+          textarea.value = val;
+        }
+
+        counter.textContent = `${val.length}/${MAX}`;
+
+        // Show error when limit exceeded (rare because maxlength blocks typing)
+        if (val.length >= MAX) {
+          error.textContent = "Maximum 300 characters allowed.";
+          error.classList.remove("hidden");
+          textarea.classList.add("border-red-500");
+        } else {
+          error.classList.add("hidden");
+          textarea.classList.remove("border-red-500");
+        }
+      }
+
+      textarea.addEventListener("input", updateMessageValidation);
+      textarea.addEventListener("keyup", updateMessageValidation);
+    })();
+  </script>
+  <script>
+    function showScheduleSuccess() {
+      const box = document.getElementById("scheduleSuccess");
+      if (box) {
+        box.classList.remove("hidden");   // show popup
+      }
+    }
+  </script>
+  <script>
+    const msgField = document.getElementById("msgField");
+    const msgError = document.getElementById("msgError");
+    const msgCount = document.getElementById("msgCount");
+
+    msgField.addEventListener("input", function () {
+
+      // update live character counter
+      msgCount.textContent = `${msgField.value.length} / 300`;
+
+      // validation
+      if (msgField.value.trim() === "") {
+        msgError.textContent = "Message is required.";
+        msgError.classList.remove("hidden");
+        msgField.classList.add("border-red-500");
+      } else {
+        msgError.classList.add("hidden");
+        msgField.classList.remove("border-red-500");
+      }
+    });
+
+    // Stop form submit if message empty
+    document.querySelector("form").addEventListener("submit", function (e) {
+      if (msgField.value.trim() === "") {
+        msgError.textContent = "Message is required.";
+        msgError.classList.remove("hidden");
+        msgField.classList.add("border-red-500");
+        msgField.focus();
+        e.preventDefault();
+      }
+    });
+
+
+
+
+    //   </script>
+
+
+
+  <script>
+
+    // NAME VALIDATION
+    const fullName = document.getElementById("fullName");
+    const fullNameError = document.getElementById("fullNameError");
+
+    if (fullName) {
+      fullName.addEventListener("input", function () {
+        fullName.value = fullName.value.replace(/[0-9]/g, "");
+        const v = fullName.value.trim();
+
+        if (v === "") {
+          fullNameError.textContent = "Name is required.";
+          fullName.classList.add("border-red-500");
+        } else if (!/^[A-Za-z ]+$/.test(v)) {
+          fullNameError.textContent = "Only letters are allowed.";
+          fullName.classList.add("border-red-500");
+        } else {
+          fullNameError.textContent = "";
+          fullName.classList.remove("border-red-500");
+        }
+      });
+    }
+
+
+    // PHONE VALIDATION
+    const phoneNumber = document.getElementById("phoneNumber");
+    const phoneError = document.getElementById("phoneError");
+
+    if (phoneNumber) {
+      phoneNumber.addEventListener("input", function () {
+
+        phoneNumber.value = phoneNumber.value.replace(/\D/g, "");
+        const v = phoneNumber.value;
+
+        if (v === "") {
+          phoneError.textContent = "Phone number is required.";
+          phoneNumber.classList.add("border-red-500");
+        } else if (v.length < 10) {
+          phoneError.textContent = "Phone number must be 10 digits.";
+          phoneNumber.classList.add("border-red-500");
+        } else if (v.length > 10) {
+          phoneNumber.value = v.slice(0, 10);
+          phoneError.textContent = "";
+          phoneNumber.classList.remove("border-red-500");
+        } else {
+          phoneError.textContent = "";
+          phoneNumber.classList.remove("border-red-500");
+        }
+      });
+    }
+
+
+    // ✅ FIXED — FORM SUBMIT VALIDATION (must be AFTER phoneNumber is defined!)
+    document.getElementById("scheduleDemoForm").addEventListener("submit", function (e) {
+      const v = phoneNumber.value;
+
+      if (v.length !== 10) {
+        e.preventDefault();
+        phoneError.textContent = "Phone number must be exactly 10 digits.";
+        phoneNumber.classList.add("border-red-500");
+        return false;
+      }
+    });
+
+  </script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      // Elements (matching your HTML)
+      const phoneNumber = document.getElementById("phoneNumber");
+      const phoneError = document.getElementById("phoneError");
+      const submitBtn = document.getElementById("scheduleSubmitBtn");
+      const scheduleForm = document.getElementById("scheduleDemoForm");
+
+      if (!phoneNumber || !phoneError || !submitBtn || !scheduleForm) {
+        // If any element is missing, stop (prevents JS errors)
+        return;
+      }
+
+      // Helper: update submit button state
+      function setSubmitEnabled(enabled) {
+        submitBtn.disabled = !enabled;
+        if (!enabled) {
+          submitBtn.classList.add("opacity-50", "cursor-not-allowed");
+          submitBtn.setAttribute("aria-disabled", "true");
+        } else {
+          submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
+          submitBtn.removeAttribute("aria-disabled");
+        }
+      }
+
+      // Core validation function
+      // NOTE: Added 'eventOrShow' param to handle initial load behavior
+      function validatePhoneAndUI(eventOrShow) {
+        // remove non-digits immediately
+        phoneNumber.value = phoneNumber.value.replace(/\D/g, "");
+
+        let v = phoneNumber.value;
+
+        // enforce max 10 digits by trimming (keeps UI consistent)
+        if (v.length > 10) {
+          v = v.slice(0, 10);
+          phoneNumber.value = v;
+        }
+        
+        // Determine if we should show visual errors.
+        // If called by event listener, argument is an Event object (truthy).
+        // If called manually with 'false', argument is false.
+        // Default (undefined) treats as true.
+        const showUI = (eventOrShow === false) ? false : true;
+
+        // set error messages and button state
+        if (v.length === 0) {
+          // Only show error if allowed (e.g. not on initial page load)
+          if (showUI) {
+            phoneError.textContent = "Phone number is required.";
+            phoneNumber.classList.add("border-red-500");
+          }
+          setSubmitEnabled(false);
+        } else if (v.length < 10) {
+          if (showUI) {
+            phoneError.textContent = "Phone number must be 10 digits.";
+            phoneNumber.classList.add("border-red-500");
+          }
+          setSubmitEnabled(false);
+        } else if (v.length === 10) {
+          phoneError.textContent = "";
+          phoneNumber.classList.remove("border-red-500");
+          setSubmitEnabled(true);
+        } else {
+          // Shouldn't reach here because of trimming, but safe fallback
+          if (showUI) {
+            phoneError.textContent = "Phone number must be 10 digits.";
+            phoneNumber.classList.add("border-red-500");
+          }
+          setSubmitEnabled(false);
+        }
+      }
+
+      // Run once on load to set initial button state (in case field prefilled)
+      // Passing 'false' prevents the error message from showing immediately on load
+      validatePhoneAndUI(false);
+
+      // Listen to input & paste events on phone field
+      phoneNumber.addEventListener("input", validatePhoneAndUI);
+      phoneNumber.addEventListener("paste", function (ev) {
+        // small delay to let paste happen, then validate
+        setTimeout(validatePhoneAndUI, 0);
+      });
+
+      // Final safety: block submission if phone not valid
+      scheduleForm.addEventListener("submit", function (e) {
+        if (phoneNumber.value.replace(/\D/g, "").length !== 10) {
+          e.preventDefault();
+          phoneError.textContent = "Phone number must be exactly 10 digits.";
+          phoneNumber.classList.add("border-red-500");
+          setSubmitEnabled(false);
+          phoneNumber.focus();
+          return false;
+        }
+        // form will submit if valid
+      });
+
+    });
+  </script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+      const form = document.getElementById("scheduleDemoForm");
+      const submitBtn = document.getElementById("scheduleSubmitBtn");
+
+      const fields = {
+        name: {
+          el: document.getElementById("name"),
+          error: document.getElementById("nameError"),
+          validate: v => /^[A-Za-z ]+$/.test(v) ? "" : "Name must contain letters only."
+        },
+        email: {
+          el: document.getElementById("email"),
+          error: document.getElementById("emailError"),
+          validate: v => /\S+@\S+\.\S+/.test(v) ? "" : "Enter a valid email address."
+        },
+        phoneNumber: {
+          el: document.getElementById("phoneNumber"),
+          error: document.getElementById("phoneError"),
+          validate: v => v.length === 10 ? "" : "Phone number must be 10 digits."
+        },
+        message: {
+          el: document.getElementById("message"),
+          error: document.getElementById("messageError"),
+          validate: v => v.trim() !== "" ? "" : "Message cannot be empty."
+        }
+      };
+
+      function validateField(key) {
+        const field = fields[key];
+        // safety check if element exists
+        if (!field.el) return true;
+
+        const value = field.el.value.trim();
+
+        // Special cleanup: Phone numbers must be digits
+        if (key === "phoneNumber") {
+          field.el.value = field.el.value.replace(/\D/g, "").slice(0, 10);
+        }
+
+        const errorMessage = field.validate(field.el.value.trim());
+
+        if (errorMessage) {
+          if (field.error) {
+            field.error.textContent = errorMessage;
+            field.error.classList.remove("hidden");
+          }
+          field.el.classList.add("border-red-500");
+          return false;
+        } else {
+          if (field.error) {
+            field.error.textContent = "";
+            field.error.classList.add("hidden");
+          }
+          field.el.classList.remove("border-red-500");
+          return true;
+        }
+      }
+
+      function validateForm() {
+        let isValid = true;
+
+        Object.keys(fields).forEach(key => {
+          if (!validateField(key)) isValid = false;
+        });
+
+        if (submitBtn) submitBtn.disabled = !isValid;
+
+        return isValid;
+      }
+
+
+      // Validate on input
+      Object.keys(fields).forEach(key => {
+        if (fields[key].el) {
+          fields[key].el.addEventListener("input", () => validateForm());
+        }
+      });
+
+      // Final check before submit
+      if (form) {
+        form.addEventListener("submit", function (e) {
+          if (!validateForm()) {
+            e.preventDefault();
+            const err = document.getElementById("formErrorMessage");
+            if (err) err.classList.remove("hidden");
+          }
+        });
+      }
+
+    });
+  </script>
+  <script>
+    document.getElementById("expertPhone").addEventListener("input", function () {
+      const phoneField = this;
+      const errorField = document.getElementById("expert_phone_error");
+
+      // Remove any non-numeric characters
+      phoneField.value = phoneField.value.replace(/\D/g, "");
+
+      // Show error if less than 10 digits
+      if (phoneField.value.length > 0 && phoneField.value.length < 10) {
+        errorField.textContent = "Phone number must be exactly 10 digits.";
+        errorField.classList.remove("hidden");
+      }
+      else {
+        errorField.classList.add("hidden");
+      }
+
+      // Prevent entering more than 10 digits
+      if (phoneField.value.length > 10) {
+        phoneField.value = phoneField.value.slice(0, 10);
+      }
+    });
+  </script>
+  <script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const phoneField = document.getElementById("expertPhone");
+      const errorField = document.getElementById("expert_phone_error");
+      const submitBtn = document.querySelector("#expertForm button[type='submit']");
+
+      // Disable submit initially
+      submitBtn.disabled = true;
+      submitBtn.classList.add("opacity-50", "cursor-not-allowed");
+
+      phoneField.addEventListener("input", function () {
+
+        // Only allow digits
+        phoneField.value = phoneField.value.replace(/\D/g, "");
+
+        // Limit to 10 digits
+        if (phoneField.value.length > 10) {
+          phoneField.value = phoneField.value.slice(0, 10);
+        }
+
+        // Validation
+        if (phoneField.value.length === 0) {
+          // Optional field: no error → allow submit
+          errorField.classList.add("hidden");
+          submitBtn.disabled = false;
+          submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
+        }
+        else if (phoneField.value.length !== 10) {
+          errorField.textContent = "Phone number must be exactly 10 digits.";
+          errorField.classList.remove("hidden");
+
+          submitBtn.disabled = true;
+          submitBtn.classList.add("opacity-50", "cursor-not-allowed");
+        }
+        else {
+          errorField.classList.add("hidden");
+
+          submitBtn.disabled = false;
+          submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
+        }
+      });
+    });
+  </script>
+
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const phoneField = document.getElementById("expertPhone");
+      const errorField = document.getElementById("expert_phone_error");
+      const submitBtn = document.querySelector("#expertForm button[type='submit']");
+
+      // Submit should NEVER be disabled because phone is optional
+      submitBtn.disabled = false;
+      submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
+
+      phoneField.addEventListener("input", function () {
+
+        // Allow only digits
+        phoneField.value = phoneField.value.replace(/\D/g, "");
+
+        // Limit to 10 digits
+        if (phoneField.value.length > 10) {
+          phoneField.value = phoneField.value.slice(0, 10);
+        }
+
+        // If empty → valid (optional field)
+        if (phoneField.value.length === 0) {
+          errorField.classList.add("hidden");
+          submitBtn.disabled = false;
+          submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
+          return;
+        }
+
+        // If not exactly 10 digits → show error but DO NOT disable submit
+        if (phoneField.value.length !== 10) {
+          errorField.textContent = "Phone number must be 10 digits if provided.";
+          errorField.classList.remove("hidden");
+
+          // DO NOT disable submission
+          submitBtn.disabled = false;
+          submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
+          return;
+        }
+
+        // Valid 10-digit phone
+        errorField.classList.add("hidden");
+        submitBtn.disabled = false;
+        submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
+      });
+    });
+  </script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const phoneField = document.getElementById("expertPhone");
+      const errorField = document.getElementById("expert_phone_error");
+      const submitBtn = document.querySelector("#expertForm button[type='submit']");
+
+      phoneField.addEventListener("input", function () {
+
+        // Allow only digits
+        phoneField.value = phoneField.value.replace(/\D/g, "");
+
+        // Limit to 10 digits
+        if (phoneField.value.length > 10) {
+          phoneField.value = phoneField.value.slice(0, 10);
+        }
+
+        // Case 1: Empty (optional)
+        if (phoneField.value.length === 0) {
+          errorField.classList.add("hidden");
+          submitBtn.disabled = false;
+          submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
+          return;
+        }
+
+        // Case 2: User typed but less than 10 digits (INVALID)
+        if (phoneField.value.length < 10) {
+          errorField.textContent = "Phone number must be exactly 10 digits.";
+          errorField.classList.remove("hidden");
+
+          submitBtn.disabled = true;
+          submitBtn.classList.add("opacity-50", "cursor-not-allowed");
+          return;
+        }
+
+        // Case 3: Exactly 10 digits (VALID)
+        if (phoneField.value.length === 10) {
+          errorField.classList.add("hidden");
+          submitBtn.disabled = false;
+          submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
+        }
+      });
+    });
+  </script>
+
 </body>
+
 </html>

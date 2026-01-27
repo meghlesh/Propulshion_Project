@@ -16,8 +16,33 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 SECRET_KEY = 'django-insecure-xmlwbev-^6fwr!*ec!f2)qlf##mql-78c3270(+_@mnnozcv(c'
-DEBUG = True
-ALLOWED_HOSTS = []
+#DEBUG = True
+#ALLOWED_HOSTS = []
+
+DEBUG = False
+
+SECURE_SSL_REDIRECT = True
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+
+
+ALLOWED_HOSTS = [
+    "propulsiontech.in",
+    "www.propulsiontech.in",
+    "13.127.123.170",
+    "127.0.0.1",
+    "localhost",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://propulsiontech.in",
+    "https://www.propulsiontech.in",
+]
+
 
 # ------------------------------------------------------------
 # APPLICATIONS
@@ -30,20 +55,34 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'website',
+    'client',
+    'widget_tweaks',
 ]
 
 # ------------------------------------------------------------
 # MIDDLEWARE
 # ------------------------------------------------------------
+#MIDDLEWARE = [
+ #   'django.middleware.security.SecurityMiddleware',
+  #  'django.contrib.sessions.middleware.SessionMiddleware',
+   # 'django.middleware.common.CommonMiddleware',
+  #  'django.middleware.csrf.CsrfViewMiddleware',
+   # 'django.contrib.auth.middleware.AuthenticationMiddleware',
+   # 'django.contrib.messages.middleware.MessageMiddleware',
+    # 🔒 Custom Encryption Middleware
+   # 'propulsion_site.middleware.encrypt_response_middleware.EncryptHTMLMiddleware',
+   # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
+#]
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    # 🔒 Custom Encryption Middleware
-    'propulsion_site.middleware.encrypt_response_middleware.EncryptHTMLMiddleware',
+#    'propulsion_site.middleware.encrypt_response_middleware.EncryptHTMLMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -77,10 +116,10 @@ WSGI_APPLICATION = 'propulsion_site.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'yourdatabasename',
+        'NAME': 'ID',
         'USER': 'postgres',
-        'PASSWORD': 'yourpassword',
-        'HOST': 'localhost',
+        'PASSWORD': 'postgres#123',
+        'HOST': '13.127.123.170',
         'PORT': '5432',
     }
 }
@@ -106,8 +145,23 @@ USE_TZ = True
 # ------------------------------------------------------------
 # STATIC & MEDIA FILES
 # ------------------------------------------------------------
-STATIC_URL = 'static/'
+#STATIC_URL = 'static/'
+#STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+#STATIC_ROOT = os.path.join(BASE_DIR, 'static')  # this matches Nginx alias
+
+# Static files (CSS, JS, images)
+STATIC_URL = '/static/'
+
+# This is the source directory for your project static files
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
+# This is where collectstatic will put all files for production
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Use Whitenoise for hashed files
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -117,27 +171,32 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # ------------------------------------------------------------
 # EMAIL CONFIGURATION
 # ------------------------------------------------------------
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtpout.secureserver.net'
-EMAIL_PORT = 465
-EMAIL_USE_TLS = False
-EMAIL_USE_SSL = True
-EMAIL_HOST_USER = 'jayesh@creativewebsolution.in'
-EMAIL_HOST_PASSWORD = 'JP@$$w0rd@123'
-DEFAULT_FROM_EMAIL = 'jayesh@creativewebsolution.in'
-CONTACT_EMAIL = 'jayesh@creativewebsolution.in'
-DEFAULT_SITE_URL = 'http://127.0.0.1:8000'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+
+EMAIL_HOST_USER = 'propulsiontech381@gmail.com'
+EMAIL_HOST_PASSWORD = 'gwrv nrhy jxcm gbyn'
+
+DEFAULT_FROM_EMAIL = 'Propulsion Tech <propulsiontech381@gmail.com>'
+#DEFAULT_SITE_URL = 'http://127.0.0.1:8000'
+DEFAULT_SITE_URL = 'https://propulsiontech.in'
 
 # ------------------------------------------------------------
 # SESSION CONFIGURATION
 # ------------------------------------------------------------
-SESSION_ENGINE = "django.contrib.sessions.backends.cache"
-SESSION_CACHE_ALIAS = "default"
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
+#SESSION_CACHE_ALIAS = "default"
+
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
 
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-sessions',
+ #       'LOCATION': 'unique-sessions',
     }
 }
 
@@ -164,3 +223,9 @@ SESSION_SAVE_EVERY_REQUEST = True
 # # END OF SETTINGS
 # # ------------------------------------------------------------
 
+# Auth redirects (Admin)
+LOGIN_URL = '/admin-login/'
+LOGIN_REDIRECT_URL = '/admin-dashboard/'
+LOGOUT_REDIRECT_URL = '/admin-login/'
+#LOGIN_REDIRECT_URL = 'https://propulsiontech.in/admin-dashboard/'
+#LOGOUT_REDIRECT_URL = 'https://propulsiontech.in/admin-login/'

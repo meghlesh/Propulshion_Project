@@ -1,0 +1,552 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Client Registration | Propulsion</title>
+
+  <link rel="icon" type="image/png" href="{% static 'img/logo6.png' %}" />
+
+  <!-- Poppins Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Poppins', 'sans-serif'] },
+          colors: {
+            'primary-green': '#053830',
+            'accent-green': '#D2E8B8',
+            'highlight-gold': '#FF9728',
+            'card-bg': '#F1F2F0',
+            'dark-text': '#262626',
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: var(--tw-colors-accent-green);
+      background-image: radial-gradient(circle at center, rgba(5, 56, 48, 0.1) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+    .register-card {
+      box-shadow: 0 10px 25px rgba(5, 56, 48, 0.15), 0 5px 10px rgba(5, 56, 48, 0.05);
+    }
+    .cta-button-shadow {
+      box-shadow: 0 4px 15px rgba(255, 151, 40, 0.4);
+    }
+    .safe-bottom {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+  </style>
+</head>
+
+<body class="min-h-screen font-sans text-dark-text py-6 px-4 flex items-center justify-center relative overflow-y-auto safe-bottom">
+
+  <div class="fixed inset-0 bg-[radial-gradient(circle_at_center,rgba(5,56,48,0.08)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none"></div>
+
+  <div class="bg-white register-card rounded-3xl p-6 md:p-10 w-full max-w-xl mx-auto border border-gray-100 
+              transition-all duration-300 hover:shadow-2xl hover:scale-[1.005] relative z-10 my-auto">
+
+    <!-- Branding -->
+    <div class="flex flex-col items-center justify-center mb-6 space-y-1">
+      <span class="flex flex-col text-primary-green font-extrabold text-center">
+        <span class="text-2xl md:text-3xl font-extrabold tracking-widest">PROPULSION</span>
+        <span class="text-xs md:text-sm font-bold tracking-widest opacity-70 text-highlight-gold uppercase">Client Registration</span>
+      </span>
+    </div>
+
+    <h2 class="text-xl md:text-2xl font-extrabold text-center text-primary-green mb-6">
+      Create Client Account
+    </h2>
+
+    {% if messages %}
+<div class="mb-5">
+  {% for message in messages %}
+    <div class="auto-dismiss p-3 rounded-xl text-center font-semibold text-sm mb-2 shadow-sm border
+        {% if message.tags == 'error' %}bg-red-50 text-red-600 border-red-100
+        {% elif message.tags == 'success' %}bg-green-50 text-green-700 border-green-100
+        {% else %}bg-blue-50 text-blue-700 border-blue-100{% endif %}">
+        {{ message }}
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+
+    <!-- Registration Form -->
+    <form id="registrationForm" method="POST" class="space-y-4 md:space-y-5" onsubmit="return showLoaderAndSubmit()">
+      {% csrf_token %}
+
+      <!-- Name -->
+      <div>
+        <label class="block text-gray-700 font-bold text-sm md:text-base mb-2">Full Name *</label>
+
+        <input type="text" id="name" name="name" required placeholder="Enter your full name"
+               maxlength="50"
+               class="w-full px-4 py-3 border-2 border-accent-green rounded-xl bg-card-bg 
+                      focus:border-primary-green focus:ring-primary-green transition-all 
+                      shadow-inner placeholder-gray-400 outline-none text-sm md:text-base">
+
+        <p id="nameError" class="text-red-600 text-xs mt-1 font-medium"></p>
+        <p class="text-xs text-gray-500 mt-1"><span id="nameCount">0</span>/50</p>
+      </div>
+
+      <!-- Email -->
+      <div>
+        <label class="block text-gray-700 font-bold text-sm md:text-base mb-2">Email Address *</label>
+        <input type="email" id="email" name="email" required placeholder="Enter your email"
+               oninput="validateEmail()"
+               class="w-full px-4 py-3 border-2 border-accent-green rounded-xl bg-card-bg 
+                      focus:border-primary-green focus:ring-primary-green transition-all  
+                      shadow-inner placeholder-gray-400 outline-none text-sm md:text-base">
+        <p id="emailError" class="text-red-600 text-xs mt-1 font-medium"></p>
+      </div>
+
+      <!-- Phone -->
+      <div>
+        <label class="block text-gray-700 font-bold text-sm md:text-base mb-2">Phone Number *</label>
+        <input type="text" id="phone" name="phone" required placeholder="10 digit mobile number"
+               maxlength="10"
+               class="w-full px-4 py-3 border-2 border-accent-green rounded-xl bg-card-bg 
+                      focus:border-primary-green focus:ring-primary-green transition-all  
+                      shadow-inner placeholder-gray-400 outline-none text-sm md:text-base">
+        <p id="phoneError" class="text-red-600 text-xs mt-1 font-medium"></p>
+      </div>
+
+      <!-- Company Name -->
+      <div>
+        <label class="block text-gray-700 font-bold text-sm md:text-base mb-2">Company Name *</label>
+
+        <input type="text" name="company_name" id="company_name" placeholder="Enter your company name"
+               maxlength="50"
+               class="w-full px-4 py-3 border-2 border-accent-green rounded-xl bg-card-bg 
+                      focus:border-primary-green focus:ring-primary-green transition-all 
+                      shadow-inner placeholder-gray-400 outline-none text-sm md:text-base">
+
+        <p id="companyError" class="text-red-600 text-xs mt-1 font-medium"></p>
+        <p class="text-xs text-gray-500 mt-1"><span id="companyCount">0</span>/50</p>
+      </div>
+
+      <!-- Address -->
+      <div>
+        <label class="block text-gray-700 font-bold text-sm md:text-base mb-2">Address</label>
+
+        <textarea id="address" name="address" rows="3" placeholder="Your address"
+          maxlength="300"
+          class="w-full px-4 py-3 border-2 border-accent-green rounded-xl bg-card-bg
+                 focus:border-primary-green focus:ring-primary-green transition-all
+                 shadow-inner placeholder-gray-400 outline-none text-sm md:text-base"></textarea>
+
+        <p id="addressCount" class="text-xs text-gray-500 mt-1">0/300</p>
+        <p id="addressError" class="text-red-600 text-xs font-medium mt-1"></p>
+      </div>
+
+      <!-- Password -->
+      <div>
+        <label class="block text-gray-700 font-bold text-sm md:text-base mb-2">Password *</label>
+
+        <div class="relative">
+          <input type="password" id="password" name="password" required placeholder="Enter your password"
+                 maxlength="20"
+                 class="w-full px-4 py-3 pr-12 border-2 border-accent-green rounded-xl bg-card-bg 
+                        focus:border-primary-green focus:ring-primary-green transition-all  
+                        shadow-inner placeholder-gray-400 outline-none text-sm md:text-base">
+
+          <!-- Eye Icon -->
+          <i id="eye_password" class="ri-eye-off-line absolute right-4 top-1/2 -translate-y-1/2 text-xl text-gray-600 cursor-pointer hover:text-primary-green"></i>
+        </div>
+
+        <p id="passwordError" class="text-red-600 text-xs mt-1 font-medium"></p>
+      </div>
+
+      <!-- Confirm Password -->
+      <div>
+        <label class="block text-gray-700 font-bold text-sm md:text-base mb-2">Confirm Password *</label>
+
+        <div class="relative">
+          <input type="password" id="confirm_password" name="confirm_password" required placeholder="Confirm password"
+                 maxlength="20"
+                 class="w-full px-4 py-3 pr-12 border-2 border-accent-green rounded-xl bg-card-bg 
+                        focus:border-primary-green focus:ring-primary-green transition-all  
+                        shadow-inner placeholder-gray-400 outline-none text-sm md:text-base">
+
+          <!-- Eye Icon -->
+          <i id="eye_confirm" class="ri-eye-off-line absolute right-4 top-1/2 -translate-y-1/2 text-xl text-gray-600 cursor-pointer hover:text-primary-green"></i>
+        </div>
+
+        <p id="confirmPasswordError" class="text-red-600 text-xs mt-1 font-medium"></p>
+      </div>
+
+      <!-- Register Button -->
+      <button type="submit"
+              class="w-full bg-primary-green text-white font-bold py-3.5 rounded-xl 
+                     hover:bg-highlight-gold hover:text-dark-text transition-all 
+                     cta-button-shadow transform hover:scale-[1.01] hover:-translate-y-0.5 text-sm md:text-base mt-2">
+        Register
+      </button>
+    </form>
+
+   <div class="mt-8 text-center border-t border-gray-100 pt-6 space-y-4">
+
+  <!-- Back to Dashboard -->
+  <a href="{% url 'admin_dashboard' %}"
+     class="inline-block w-full bg-primary-green text-white font-semibold py-2.5 rounded-xl 
+            hover:bg-highlight-gold hover:text-dark-text transition-all cta-button-shadow">
+     ← Back to Dashboard
+  </a>
+
+  <!-- Back to Home -->
+  <div class="mt-8 text-center border-t border-gray-100 pt-6">
+    <a href="{% url 'home' %}"
+       class="text-primary-green font-semibold text-sm hover:text-highlight-gold transition">
+       ← Back to Home
+    </a>
+  </div>
+
+  </div>
+
+  <!-- Loader Overlay -->
+  <div id="loader" class="hidden fixed inset-0 bg-black bg-opacity-40 flex flex-col justify-center items-center z-50 transition opacity-100">
+    <svg class="animate-spin w-14 h-14 text-white" viewBox="0 0 50 50">
+        <circle class="opacity-30" cx="25" cy="25" r="20" stroke="white" stroke-width="5" fill="none"/>
+        <circle class="opacity-100" cx="25" cy="25" r="20" stroke="white" stroke-width="5" stroke-linecap="round" fill="none"
+                stroke-dasharray="31.4 31.4" stroke-dashoffset="0">
+            <animateTransform 
+                attributeName="transform"
+                attributeType="XML"
+                type="rotate"
+                from="0 25 25"
+                to="360 25 25"
+                dur="1s"
+                repeatCount="indefinite"/>
+        </circle>
+    </svg>
+
+    <p class="text-white text-sm font-semibold mt-3 tracking-wider animate-pulse">
+        Please wait…
+    </p>
+  </div>
+
+  </div>
+
+  <!-- VALIDATION & BEHAVIOR SCRIPT -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // Constants
+      const NAME_MAX = 50;
+      const COMPANY_MAX = 50;
+      const ADDR_MAX = 300;
+
+      // Elements
+      const nameInput = document.getElementById('name');
+      const nameError = document.getElementById('nameError');
+      const nameCount = document.getElementById('nameCount');
+
+      const companyInput = document.getElementById('company_name');
+      const companyError = document.getElementById('companyError');
+      const companyCount = document.getElementById('companyCount');
+
+      const addressInput = document.getElementById('address');
+      const addressCount = document.getElementById('addressCount');
+      const addressError = document.getElementById('addressError');
+
+      const emailInput = document.getElementById('email');
+      const emailError = document.getElementById('emailError');
+
+      const phoneInput = document.getElementById('phone');
+      const phoneError = document.getElementById('phoneError');
+
+      const passwordInput = document.getElementById('password');
+      const passwordError = document.getElementById('passwordError');
+      const confirmInput = document.getElementById('confirm_password');
+      const confirmError = document.getElementById('confirmPasswordError');
+
+      // Initialize counters
+      nameCount.textContent = '0';
+      companyCount.textContent = '0';
+      addressCount.textContent = 0/`${ADDR_MAX}`;
+
+      /* ----------------- Full Name handling ----------------- */
+      function sanitizeNameValue(val) {
+        // Allow letters and spaces only
+        return val.replace(/[^A-Za-z ]/g, '');
+      }
+
+      function updateNameCounterAndValidation() {
+        let val = nameInput.value;
+        const cleaned = sanitizeNameValue(val);
+        if (val !== cleaned) {
+          // replace with cleaned - keep caret simple by replacing full value
+          nameInput.value = cleaned;
+        }
+
+        if (nameInput.value.length > NAME_MAX) {
+          nameInput.value = nameInput.value.slice(0, NAME_MAX);
+        }
+
+        // update live count (display only the numeric count as before)
+        nameCount.textContent = String(nameInput.value.length);
+
+        // validation messages
+        if (/^\s/.test(nameInput.value)) {
+          nameError.textContent = 'Name cannot start with space.';
+        } else {
+          nameError.textContent = '';
+        }
+      }
+
+      // keydown: prevent invalid key presses
+      nameInput.addEventListener('keydown', function (e) {
+        const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'Tab'];
+        if (allowedKeys.includes(e.key)) return;
+        if (e.ctrlKey || e.metaKey) return;
+        // allow letters and space only
+        if (!/^[A-Za-z ]$/.test(e.key)) {
+          e.preventDefault();
+          nameError.textContent = 'Only letters and spaces allowed';
+          setTimeout(() => { if (nameError.textContent === 'Only letters and spaces allowed') nameError.textContent = ''; }, 1200);
+        }
+      });
+
+      // paste: sanitize
+      nameInput.addEventListener('paste', function (e) {
+        e.preventDefault();
+        const text = (e.clipboardData || window.clipboardData).getData('text');
+        const cleaned = sanitizeNameValue(text).slice(0, NAME_MAX - nameInput.value.length);
+        document.execCommand('insertText', false, cleaned);
+      });
+
+      nameInput.addEventListener('input', updateNameCounterAndValidation);
+
+      /* ----------------- Company Name handling ----------------- */
+      function sanitizeCompany(val) {
+        return val.replace(/[^A-Za-z ]/g, '');
+      }
+
+      function updateCompany() {
+        if (!companyInput) return;
+        let val = companyInput.value;
+        const cleaned = sanitizeCompany(val);
+        if (val !== cleaned) companyInput.value = cleaned;
+        if (companyInput.value.length > COMPANY_MAX) companyInput.value = companyInput.value.slice(0, COMPANY_MAX);
+        companyCount.textContent = String(companyInput.value.length);
+
+        if (companyInput.value.trim().length > 0 && !/^[A-Za-z ]+$/.test(companyInput.value)) {
+          companyError.textContent = 'Only letters and spaces allowed';
+        } else {
+          companyError.textContent = '';
+        }
+      }
+
+      companyInput.addEventListener('input', updateCompany);
+      companyInput.addEventListener('paste', function (e) {
+        e.preventDefault();
+        const text = (e.clipboardData || window.clipboardData).getData('text');
+        const cleaned = sanitizeCompany(text).slice(0, COMPANY_MAX - companyInput.value.length);
+        document.execCommand('insertText', false, cleaned);
+      });
+
+      /* ----------------- Address handling ----------------- */
+      function updateAddress() {
+        const val = addressInput.value;
+        if (val.length > ADDR_MAX) addressInput.value = val.slice(0, ADDR_MAX);
+        addressCount.textContent = `${addressInput.value.length}/${ADDR_MAX}`;
+        if (addressInput.value.length >= ADDR_MAX) {
+          addressError.textContent = "You’ve reached the maximum limit!";
+        } else {
+          addressError.textContent = "";
+        }
+      }
+
+      addressInput.addEventListener('input', updateAddress);
+      addressInput.addEventListener('paste', function (e) {
+        // allow paste but enforce max
+        const text = (e.clipboardData || window.clipboardData).getData('text');
+        const spaceLeft = ADDR_MAX - addressInput.value.length;
+        e.preventDefault();
+        document.execCommand('insertText', false, text.slice(0, spaceLeft));
+        updateAddress();
+      });
+
+      /* ----------------- Email handling ----------------- */
+      function validateEmail() {
+        const v = emailInput.value.trim();
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!regex.test(v)) {
+          emailError.textContent = 'Enter a valid email format with @';
+          return false;
+        }
+        emailError.textContent = '';
+        return true;
+      }
+      emailInput.addEventListener('input', validateEmail);
+
+      /* ----------------- Phone handling ----------------- */
+      function validatePhone() {
+        // Allow only numbers and enforce maxlength
+        let digits = phoneInput.value.replace(/[^0-9]/g, '');
+        if (digits.length > 10) digits = digits.slice(0, 10);
+        phoneInput.value = digits;
+
+        if (!/^[0-9]{10}$/.test(digits)) {
+          phoneError.textContent = 'Phone must be exactly 10 digits';
+          return false;
+        }
+        phoneError.textContent = '';
+        return true;
+      }
+      phoneInput.addEventListener('input', validatePhone);
+      phoneInput.addEventListener('paste', function (e) {
+        e.preventDefault();
+        const text = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '');
+        const spaceLeft = 10 - phoneInput.value.length;
+        document.execCommand('insertText', false, text.slice(0, spaceLeft));
+      });
+
+      /* ----------------- Password handling ----------------- */
+      function validatePassword() {
+        const pass = passwordInput.value;
+        if (pass.length < 4 || pass.length > 20) {
+          passwordError.textContent = 'Password must be between 4–20 characters';
+          return false;
+        }
+        passwordError.textContent = '';
+        return true;
+      }
+      passwordInput.addEventListener('input', validatePassword);
+
+      function validateConfirmPassword() {
+        const pass = passwordInput.value;
+        const confirm = confirmInput.value;
+        if (confirm.length < 4 || confirm.length > 20) {
+          confirmError.textContent = 'Password must be between 4–20 characters';
+          return false;
+        }
+        if (pass !== confirm) {
+          confirmError.textContent = 'Passwords do not match';
+          return false;
+        }
+        confirmError.textContent = '';
+        return true;
+      }
+      confirmInput.addEventListener('input', validateConfirmPassword);
+
+      /* ----------------- Eye toggle for password fields ----------------- */
+      function attachEyeToggle(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+
+        if (!input || !icon) return;
+        icon.addEventListener('click', () => {
+          const type = input.type === 'password' ? 'text' : 'password';
+          input.type = type;
+          if (type === 'password') {
+            icon.className = 'ri-eye-off-line absolute right-4 top-1/2 -translate-y-1/2 text-xl text-gray-600 cursor-pointer hover:text-primary-green';
+          } else {
+            icon.className = 'ri-eye-line absolute right-4 top-1/2 -translate-y-1/2 text-xl text-gray-600 cursor-pointer hover:text-primary-green';
+          }
+        });
+      }
+      attachEyeToggle('password', 'eye_password');
+      attachEyeToggle('confirm_password', 'eye_confirm');
+
+      /* ----------------- Form validation aggregator ----------------- */
+      function validateNameFieldForSubmit() {
+        // stricter regex: must start with letter and contain only letters/spaces, length >= 1
+        const v = nameInput.value.trim();
+        const regex = /^[A-Za-z][A-Za-z ]{0,49}$/;
+        if (!regex.test(v)) {
+          nameError.textContent = 'Enter a valid name (no numbers, symbols, or starting space)';
+          return false;
+        }
+        nameError.textContent = '';
+        return true;
+      }
+
+      function validateCompanyNameForSubmit() {
+        const v = companyInput.value.trim();
+        if (v.length === 0) {
+          companyError.textContent = '';
+          return true; // if it's required server-side, server will reject; preserve client flexibility
+        }
+        const regex = /^[A-Za-z ]{1,50}$/;
+        if (!regex.test(v)) {
+          companyError.textContent = 'Only letters and spaces allowed';
+          return false;
+        }
+        companyError.textContent = '';
+        return true;
+      }
+
+      function validateAll() {
+        const okName = validateNameFieldForSubmit();
+        const okEmail = validateEmail();
+        const okPhone = validatePhone();
+        const okPass = validatePassword();
+        const okConfirm = validateConfirmPassword();
+        const okCompany = validateCompanyNameForSubmit();
+        // address validation optional
+        return okName && okEmail && okPhone && okPass && okConfirm && okCompany;
+      }
+
+      // expose validateAll and helpers for submit
+      window._validateAll = validateAll;
+
+      // show/hide loader on submit (form attribute onsubmit calls this)
+      window.showLoaderAndSubmit = function () {
+        if (validateAll()) {
+          document.getElementById('loader').classList.remove('hidden');
+          return true; // allow form submission
+        } else {
+          // focus first error field
+          if (nameError.textContent) nameInput.focus();
+          else if (emailError.textContent) emailInput.focus();
+          else if (phoneError.textContent) phoneInput.focus();
+          else if (passwordError.textContent) passwordInput.focus();
+          else if (confirmError.textContent) confirmInput.focus();
+          else companyInput.focus();
+          return false; // block submission
+        }
+      };
+
+      // optional: prevent accidental whitespace-only submission for name
+      const form = document.getElementById('registrationForm');
+      form.addEventListener('submit', (e) => {
+        if (!validateAll()) {
+          e.preventDefault();
+        }
+      });
+
+      // initial run to sync counters if server prefilled values
+      updateNameCounterAndValidation();
+      updateCompany();
+      updateAddress();
+    }); // DOMContentLoaded end
+  </script>
+  <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const alerts = document.querySelectorAll(".auto-dismiss");
+
+    alerts.forEach((alert) => {
+        setTimeout(() => {
+            alert.style.transition = "opacity 0.8s ease";
+            alert.style.opacity = "0";
+
+            setTimeout(() => alert.remove(), 800);
+        }, 4000); // 4 seconds
+    });
+});
+</script>
+
+
+</body>
+</html>

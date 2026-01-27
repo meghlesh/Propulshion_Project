@@ -6,7 +6,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Expert OTP Verification | Propulsion Technology</title>
-  <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+  <link rel="icon" type="image/png" href="{% static 'img/logo6.png'%}">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -38,12 +38,24 @@
     </p>
 
     {% if messages %}
-      {% for message in messages %}
-        <div class="mb-4 p-3 rounded-lg text-sm font-semibold {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-blue-100 text-blue-800{% endif %}">
-          {{ message }}
-        </div>
-      {% endfor %}
-    {% endif %}
+  {% for message in messages %}
+    <div class="
+        mb-4 p-3 rounded-lg text-sm font-semibold border
+        {% if message.tags == 'success' %}
+            bg-green-100 text-green-700 border-green-300
+        {% elif message.tags == 'error' %}
+            bg-red-100 text-red-700 border-red-300
+        {% elif message.tags == 'warning' %}
+            bg-yellow-100 text-yellow-700 border-yellow-300
+        {% else %}
+            bg-blue-100 text-blue-800 border-blue-300
+        {% endif %}
+      ">
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
+
 
     <form method="POST" class="space-y-6">
       {% csrf_token %}

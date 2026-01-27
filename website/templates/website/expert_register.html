@@ -5,7 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Expert Registration | Propulsion Technology</title>
-  <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+  <link rel="icon" type="image/png" href="{% static 'img/logo6.png'%}">
 
   <!-- Poppins Font -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -45,7 +45,7 @@
 <body class="flex items-center justify-center min-h-screen p-4 font-sans text-dark-text">
 
 <div class="bg-white login-card rounded-3xl p-10 w-full max-w-lg border border-gray-100">
-    
+
     <div class="text-center mb-8">
       <h1 class="text-3xl font-extrabold text-primary-green">Expert Registration</h1>
       <p class="text-gray-500 text-sm mt-1">Create your expert account</p>
@@ -67,21 +67,24 @@
             <label class="block text-gray-700 font-semibold mb-1">Full Name (Optional)</label>
             <input type="text" id="full_name" name="full_name"
                    class="w-full px-5 py-3 border-2 border-accent-green rounded-xl bg-card-bg focus:border-primary-green transition"
-                   placeholder="Enter full name" maxlength="200">
+                   placeholder="Enter full name" maxlength="50">
             <p id="nameError" class="text-red-600 text-sm mt-1 hidden"></p>
         </div>
 
-        <!-- USERNAME -->
-        <div>
-            <label class="block text-gray-700 font-semibold mb-1">Username</label>
-            <input type="text" name="username" required
-                   class="w-full px-5 py-3 border-2 border-accent-green rounded-xl bg-card-bg focus:border-primary-green transition"
-                   placeholder="Enter username" maxlength="50">
-        </div>
+       <!-- USERNAME -->
+<div>
+    <label class="block text-gray-700 font-semibold mb-1">Username *</label>
+    <input type="text" id="username" name="username" required
+           class="w-full px-5 py-3 border-2 border-accent-green rounded-xl bg-card-bg focus:border-primary-green transition"
+           placeholder="Enter your username (max 30)"
+           maxlength="30">
+    <p id="usernameError" class="text-red-600 text-sm mt-1 hidden"></p>
+</div>
+
 
         <!-- EMAIL -->
         <div>
-            <label class="block text-gray-700 font-semibold mb-1">Email</label>
+            <label class="block text-gray-700 font-semibold mb-1">Email *</label>
             <input type="email" id="email" name="email" required
                    class="w-full px-5 py-3 border-2 border-accent-green rounded-xl bg-card-bg focus:border-primary-green transition"
                    placeholder="Enter email">
@@ -89,100 +92,157 @@
         </div>
 
         <!-- PASSWORD -->
-        <div>
-            <label class="block text-gray-700 font-semibold mb-1">Password</label>
-            <input type="password" id="password" name="password" required
-                   class="w-full px-5 py-3 border-2 border-accent-green rounded-xl bg-card-bg focus:border-primary-green transition"
-                   placeholder="Enter password" minlength="4" maxlength="20">
-            <p id="passwordError" class="text-red-600 text-sm mt-1 hidden"></p>
-        </div>
+<div>
+    <label class="block text-gray-700 font-semibold mb-1">Password *</label>
+    <div class="relative">
+        <input type="password" id="password" name="password" required
+               class="w-full px-5 py-3 border-2 border-accent-green rounded-xl bg-card-bg pr-12 focus:border-primary-green transition"
+               placeholder="Enter your password (max 20)"
+               maxlength="20">
+        <!-- Eye Toggle Button -->
+        <button type="button"
+                onclick="togglePassword('password','icon_password')"
+                class="absolute right-3 top-3 text-gray-600 hover:text-primary-green">
+            <svg id="icon_password" xmlns="http://www.w3.org/2000/svg"
+                 class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5
+                         c4.477 0 8.268 2.943 9.542 7
+                         -1.274 4.057-5.065 7-9.542 7
+                         -4.477 0-8.268-2.943-9.542-7z" />
+                <circle cx="12" cy="12" r="3" />
+            </svg>
+        </button>
+    </div>
+    <p id="passwordError" class="text-red-600 text-sm mt-1 hidden"></p>
+</div>
 
         <!-- SUBMIT -->
         <button type="submit" id="submitBtn"
-                class="w-full bg-primary-green text-white font-bold py-3.5 rounded-xl hover:bg-highlight-gold hover:text-dark-text transition">
-            Register
-        </button>
-    </form>
+        class="w-full bg-primary-green text-white font-bold py-3.5 rounded-xl hover:bg-highlight-gold hover:text-dark-text transition flex items-center justify-center">
+    <span id="btnText">Register</span>
+    <svg id="btnLoader" class="hidden animate-spin h-5 w-5 ml-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+    </svg>
+</button>
 
-    <div class="mt-8 text-center border-t border-gray-100 pt-6">
-      <p class="text-gray-600 text-sm mb-3">Already an Expert?</p>
-      <a href="{% url 'expert_login' %}" class="px-5 py-2.5 bg-highlight-gold text-dark-text font-semibold rounded-xl hover:bg-primary-green hover:text-white transition">
-         Login Now
-      </a>
-    </div>
+</form>
+<div class="mt-8 text-center border-t border-gray-100 pt-6"> <p class="text-gray-600 text-sm mb-3">Already an Expert?</p> <a href="{% url 'expert_login' %}" class="px-5 py-2.5 bg-highlight-gold text-dark-text font-semibold rounded-xl hover:bg-primary-green hover:text-white transition"> Login Now </a> </div> <div class="text-center mt-6"> <a href="{% url 'home' %}" class="text-primary-green font-semibold hover:text-highlight-gold transition"> ← Back to Main Website </a> </div>
 
-    <div class="text-center mt-6">
-      <a href="{% url 'home' %}" class="text-primary-green font-semibold hover:text-highlight-gold transition">
-        ← Back to Main Website
-      </a>
-    </div>
 </div>
 
-<!-- VALIDATION SCRIPT -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
   const nameField = document.getElementById("full_name");
+  const userField = document.getElementById("username");
   const emailField = document.getElementById("email");
   const passwordField = document.getElementById("password");
   const submitBtn = document.getElementById("submitBtn");
 
-  // FULL NAME VALIDATION (allow spaces, but NOT at start)
-  nameField.addEventListener("input", () => {
-    const val = nameField.value;
+  const errors = {
+    name: true,
+    username: true,
+    email: true,
+    password: true
+  };
 
-    // ❌ Leading space not allowed
-    if (val.startsWith(" ")) {
-      showError("nameError", "Name cannot start with a space.");
-    }
-    // ❌ Only alphabets + spaces allowed
-    else if (!/^[A-Za-z ]*$/.test(val)) {
-      showError("nameError", "Only alphabets and spaces are allowed.");
-    }
-    else {
-      hideError("nameError");
-    }
-  });
+  function updateSubmitState() {
+    const hasError = Object.values(errors).some(v => v);
+    submitBtn.disabled = hasError;
+    submitBtn.classList.toggle('opacity-50', hasError);
+  }
 
-  // EMAIL VALIDATION
-  emailField.addEventListener("input", () => {
-    const val = emailField.value.trim();
-
-    if (!val.includes("@")) {
-      showError("emailError", "Email must contain '@'.");
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
-      showError("emailError", "Enter a valid email address.");
-    } else {
-      hideError("emailError");
-    }
-  });
-
-  // PASSWORD VALIDATION
-  passwordField.addEventListener("input", () => {
-    const len = passwordField.value.length;
-
-    if (len < 4) {
-      showError("passwordError", "Minimum 4 characters required.");
-    } else if (len > 20) {
-      showError("passwordError", "Maximum 20 characters allowed.");
-    } else {
-      hideError("passwordError");
-    }
-  });
-
-  // SHOW ERROR
-  function showError(id, msg) {
+  function showError(id, msg, key) {
     const el = document.getElementById(id);
     el.textContent = msg;
     el.classList.remove("hidden");
+    errors[key] = true;
+    updateSubmitState();
   }
 
-  // HIDE ERROR
-  function hideError(id) {
+  function hideError(id, key) {
     document.getElementById(id).classList.add("hidden");
+    errors[key] = false;
+    updateSubmitState();
   }
 
+  // Full Name Validation
+  nameField.addEventListener("input", () => {
+    const val = nameField.value;
+    if (val.startsWith(" ")) showError("nameError", "Name cannot start with a space.", "name");
+    else if (!/^[A-Za-z ]*$/.test(val)) showError("nameError", "Only alphabets and spaces allowed.", "name");
+    else hideError("nameError", "name");
+  });
+
+  // Username Validation
+  userField.addEventListener("input", () => {
+    if (userField.value.trim() === "") showError("usernameError", "Username is required.", "username");
+    else hideError("usernameError", "username");
+  });
+
+  // Email Validation
+  emailField.addEventListener("input", () => {
+    const val = emailField.value.trim();
+    if (!val.includes("@")) showError("emailError", "Email must contain '@'.", "email");
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) showError("emailError", "Enter a valid email address.", "email");
+    else hideError("emailError", "email");
+  });
+
+  // Password Validation
+  passwordField.addEventListener("input", () => {
+    const len = passwordField.value.length;
+    if (len < 4) showError("passwordError", "Minimum 4 characters required.", "password");
+    else if (len > 20) showError("passwordError", "Maximum 20 characters allowed.", "password");
+    else hideError("passwordError", "password");
+  });
+
+  // Initialize submit button state
+  updateSubmitState();
 });
+</script>
+
+<script>
+function togglePassword(id, iconId) {
+  const input = document.getElementById(id);
+  const icon = document.getElementById(iconId);
+  if (input.type === "password") {
+    input.type = "text";
+    icon.classList.add("text-primary-green");
+  } else {
+    input.type = "password";
+    icon.classList.remove("text-primary-green");
+  }
+}
+
+document.getElementById("expertForm").addEventListener("submit", function(e) {
+    // Disable the button to prevent multiple clicks
+    const btn = document.getElementById("submitBtn");
+    const btnText = document.getElementById("btnText");
+    const btnLoader = document.getElementById("btnLoader");
+
+    btn.disabled = true;
+    btnText.textContent = "Registering...";
+    btnLoader.classList.remove("hidden");
+});
+document.addEventListener("DOMContentLoaded", () => {
+    const usernameInput = document.getElementById("username");
+    const usernameCount = document.getElementById("usernameCount");
+    const passwordInput = document.getElementById("password");
+    const passwordCount = document.getElementById("passwordCount");
+
+    usernameInput.addEventListener("input", () => {
+        usernameCount.textContent = `${usernameInput.value.length}/30`;
+    });
+
+    passwordInput.addEventListener("input", () => {
+        passwordCount.textContent = `${passwordInput.value.length}/20`;
+    });
+});
+
+
 </script>
 
 </body>

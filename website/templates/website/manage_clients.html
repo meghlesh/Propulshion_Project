@@ -1,0 +1,406 @@
+{% load static %}
+{% load form_tags %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Manage Clients | Propulsion Admin</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Alpine.js -->
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        heading: ['"Outfit"', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            DEFAULT: '#053830', // Deep Green
+                            light: '#155C54',
+                            dark: '#022620',
+                        },
+                        gold: {
+                            DEFAULT: '#FF9728', // Highlight Gold
+                            light: '#FFB05C',
+                            dim: '#C67011',
+                        },
+                        surface: '#F3F4F6',
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Outfit', sans-serif; }
+        
+        .glass-nav {
+            background: rgba(5, 56, 48, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Loader */
+        #blur-loader { position: fixed; inset:0; background: rgba(255,255,255,0.75); backdrop-filter: blur(4px); z-index:9999; display:none; align-items:center; justify-content:center; }
+    </style>
+</head>
+
+<body class="bg-[#f0f2f5] text-slate-800 min-h-screen flex flex-col selection:bg-gold selection:text-white">
+
+    <!-- GLOBAL LOADER -->
+    <div id="blur-loader">
+        <div class="flex flex-col items-center">
+            <div class="w-14 h-14 border-4 border-[#053830] border-t-transparent rounded-full animate-spin"></div>
+            <div class="mt-3 text-[#053830] font-semibold">Processing...</div>
+        </div>
+    </div>
+
+    <!-- ===========================
+          TOP NAVIGATION BAR
+    ============================ -->
+    <nav class="glass-nav text-white sticky top-0 z-50 shadow-lg" x-data="{ mobileMenuOpen: false }">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                
+                <!-- Brand -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-gold font-heading font-extrabold text-xl backdrop-blur-sm border border-white/10 shadow-lg shadow-black/20">P</div>
+                    <div>
+                        <h1 class="font-heading font-bold text-xl tracking-tight leading-none">Propulsion</h1>
+                        <p class="text-[10px] text-white/50 uppercase tracking-[0.2em] font-semibold">Admin Panel</p>
+                    </div>
+                </div>
+
+                <!-- Desktop Links -->
+                <div class="hidden md:flex items-center gap-8">
+                    
+                    
+                    
+                    
+                    <div class="h-5 w-px bg-white/10"></div> <!-- Divider -->
+                    
+
+                    <a href="{% url 'admin_dashboard' %}"
+                     
+                    class="group flex items-center text-[#053830] bg-[#FF9728]
+                  px-4 py-2 rounded-full text-sm font-medium 
+                  transition-all shadow-sm hover:scale-[1.02]">Back To Dashboard</a>
+                    
+                  
+                  <a href="{% url 'home' %}" class="group flex items-center text-[#053830] bg-[#FF9728]
+                  px-4 py-2 rounded-full text-sm font-medium 
+                  transition-all shadow-sm hover:scale-[1.02]">Back To Home</a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden p-2 text-slate-300 hover:text-white rounded-lg">
+                    <i class="ph-bold ph-list text-2xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Dropdown -->
+        <div x-show="mobileMenuOpen" 
+             @click.away="mobileMenuOpen = false"
+             x-transition
+             class="md:hidden border-t border-white/10 bg-primary-dark">
+            <div class="px-4 py-4 space-y-3">
+                <a href="{% url 'home' %}" class="block px-4 py-2 rounded-lg hover:bg-white/10 text-slate-300 hover:text-white font-medium">Home</a>
+                <a href="{% url 'admin_dashboard' %}" class="block px-4 py-2 rounded-lg hover:bg-white/10 text-slate-300 hover:text-white font-medium">Dashboard</a>
+                <a href="{% url 'manage_clients' %}" class="block px-4 py-2 rounded-lg bg-white/10 text-gold font-bold">Clients</a>
+                <a href="{% url 'admin_logout' %}" class="block px-4 py-2 rounded-lg bg-red-500/20 text-red-300 font-medium">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ===========================
+             MAIN CONTENT
+    ============================ -->
+    <main class="flex-grow p-4 md:p-10 relative">
+        
+        <!-- Background Pattern -->
+        <div class="absolute inset-0 z-0 opacity-30 pointer-events-none" style="background-image: radial-gradient(#053830 0.5px, transparent 0.5px); background-size: 24px 24px;"></div>
+
+        <div class="max-w-7xl mx-auto relative z-10 space-y-6 animate-fade-in-up">
+
+            <!-- Toast Notifications -->
+            {% if messages %}
+<div class=" z-[60] flex flex-col gap-3 pointer-events-none w-full max-w-sm px-4 md:px-0">                {% for message in messages %}
+                <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
+                     class="pointer-events-auto bg-white rounded-xl shadow-2xl border-l-4 p-4 flex items-center gap-3 animate-fade-in-up
+                     {% if message.tags == 'success' %}border-green-500{% elif message.tags == 'error' %}border-red-500{% else %}border-blue-500{% endif %}">
+                    {% if message.tags == 'success' %}<i class="ph-fill ph-check-circle text-xl text-green-500"></i>
+                    {% elif message.tags == 'error' %}<i class="ph-fill ph-warning-circle text-xl text-red-500"></i>
+                    {% else %}<i class="ph-fill ph-info text-xl text-blue-500"></i>{% endif %}
+                    <p class="text-sm font-medium text-slate-700">{{ message }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Header Section -->
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div>
+                    <h2 class="text-3xl md:text-4xl font-bold font-heading text-primary">Manage Clients</h2>
+                    <p class="text-slate-500 mt-2 text-lg">View, edit, or remove client accounts and track their status.</p>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                    <!-- Search Form -->
+                    <form method="get" class="relative group w-full sm:w-64">
+                        <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors"></i>
+                        <input type="text" name="q" value="{{ request.GET.q|default:'' }}" 
+                               placeholder="Search clients..." 
+                               class="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition shadow-sm">
+                    </form>
+
+                    <!-- Add Client Button -->
+                    <a href="{% url 'admin_client_register' %}" class="flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-primary-light text-white rounded-xl font-bold shadow-lg shadow-primary/30 transition hover:-translate-y-0.5 whitespace-nowrap">
+                        <i class="ph-bold ph-plus"></i>
+                        <span>Add Client</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Clients Table Card -->
+            <div class="glass-card rounded-3xl overflow-hidden shadow-xl border border-white/60">
+                
+                <!-- Card Header -->
+                <div class="px-6 py-4 bg-slate-50/50 border-b border-slate-100 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                            <i class="ph-bold ph-users"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-700">All Clients <span class="text-slate-400 font-medium ml-1">({{ clients.count }})</span></h3>
+                    </div>
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider bg-white px-2 py-1 rounded border border-slate-200">Latest First</span>
+                </div>
+
+                <!-- Responsive Table Wrapper -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[1000px]">
+                        <thead>
+                            <tr class="bg-slate-50/80 text-xs uppercase tracking-wider text-slate-500 font-bold border-b border-slate-200">
+                                <th class="px-6 py-4 w-16">#</th>
+                                <th class="px-6 py-4">Client Name</th>
+                                <th class="px-6 py-4">Contact Info</th>
+                                <th class="px-6 py-4">Company</th>
+                                <th class="px-6 py-4">Status</th>
+                                <th class="px-6 py-4">Joined Date</th>
+                                <th class="px-6 py-4 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 bg-white/60">
+                            {% for client in clients %}
+                            <tr class="hover:bg-blue-50/50 transition duration-150 group">
+                                <td class="px-6 py-4 text-slate-400 font-medium">{{ forloop.counter }}</td>
+                                
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-primary font-bold border border-slate-200 shadow-sm">
+                                            {{ client.user.first_name|default:client.user.username|slice:":1"|upper }}
+                                        </div>
+                                        <div>
+                                            <div class="font-bold text-slate-800">{{ client.user.get_full_name|default:client.user.username }}</div>
+                                            <div class="text-xs text-slate-500 font-mono">@{{ client.user.username }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-col gap-1">
+                                        <a href="mailto:{{ client.user.email }}" class="flex items-center gap-1.5 text-sm text-slate-600 hover:text-primary transition">
+                                            <i class="ph-fill ph-envelope text-gold"></i>
+                                            {{ client.user.email }}
+                                        </a>
+                                        <div class="flex items-center gap-1.5 text-sm text-slate-500">
+                                            <i class="ph-fill ph-phone text-slate-300"></i>
+                                            {{ client.phone|default:"—" }}
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <i class="ph ph-buildings text-slate-400"></i>
+                                        <span class="text-slate-700 font-medium">{{ client.company_name|default:"—" }}</span>
+                                    </div>
+                                </td>
+
+                              <td class="px-6 py-4">
+    {% if client.payment_status == 'Paid' %}
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200">
+            <span class="w-1.5 h-1.5 rounded-full bg-green-600"></span> Paid
+        </span>
+
+    {% elif client.payment_status == 'Partial' %}
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700 border border-yellow-200">
+            <span class="w-1.5 h-1.5 rounded-full bg-yellow-500"></span> Partial
+        </span>
+
+    {% elif client.payment_status == 'Pending' %}
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gold/10 text-gold border border-gold/20">
+            <span class="w-1.5 h-1.5 rounded-full bg-gold animate-pulse"></span> Pending
+        </span>
+
+    {% elif client.payment_status == 'Not Assigned' %}
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200">
+            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Not Assigned
+        </span>
+
+    {% else %}
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200">
+            <i class="ph-fill ph-warning-circle"></i> {{ client.payment_status }}
+        </span>
+    {% endif %}
+</td>
+                                <td class="px-6 py-4 text-sm text-slate-500">
+                                    {{ client.date_created|date:"M d, Y" }}
+                                </td>
+
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center justify-center gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
+                                        <a href="{% url 'client_detail' client.pk %}" class="w-8 h-8 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-white flex items-center justify-center transition" title="View Details">
+                                            <i class="ph-bold ph-eye"></i>
+                                        </a>
+                                        
+                                        <a href="{% url 'edit_client' client.pk %}" class="w-8 h-8 rounded-lg bg-gold/10 text-gold hover:bg-gold hover:text-primary-dark flex items-center justify-center transition" title="Edit">
+                                            <i class="ph-bold ph-pencil-simple"></i>
+                                        </a>
+
+                                        <form action="{% url 'delete_client' client.pk %}" method="post" onsubmit="return confirmDeleteClient(event, '{{ client.user.get_full_name|default:client.user.username }}')">
+                                            {% csrf_token %}
+                                            <button type="submit" class="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition" title="Delete">
+                                                <i class="ph-bold ph-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="px-6 py-12 text-center">
+                                    <div class="flex flex-col items-center justify-center">
+                                        <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3">
+                                            <i class="ph ph-users-three text-3xl text-slate-300"></i>
+                                        </div>
+                                        <h3 class="text-slate-600 font-bold">No Clients Found</h3>
+                                        <p class="text-slate-400 text-sm mt-1">Get started by adding a new client to the system.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination Footer -->
+                <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-sm">
+                    <div class="text-slate-500 font-medium">Showing <span class="text-slate-900 font-bold">{{ clients|length }}</span> clients</div>
+                    
+                    <!-- Pagination (Placeholder logic) -->
+                    {% if is_paginated %}
+                    <div class="flex gap-2">
+                        <button class="px-3 py-1 rounded border border-slate-200 bg-white text-slate-600 hover:border-primary hover:text-primary transition" disabled>Previous</button>
+                        <button class="px-3 py-1 rounded border border-slate-200 bg-white text-slate-600 hover:border-primary hover:text-primary transition">Next</button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script>
+        // Form submission loader logic
+        document.addEventListener('submit', function(e){
+            const form = e.target;
+            // Only trigger for admin actions (forms with CSRF) to avoid blocking search
+            if (form && form.querySelector('input[name="csrfmiddlewaretoken"]')) {
+                const blur = document.getElementById('blur-loader');
+                if (blur) blur.style.display = 'flex';
+                
+                // Optional: Disable submit buttons to prevent double-clicks
+                form.querySelectorAll('button[type="submit"]').forEach(b => {
+                    b.style.opacity = '0.7';
+                    b.style.pointerEvents = 'none';
+                });
+            }
+        });
+
+        // Confirmation for delete
+        function confirmDeleteClient(evt, name) {
+            const msg = `Delete client "${name}"?\n\nThis will permanently remove their user account and associated data. Proceed?`;
+            if (!confirm(msg)) {
+                evt.preventDefault();
+                return false;
+            }
+            return true;
+        }
+
+        // Live Search Filter (Client-side)
+        (function(){
+            const searchInput = document.querySelector('input[name="q"]');
+            if (!searchInput) return;
+            
+            searchInput.addEventListener('input', function(){
+                const q = this.value.trim().toLowerCase();
+                const rows = document.querySelectorAll('table tbody tr');
+                
+                rows.forEach(row => {
+                    // Skip empty state row
+                    if(row.cells.length < 2) return;
+                    
+                    const text = row.innerText.toLowerCase();
+                    if(q && !text.includes(q)) {
+                        row.style.display = 'none';
+                    } else {
+                        row.style.display = '';
+                    }
+                });
+            });
+        })();
+    </script>
+</body>
+</html>

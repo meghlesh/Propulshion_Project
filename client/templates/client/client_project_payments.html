@@ -1,0 +1,791 @@
+{% load static %}
+{% load dict_extras %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Payment Details | Propulsion</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Alpine.js -->
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+    <!-- Google Fonts: Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <script>
+        tailwind.config = {
+          theme: {
+            extend: {
+              fontFamily: {
+                sans: ['Poppins', 'sans-serif'],
+              },
+              colors: {
+                'primary-green': '#053830',        
+                'primary-green-hover': '#155C54', 
+                'accent-green': '#D2E8B8',        
+                'highlight-gold': '#FF9728',        
+                'gold-hover': '#e0851f',
+              },
+              animation: {
+                'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+              },
+              keyframes: {
+                fadeInUp: {
+                    '0%': { opacity: '0', transform: 'translateY(20px)' },
+                    '100%': { opacity: '1', transform: 'translateY(0)' },
+                }
+              }
+            }
+          }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(5, 56, 48, 0.05);
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #155C54; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #053830; }
+
+        /* Form styling */
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #053830;
+            box-shadow: 0 0 0 4px rgba(5, 56, 48, 0.1);
+        }
+
+        .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+    </style>
+</head>
+
+<body class="bg-[#e2e8f0] text-slate-800 h-screen overflow-hidden flex selection:bg-highlight-gold selection:text-white" 
+      x-data="{ 
+          mobileMenuOpen: false, 
+          imageModalOpen: false, 
+          imageModalSrc: '' 
+      }">
+
+    <!-- ===========================
+          MOBILE SIDEBAR OVERLAY
+    ============================ -->
+    <div x-show="mobileMenuOpen" class="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true" style="display: none;">
+        <!-- Backdrop -->
+        <div x-show="mobileMenuOpen" 
+             x-transition:enter="transition-opacity ease-linear duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-linear duration-300"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 bg-black/60 backdrop-blur-sm"
+             @click="mobileMenuOpen = false"></div>
+
+        <!-- Slide-out Panel -->
+        <div x-show="mobileMenuOpen" 
+             x-transition:enter="transition ease-in-out duration-300 transform"
+             x-transition:enter-start="-translate-x-full"
+             x-transition:enter-end="translate-x-0"
+             x-transition:leave="transition ease-in-out duration-300 transform"
+             x-transition:leave-start="translate-x-0"
+             x-transition:leave-end="-translate-x-full"
+             class="fixed inset-y-0 left-0 w-72 bg-primary-green text-white shadow-2xl flex flex-col h-full safe-bottom">
+            
+            <!-- Mobile Brand -->
+            <div class="p-6 flex items-center justify-between border-b border-white/10">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/10 text-highlight-gold font-extrabold text-xl">P</div>
+                    <span class="font-bold text-lg">Propulsion</span>
+                </div>
+                <button @click="mobileMenuOpen = false" class="text-white/70 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <!-- Mobile Nav -->
+            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest px-4 pb-2">Main Menu</p>
+                
+                <a href="{% url 'client:client_dashboard' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                    <span class="font-medium">Dashboard</span>
+                </a>
+
+                <a href="{% url 'client:client_projects' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    <span class="font-medium">Projects</span>
+                </a>
+
+                <a href="{% url 'client:client_personal_documents' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <span class="font-medium">Documents</span>
+                </a>
+
+                <!-- Active Page Indicator (Payments) -->
+                <div class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary-green-hover border-l-4 border-highlight-gold text-white shadow-lg">
+                    <svg class="w-5 h-5 text-highlight-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                    <span class="font-bold">Payments</span>
+                </div>
+            </nav>
+
+            <!-- User Info Mobile -->
+            <div class="p-4 border-t border-white/10">
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-white/5">
+                    <div class="w-8 h-8 rounded-full bg-highlight-gold text-primary-green flex items-center justify-center font-bold text-xs">
+                        {{ user.username|slice:":1"|upper }}
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-white">{% if user.email %}{{ user.email }}{% else %}{{ user.username }}{% endif %}</p>
+                        <p class="text-xs text-white/50">Logged In</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===========================
+              TOAST NOTIFICATIONS
+    ============================ -->
+    {% if messages %}
+    <div class="fixed top-6 right-6 z-[60] flex flex-col gap-3 pointer-events-none w-full max-w-[90vw] md:max-w-sm px-4 md:px-0">
+        {% for message in messages %}
+        <div x-data="{ show: true }" 
+             x-show="show" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-x-12 scale-95"
+             x-transition:enter-end="opacity-100 translate-x-0 scale-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-90"
+             x-init="setTimeout(() => show = false, 5000)"
+             class="pointer-events-auto relative overflow-hidden bg-white rounded-2xl shadow-2xl border-l-4 flex p-4 items-start gap-3"
+             :class="{
+                'border-green-500': '{{ message.tags }}' == 'success',
+                'border-red-500': '{{ message.tags }}' == 'error',
+                'border-highlight-gold': '{{ message.tags }}' == 'warning',
+                'border-blue-500': '{{ message.tags }}' == 'info' || '{{ message.tags }}' == ''
+             }">
+             
+             <div class="mt-0.5 flex-shrink-0">
+                {% if message.tags == 'success' %}
+                    <i class="ph-fill ph-check-circle text-2xl text-green-500"></i>
+                {% elif message.tags == 'error' %}
+                    <i class="ph-fill ph-warning-circle text-2xl text-red-500"></i>
+                {% elif message.tags == 'warning' %}
+                    <i class="ph-fill ph-warning text-2xl text-highlight-gold"></i>
+                {% else %}
+                    <i class="ph-fill ph-info text-2xl text-blue-500"></i>
+                {% endif %}
+             </div>
+
+             <div class="flex-1 min-w-0">
+                 <h4 class="font-bold text-sm text-slate-800 capitalize truncate">
+                    {% if message.tags %}{{ message.tags }}{% else %}Notification{% endif %}
+                 </h4>
+                 <p class="text-sm text-slate-500 leading-snug mt-1 break-words">{{ message }}</p>
+             </div>
+
+             <button @click="show = false" class="text-slate-400 hover:text-slate-600 transition flex-shrink-0">
+                 <i class="ph-bold ph-x"></i>
+             </button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- ===========================
+                 DESKTOP SIDEBAR
+    ============================ -->
+    <aside class="w-72 bg-primary-green text-white hidden md:flex flex-col relative z-20 shadow-2xl h-full shrink-0">
+        <!-- Glow Effect -->
+        <div class="absolute top-0 left-0 w-full h-64 bg-highlight-gold blur-[120px] opacity-10 pointer-events-none"></div>
+
+        <div class="p-8 z-10 flex items-center gap-3 shrink-0">
+            <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/10 backdrop-blur-sm text-highlight-gold font-extrabold text-xl shadow-lg">P</div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight leading-none">Propulsion</h1>
+                <span class="text-[10px] text-gray-400 uppercase tracking-widest">Client Portal</span>
+            </div>
+        </div>
+
+        <nav class="flex-1 px-4 space-y-1 z-10 overflow-y-auto sidebar-nav pb-4 custom-scrollbar">
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest px-4 pt-4 pb-2">Main Menu</p>
+            
+            <a href="{% url 'client:client_dashboard' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                <span class="font-medium">Dashboard</span>
+            </a>
+
+            <a href="{% url 'client:client_projects' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                <span class="font-medium">Projects</span>
+            </a>
+
+            <a href="{% url 'client:client_personal_documents' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                <span class="font-medium">Documents</span>
+            </a>
+
+            <!-- Active Menu -->
+            <div class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary-green-hover border-l-4 border-highlight-gold text-white shadow-lg">
+                <svg class="w-5 h-5 text-highlight-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                <span class="font-medium">Payments</span>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- ===========================
+                  MAIN CONTENT
+    ============================ -->
+    <main class="flex-1 flex flex-col h-full relative z-0 overflow-hidden w-full">
+        
+        <!-- Header -->
+        <header class="h-16 md:h-20 glass flex items-center justify-between px-4 md:px-8 sticky top-0 z-30 transition-all">
+            <div class="flex items-center gap-4">
+                <!-- Mobile Toggle -->
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+
+                <a href="{% url 'client:client_payments' %}" class="flex items-center gap-2 text-slate-500 hover:text-primary-green transition-colors group">
+                    <i class="ph-bold ph-arrow-left text-xl group-hover:-translate-x-1 transition-transform"></i>
+                    <span class="font-bold text-lg md:text-xl text-primary-green tracking-tight">Back to Dashboard</span>
+                </a>
+            </div>
+
+            <!-- Right Header Section (Profile) -->
+            <div class="flex items-center gap-6">
+                <!-- Notification Bell -->
+                <button class="w-10 h-10 rounded-full bg-white border border-slate-200 text-slate-500 hover:text-highlight-gold hover:border-highlight-gold hover:shadow-lg transition flex items-center justify-center relative">
+                    <i class="ph ph-bell text-xl"></i>
+                    <span class="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                </button>
+
+                <!-- User Info -->
+              <!-- Profile Dropdown -->
+                <div class="relative" x-data="{ userMenuOpen: false }">
+                    <div @click="userMenuOpen = !userMenuOpen" @click.outside="userMenuOpen = false" class="flex items-center gap-2 md:gap-3 cursor-pointer hover:bg-white p-1 md:p-1.5 md:pr-4 rounded-full transition border border-transparent hover:border-gray-200 select-none">
+                        <div class="w-8 h-8 md:w-9 md:h-9 bg-highlight-gold rounded-full shadow-md flex items-center justify-center text-white font-bold text-xs md:text-sm">
+                            {{ user.username|slice:":1"|upper|default:"J" }}
+                        </div>
+                        <div class="hidden md:block">
+                            <p class="text-sm font-bold text-primary-green leading-tight">{{ user.username|default:"Guest User" }}</p>
+                            <p class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Client</p>
+                        </div>
+                        <svg :class="{'rotate-180': userMenuOpen}" class="w-4 h-4 text-slate-400 transition-transform duration-200 hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+
+                    <!-- Dropdown Menu -->
+                    <div x-show="userMenuOpen" 
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border border-slate-100 py-1 z-50 overflow-hidden origin-top-right">
+                         
+                        <div class="px-4 py-3 border-b border-slate-50 md:hidden">
+                            <!-- Mobile-only User Info inside dropdown -->
+                            <p class="text-sm font-bold text-slate-700 truncate">{{ user.username|default:"Guest User" }}</p>
+                            <p class="text-xs text-slate-400">{{ user.email|default:"user@example.com" }}</p>
+                        </div>
+                         
+                        <div class="px-4 py-3 border-b border-slate-50 hidden md:block">
+                            <p class="text-xs text-slate-400 font-semibold uppercase">Account</p>
+                            <p class="text-sm font-bold text-slate-700 truncate">{{ user.email|default:"user@example.com" }}</p>
+                        </div>
+
+                        <a href="#" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-primary-green transition flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                            My Profile
+                        </a>
+                        <a href="#" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-primary-green transition flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            Settings
+                        </a>
+                        
+                        <div class="h-px bg-slate-100 my-1"></div>
+                        
+                        <!-- Logout Link -->
+                        <a href="{% url 'client:client_logout' %}" class="block px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition flex items-center gap-2 font-medium">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                            Logout
+                        </a>
+                    </div>
+            </div>
+        </header>
+
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 relative z-10 w-full">
+            <div class="max-w-5xl mx-auto space-y-6 md:space-y-8 animate-fade-in-up safe-bottom">
+
+                <!-- Project Hero Card -->
+                <div class="bg-primary-green text-white p-6 md:p-10 rounded-3xl shadow-xl relative overflow-hidden border border-white/5">
+                    <!-- Decorative Circles -->
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-highlight-gold/20 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+                    <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-10 -mb-10 blur-2xl"></div>
+
+                    <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+                        <div>
+                            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-highlight-gold text-xs font-bold mb-3 uppercase tracking-wider">
+                                <i class="ph-fill ph-hash"></i> Project ID: {{ project.id|stringformat:"06d" }}
+                            </div>
+                            <h1 class="text-2xl md:text-3xl lg:text-4xl font-bold leading-tight">{{ project.project_name }}</h1>
+                            <p class="text-slate-300 mt-2 text-sm md:text-base max-w-xl">Manage payments, view transaction history, and track financial milestones for this project.</p>
+                        </div>
+                        
+                        <!-- Quick Status Badge -->
+                        <div class="px-4 md:px-5 py-2 md:py-2.5 rounded-xl backdrop-blur-md border {% if balance_amount > 0 %}bg-highlight-gold/20 border-highlight-gold/30 text-highlight-gold{% else %}bg-green-500/20 border-green-400/30 text-green-300{% endif %} font-bold text-sm md:text-base flex items-center gap-2 whitespace-nowrap">
+                            {% if balance_amount > 0 %}
+                                <i class="ph-fill ph-warning-circle text-lg md:text-xl"></i> Payment Pending
+                            {% else %}
+                                <i class="ph-fill ph-check-circle text-lg md:text-xl"></i> Fully Paid
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Stats Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                    <!-- Total -->
+                    <div class="bg-white p-5 md:p-6 rounded-2xl flex items-center gap-4 md:gap-5 transition hover:-translate-y-1 hover:shadow-lg border border-slate-100">
+                        <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 shrink-0">
+                            <i class="ph-fill ph-receipt text-xl md:text-2xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs md:text-sm font-semibold text-slate-400 uppercase tracking-wide">Total Cost</p>
+                            <h3 class="text-xl md:text-2xl font-bold text-slate-800">₹{{ total_amount }}</h3>
+                        </div>
+                    </div>
+
+                    <!-- Paid -->
+                    <div class="bg-white p-5 md:p-6 rounded-2xl flex items-center gap-4 md:gap-5 transition hover:-translate-y-1 hover:shadow-lg border border-slate-100">
+                        <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-green-50 flex items-center justify-center text-green-600 shrink-0">
+                            <i class="ph-fill ph-check-fat text-xl md:text-2xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs md:text-sm font-semibold text-slate-400 uppercase tracking-wide">Total Paid</p>
+                            <h3 class="text-xl md:text-2xl font-bold text-green-600">₹{{ paid_amount }}</h3>
+                        </div>
+                    </div>
+
+                    <!-- Pending -->
+                    <div class="bg-white p-5 md:p-6 rounded-2xl flex items-center gap-4 md:gap-5 transition hover:-translate-y-1 hover:shadow-lg border border-slate-100 border-l-4 {% if balance_amount > 0 %}border-l-highlight-gold{% else %}border-l-transparent{% endif %}">
+                        <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl {% if balance_amount > 0 %}bg-orange-50 text-highlight-gold{% else %}bg-slate-50 text-slate-300{% endif %} flex items-center justify-center shrink-0">
+                            <i class="ph-fill ph-hourglass-high text-xl md:text-2xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs md:text-sm font-semibold text-slate-400 uppercase tracking-wide">Balance Due</p>
+                            <h3 class="text-xl md:text-2xl font-bold {% if balance_amount > 0 %}text-highlight-gold{% else %}text-slate-300{% endif %}">₹{{ balance_amount }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- IF PENDING → SHOW PAYMENT FORM -->
+                {% if balance_amount > 0 %}
+                <div class="bg-white rounded-2xl md:rounded-3xl overflow-hidden shadow-sm border border-slate-200">
+                    <div class="bg-slate-50/50 px-6 md:px-8 py-4 border-b border-slate-100 flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-primary-green text-white flex items-center justify-center shrink-0">
+                            <i class="ph-bold ph-currency-inr"></i>
+                        </div>
+                        <h3 class="font-bold text-base md:text-lg text-primary-green">Initiate Payment</h3>
+                    </div>
+
+                    <div class="p-6 md:p-8">
+                        <form action="{% url 'client:client_make_payment' project.id %}" 
+                              method="POST" 
+                              enctype="multipart/form-data"
+                              class="space-y-6">
+                            {% csrf_token %}
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Amount -->
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-700 mb-2">Payment Amount *</label>
+                                    <div class="relative">
+                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
+                                        
+                                        <input id="payment_amount" 
+                                               type="number" 
+                                               step="0.01" 
+                                               name="amount" 
+                                               value="{{ balance_amount|default:0 }}" 
+                                               class="w-full pl-8 pr-4 py-3 bg-slate-50 rounded-xl border border-slate-200 
+                                                      font-bold text-slate-700 transition 
+                                                      focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                               placeholder="0.00"
+                                               oninput="validateAmount()">
+                                    </div>
+                                    
+                                    <p id="amount_error" class="text-red-500 text-xs font-semibold mt-1 hidden"></p>
+                                </div>
+
+                                <!-- Mode -->
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-700 mb-2">Payment Mode</label>
+                                    <div class="relative">
+                                        <select name="mode" class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 appearance-none text-slate-700 cursor-pointer focus:ring-2 focus:ring-primary-green/20 focus:border-primary-green">
+                                            <option value="gpay">Google Pay</option>
+                                            <option value="phonepe">PhonePe</option>
+                                            <option value="paytm">Paytm</option>
+                                            <option value="bank">Bank Transfer (NEFT/IMPS)</option>
+                                            <option value="cash">Cash Deposit</option>
+                                            <option value="cheque">Cheque</option>
+                                        </select>
+                                        <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Transaction ID -->
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Transaction Reference / UTR No.</label>
+                                <input type="text" name="transaction_id" placeholder="e.g. UPI/1234567890 or Cheque No." 
+                                       class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-700 placeholder-slate-400 transition focus:ring-2 focus:ring-primary-green/20 focus:border-primary-green">
+                            </div>
+
+                            <!-- Note -->
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Additional Notes <span class="text-slate-400 font-normal">(Optional)</span></label>
+                                <textarea name="note" rows="2" class="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-700 transition focus:ring-2 focus:ring-primary-green/20 focus:border-primary-green"></textarea>
+                            </div>
+
+                            <!-- Screenshot / Payment Proof Upload -->
+                            <div x-data="{ 
+                                    isDragging: false, 
+                                    fileName: '', 
+                                    previewUrl: '',
+                                }" class="space-y-4 mt-2">
+
+                                <!-- If existing screenshot already uploaded -->
+                                {% if existing_payment and existing_payment.screenshot %}
+                                <div>
+                                    <p class="text-sm font-bold text-slate-700 mb-2">Uploaded Proof (Click to Enlarge) *</p>
+                                    <img src="{{ existing_payment.screenshot.url }}" 
+                                         @click="imageModalSrc = '{{ existing_payment.screenshot.url }}'; imageModalOpen = true"
+                                         class="w-full h-48 object-cover rounded-xl shadow-md border cursor-zoom-in hover:opacity-90 transition" 
+                                         alt="Payment Proof" />
+                                </div>
+                                {% endif %}
+
+                                <label 
+                                    @dragenter.prevent="isDragging = true"
+                                    @dragleave.prevent="isDragging = false"
+                                    @dragover.prevent
+                                    @drop.prevent="isDragging = false"
+                                    class="flex flex-col items-center justify-center w-full h-40 rounded-xl border-2 border-dashed cursor-pointer 
+                                           bg-white hover:bg-slate-50 transition 
+                                           border-slate-300 text-slate-500 
+                                           hover:border-primary-green hover:text-primary-green"
+                                    :class="{ 'border-primary-green bg-green-50': isDragging }"
+                                >
+                                    <div class="flex flex-col items-center pointer-events-none">
+                                        <i class="ph ph-upload-simple text-3xl mb-2"></i>
+                                        <p class="text-sm font-semibold">Drag & Drop Payment Screenshot</p>
+                                        <p class="text-xs text-slate-400">or click to browse</p>
+                                    </div>
+
+                                    <!-- Added x-ref to clear the input value via JS -->
+                                    <input 
+                                        x-ref="fileInput"
+                                        type="file"
+                                        name="screenshot"
+                                        accept="image/*"
+                                        class="hidden"
+                                        @change="
+                                            const file = $event.target.files[0];
+                                            if (!file) return;
+                                            
+                                            // 5MB Limit
+                                            const sizeLimit = 5 * 1024 * 1024;
+                                            const allowed = ['jpg', 'jpeg', 'png'];
+                                            const ext = file.name.split('.').pop().toLowerCase();
+
+                                            if (file.size > sizeLimit) {
+                                                alert('❌ File size cannot exceed 5 MB');
+                                                $event.target.value = '';
+                                                fileName = '';
+                                                previewUrl = '';
+                                                return;
+                                            }
+
+                                            if (!allowed.includes(ext)) {
+                                                alert('❌ Only JPG, JPEG, PNG files allowed');
+                                                $event.target.value = '';
+                                                fileName = '';
+                                                previewUrl = '';
+                                                return;
+                                            }
+
+                                            // If valid, set preview
+                                            fileName = file.name;
+                                            previewUrl = URL.createObjectURL(file);
+                                        "
+                                    />
+                                </label>
+
+                                <!-- Live Preview Before Upload -->
+                                <template x-if="previewUrl">
+                                    <div class="relative group inline-block w-full">
+                                        <!-- Image -->
+                                        <img :src="previewUrl" 
+                                             @click="imageModalSrc = previewUrl; imageModalOpen = true"
+                                             class="w-full h-48 object-cover rounded-xl shadow border cursor-zoom-in hover:opacity-90 transition" />
+                                        
+                                        <!-- REMOVE BUTTON (Cross Option) -->
+                                        <button 
+                                            type="button"
+                                            @click.prevent="previewUrl = ''; fileName = ''; $refs.fileInput.value = null"
+                                            class="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-md transition-transform hover:scale-110 flex items-center justify-center z-10"
+                                            title="Remove Image">
+                                            <i class="ph-bold ph-x text-sm"></i>
+                                        </button>
+
+                                        <p class="text-xs text-slate-500 mt-1 font-semibold" x-text="fileName"></p>
+                                    </div>
+                                </template>
+
+                            </div>
+
+                            <!-- WARNING MESSAGE (Hidden by default, shown by JS) -->
+                            <div id="pendingMessage" class="hidden mb-4 p-4 bg-orange-50 border-l-4 border-orange-400 text-orange-700 rounded-r-lg shadow-sm">
+                                <div class="flex items-start gap-3">
+                                    <i class="ph-fill ph-warning-circle text-xl mt-0.5"></i>
+                                    <div>
+                                        <p class="font-bold text-sm">Payment Pending Approval</p>
+                                        <p class="text-xs mt-1 leading-relaxed">You have a transaction currently under review by the admin. Please wait for confirmation before initiating a new payment.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button id="submitBtn" type="submit" 
+                                class="w-full bg-primary-green text-white font-semibold py-4 rounded-xl
+                                       shadow-[0_6px_0_#0b5d42] hover:shadow-[0_3px_0_#0b5d42] active:shadow-[0_0px_0_#0b5d42]
+                                       hover:-translate-y-1 active:translate-y-0
+                                       transition-all duration-300 flex items-center justify-center group">
+                                
+                                <span class="flex items-center gap-2 tracking-wide">
+                                    Submit Payment Record
+                                </span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Transaction History Table -->
+                <div class="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="px-6 md:px-8 py-4 md:py-6 border-b border-slate-100 bg-slate-50/30 flex flex-wrap items-center justify-between gap-3">
+                        <h3 class="text-lg font-bold text-slate-800">Transaction History</h3>
+                        <button class="text-sm text-primary-green font-semibold hover:underline">Download Receipt</button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[700px]">
+                            <thead>
+                                <tr class="bg-slate-50 text-xs uppercase tracking-wider text-slate-400 font-bold border-b border-slate-100">
+                                    <th class="px-6 md:px-8 py-4">Date</th>
+                                    <th class="px-6 py-4">Amount</th>
+                                    <th class="px-6 py-4">Mode</th>
+                                    <th class="px-6 py-4">Status</th>
+                                    <th class="px-6 md:px-8 py-4">Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                {% for h in history %}
+                                <tr class="hover:bg-slate-50/80 transition">
+                                    <td class="px-6 md:px-8 py-4 text-sm font-medium text-slate-600">
+                                        {{ h.created_at|date:"M d, Y" }} <br>
+                                        <span class="text-xs text-slate-400 font-normal">{{ h.created_at|date:"h:i A" }}</span>
+                                    </td>
+                                    <td class="px-6 py-4 font-bold text-slate-800">₹{{ h.amount }}</td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold uppercase">
+                                            <i class="ph-bold ph-bank"></i> {{ h.mode }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        {% if h.status == "Approved" %}
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold border border-green-200">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-green-600"></span> Approved
+                                            </span>
+                                        {% elif h.status == "Rejected" %}
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold border border-red-200">
+                                                <i class="ph-fill ph-x-circle"></i> Rejected
+                                            </span>
+                                        {% else %}
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-bold border border-orange-200 animate-pulse">
+                                                <i class="ph-fill ph-clock"></i> Pending
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-6 md:px-8 py-4 text-sm text-slate-500">
+                                        {% if h.admin_reason %}
+                                            {{ h.admin_reason }}
+                                        {% else %}
+                                            <span class="text-slate-300 italic">—</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="py-12 text-center">
+                                        <div class="flex flex-col items-center justify-center">
+                                            <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3">
+                                                <i class="ph ph-receipt-x text-2xl text-slate-300"></i>
+                                            </div>
+                                            <p class="text-slate-500 font-medium">No transactions recorded yet.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- ===========================
+          IMAGE PREVIEW LIGHTBOX
+    ============================ -->
+    <div x-show="imageModalOpen" 
+         style="display: none;"
+         class="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10"
+         role="dialog"
+         aria-modal="true">
+        
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/90 backdrop-blur-sm transition-opacity" 
+             x-show="imageModalOpen"
+             x-transition:enter="ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="imageModalOpen = false"></div>
+
+        <!-- Image Container -->
+        <div class="relative z-10 w-full h-full flex items-center justify-center pointer-events-none"
+             x-show="imageModalOpen"
+             x-transition:enter="ease-out duration-300"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
+             x-transition:leave="ease-in duration-200"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-95">
+             
+            <img :src="imageModalSrc" 
+                 class="max-w-full max-h-full object-contain rounded-lg shadow-2xl pointer-events-auto" 
+                 alt="Full size preview">
+            
+            <!-- Close Button -->
+            <button @click="imageModalOpen = false" 
+                    class="absolute top-4 right-4 md:top-6 md:right-6 text-white/80 hover:text-white bg-black/50 hover:bg-black/70 rounded-full p-2 transition pointer-events-auto">
+                <i class="ph-bold ph-x text-2xl"></i>
+            </button>
+        </div>
+    </div>
+
+
+    <script>
+    function checkAmount(){
+        let max = parseFloat("{{ balance_amount }}");  // pending amount from backend
+        let input = document.getElementById("paymentInput");
+        let error = document.getElementById("paymentError");
+        let submitBtn = document.getElementById("submitBtn"); 
+
+        if (parseFloat(input.value) > max) {
+            input.value = max; // block extra amount
+            error.innerText = "❗ You cannot enter more than pending balance ₹" + max;
+            submitBtn.disabled = true;
+            submitBtn.classList.add("opacity-50","cursor-not-allowed");
+        } else {
+            error.innerText = "";
+            submitBtn.disabled = false;
+            submitBtn.classList.remove("opacity-50","cursor-not-allowed");
+        }
+    }
+    </script>
+
+    <script>
+    function validateAmount() {
+        let input = document.getElementById("payment_amount");
+        let error = document.getElementById("amount_error");
+
+        let pending = parseFloat("{{ balance_amount|default:'0' }}"); // safely converts to number
+        let entered = parseFloat(input.value) || 0; // avoids NaN error
+
+        if (entered > pending) {
+            error.textContent = "⚠ Overpayment not allowed. Max payable: ₹" + pending;
+            error.classList.remove("hidden");
+            input.classList.add("border-red-500");
+        } else {
+            error.classList.add("hidden");
+            input.classList.remove("border-red-500");
+        }
+    }
+</script>
+
+<!-- Script to disable submit if Pending transaction exists -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    try {
+        const submitBtn = document.getElementById("submitBtn");
+        if (!submitBtn) return;
+
+        const rows = document.querySelectorAll("table tbody tr");
+        let foundPending = false;
+
+        rows.forEach(row => {
+            const text = row.innerText || '';
+            if (text.indexOf('Pending') !== -1) {
+                foundPending = true;
+            }
+        });
+
+        if (foundPending) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add("opacity-50", "cursor-not-allowed");
+
+            const msg = document.getElementById("pendingMessage");
+            if(msg) msg.classList.remove("hidden");
+
+            submitBtn.closest('form')?.addEventListener('submit', function(e){
+                if (submitBtn.disabled) {
+                    e.preventDefault();
+                }
+            });
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
+            
+            const msg = document.getElementById("pendingMessage");
+            if(msg) msg.classList.add("hidden");
+        }
+    } catch (err) {
+        console.error("Pending-check script error:", err);
+    }
+});
+</script>
+
+</body>
+</html>

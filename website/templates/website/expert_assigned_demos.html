@@ -5,8 +5,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Assigned Demo Requests | Propulsion Expert</title>
-  <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+  <link rel="icon" type="image/png" href="{% static 'img/logo6.png'%}">
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* Prevent name column from breaking into new line */
+    .no-wrap-text {
+      white-space: nowrap;
+    }
+  </style>
 </head>
 
 <body class="bg-[#EAF4E0] font-sans text-[#053830]">
@@ -16,7 +23,7 @@
     <h1 class="text-2xl font-bold">Assigned Demo Requests</h1>
     <div>
       <a href="{% url 'expert_dashboard' %}" class="text-[#FF9728] font-semibold hover:text-white mr-6">Dashboard</a>
-      <a href="{% url 'expert_logout' %}" 
+      <a href="{% url 'expert_logout' %}"
          class="bg-[#FF9728] text-[#053830] px-4 py-2 rounded-xl font-semibold hover:bg-white hover:text-[#053830] transition-all">
          Logout
       </a>
@@ -46,7 +53,7 @@
             <th class="py-3 px-6 text-left font-semibold">Client Name</th>
             <th class="py-3 px-6 text-left font-semibold">Email</th>
             <th class="py-3 px-6 text-left font-semibold">Phone</th>
-            <th class="py-3 px-6 text-left font-semibold">Company</th>
+            <th class="py-3 px-6 text-left font-semibold">Service</th>
             <th class="py-3 px-6 text-left font-semibold">Scheduled Date</th>
             <th class="py-3 px-6 text-left font-semibold">Message</th>
             <th class="py-3 px-6 text-center font-semibold">Status</th>
@@ -57,60 +64,97 @@
         <tbody class="divide-y divide-gray-200 text-gray-700">
           {% for demo in assigned_demos %}
           <tr class="hover:bg-[#F9FBF8] transition">
-            <td class="py-3 px-6 font-medium uppercase">{{ demo.name }}</td>
+            
+            <!-- Prevent name from wrapping -->
+            <td class="py-3 px-6 font-medium uppercase no-wrap-text">{{ demo.name }}</td>
+
             <td class="py-3 px-6">{{ demo.email }}</td>
             <td class="py-3 px-6">{{ demo.phone|default:"-" }}</td>
             <td class="py-3 px-6">{{ demo.company|default:"-" }}</td>
             <td class="py-3 px-6">{{ demo.scheduled_date|date:"M d, Y - H:i A" }}</td>
             <td class="py-3 px-6">{{ demo.message|default:"(No message)" }}</td>
 
-            <!-- Status -->
             <td class="py-3 px-6 text-center">
               {% if demo.status == "accepted" %}
                 <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold shadow-sm">Accepted</span>
               {% elif demo.status == "rejected" %}
                 <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-semibold shadow-sm">Rejected</span>
-              {% elif demo.status == "assigned" %}
-                <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-semibold shadow-sm">Assigned</span>
               {% else %}
-                <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold shadow-sm">{{ demo.status|capfirst }}</span>
+                <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-semibold shadow-sm">Assigned</span>
               {% endif %}
             </td>
 
-            <!-- Action Buttons -->
-            <td class="py-3 px-6 text-center">
+            <td class="py-3 px-6">
               {% if demo.status == "assigned" %}
-              <form method="POST" class="flex justify-center gap-2">
-                {% csrf_token %}
-                <input type="hidden" name="demo_id" value="{{ demo.id }}">
-                <button name="action" value="accept"
-                        class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-xs font-semibold shadow-md transition-all transform hover:scale-105">
-                        Accept
+
+              <!-- Make buttons always in one line -->
+              <div class="flex items-center justify-center gap-3">
+
+                <button type="button"
+                  onclick="openRejectModal('{{ demo.id }}')"
+                  class="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded-lg text-xs font-semibold shadow-md transition">
+                  Reject
                 </button>
-                <button name="action" value="reject"
-                        class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-xs font-semibold shadow-md transition-all transform hover:scale-105">
-                        Reject
-                </button>
-              </form>
+
+                <form method="POST">
+                  {% csrf_token %}
+                  <input type="hidden" name="demo_id" value="{{ demo.id }}">
+                  <button name="action" value="accept"
+                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded-lg text-xs font-semibold shadow-md transition">
+                    Accept
+                  </button>
+                </form>
+
+              </div>
+
               {% else %}
                 <span class="text-gray-500 italic">No action available</span>
               {% endif %}
             </td>
+
           </tr>
           {% endfor %}
         </tbody>
+
       </table>
     </div>
 
     {% else %}
-    <div class="text-center bg-gray-50 py-12 rounded-2xl border border-gray-200 shadow-md mt-10">
-      <p class="text-lg font-semibold text-gray-600">No demo requests assigned yet.</p>
-      <p class="text-sm text-gray-500">Once assigned, they will appear here with full details.</p>
-    </div>
+      <div class="text-center bg-gray-50 py-12 rounded-2xl border border-gray-200 shadow-md mt-10">
+        <p class="text-lg font-semibold text-gray-600">No demo requests assigned yet.</p>
+        <p class="text-sm text-gray-500">Once assigned, they will appear here with full details.</p>
+      </div>
     {% endif %}
+
   </main>
 
-  <!-- Footer -->
+  <!-- Reject Modal -->
+  <div id="rejectModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white p-6 rounded-2xl shadow-xl max-w-md w-full">
+      <h3 class="text-xl font-bold mb-3 text-[#053830]">Reject Demo Request</h3>
+      <form method="POST">
+        {% csrf_token %}
+        <textarea name="reject_reason" required rows="4"
+          class="w-full border p-3 rounded-xl"
+          placeholder="Enter rejection reason"></textarea>
+
+        <input type="hidden" name="demo_id" id="rejectDemoId">
+
+        <button name="action" value="reject"
+          class="mt-4 bg-red-600 text-white px-4 py-2 rounded-xl w-full hover:bg-red-700 transition">
+          Submit Rejection
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+  function openRejectModal(id) {
+    document.getElementById("rejectDemoId").value = id;
+    document.getElementById("rejectModal").classList.remove("hidden");
+  }
+  </script>
+
   <footer class="text-center text-sm text-gray-600 pb-6">
     © 2025 Propulsion Technology. All Rights Reserved.
   </footer>

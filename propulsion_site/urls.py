@@ -8,6 +8,7 @@ from website import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('website.urls')),  
+    path('client/', include('client.urls')),  
     path('chatbot/', views.chatbot_api, name='chatbot_api'),
     path('crypto/', views.encrypt_decrypt_view, name='crypto'),
 

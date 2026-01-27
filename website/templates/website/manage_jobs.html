@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Manage Jobs | Propulsion Technology</title>
-  <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+  <link rel="icon" type="image/png" href="{% static 'img/logo6.png'%}">
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-[#EAF4E0] font-sans text-[#053830]">
@@ -30,10 +30,20 @@
     <h2 class="text-3xl font-extrabold mb-6 text-center">All Job Postings</h2>
 
     {% if messages %}
-      {% for message in messages %}
-        <p class="text-green-700 text-center mb-4 font-semibold">{{ message }}</p>
-      {% endfor %}
-    {% endif %}
+    <div id="flash-msg-box">
+        {% for message in messages %}
+            {% if "deleted" in message.message|lower %}
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl shadow-md mb-6" role="alert">
+                    {{ message }}
+                </div>
+            {% else %}
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-xl shadow-md mb-6" role="alert">
+                    ✅ {{ message }}
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endif %}
 
     <!-- Job Table -->
     <div class="overflow-x-auto mb-12">
@@ -64,7 +74,15 @@
               <div class="flex items-center justify-center space-x-2 whitespace-nowrap">
                 <a href="{% url 'edit_job' job.id %}" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors">Edit</a>
                 <span class="text-gray-400">|</span>
-                <a href="#" onclick="confirmDelete('{{ job.id }}')" class="text-red-600 hover:text-red-800 font-semibold transition-colors">Delete</a>
+                <form action="{% url 'delete_job' job.id %}" method="POST"
+      onsubmit="return confirm('Are you sure you want to delete this job?')">
+    {% csrf_token %}
+    <button type="submit" class="text-red-600 hover:text-red-800 font-semibold">
+        Delete
+    </button>
+</form>
+
+
               </div>
             </td>
           </tr>
@@ -80,47 +98,69 @@
     <!-- Add New Job Form -->
     <div class="bg-[#EAF4E0] p-8 rounded-2xl shadow-inner">
       <h3 class="text-2xl font-bold mb-6 text-[#053830]">Add New Job</h3>
+        <form method="POST" class="space-y-6" id="jobForm">
+  {% csrf_token %}
+  <div class="grid md:grid-cols-2 gap-6">
 
-      <form method="POST" class="space-y-6">
-        {% csrf_token %}
-        <div class="grid md:grid-cols-2 gap-6">
-          <div>
-            <label for="title" class="block font-semibold mb-2">Job Title</label>
-            <input type="text" id="title" name="title" required
-                   class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all">
-          </div>
+    <!-- Job Title -->
+    <div>
+      <label for="title" class="block font-semibold mb-2">
+        Job Title <span class="text-red-600">*</span> (max 100 characters)
+      </label>
+      <input type="text" id="title" name="title" maxlength="100" required
+             class="limit-field w-full border border-gray-300 rounded-xl px-4 py-2"
+             data-limit="100">
+      <p class="text-sm text-gray-600 mt-1"><span id="title-count">0</span> / 100</p>
+    </div>
 
-          <div>
-            <label for="location" class="block font-semibold mb-2">Location</label>
-            <input type="text" id="location" name="location" required
-                   class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all">
-          </div>
-        </div>
+    <!-- Location -->
+    <div>
+      <label for="location" class="block font-semibold mb-2">
+        Location <span class="text-red-600">*</span> (max 50 characters)
+      </label>
+      <input type="text" id="location" name="location" maxlength="50" required
+             class="limit-field w-full border border-gray-300 rounded-xl px-4 py-2"
+             data-limit="50">
+      <p class="text-sm text-gray-600 mt-1"><span id="location-count">0</span> / 50</p>
+    </div>
+  </div>
 
-        <div>
-          <label for="description" class="block font-semibold mb-2">Job Description</label>
-          <textarea id="description" name="description" rows="3" required
-                    class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all"></textarea>
-        </div>
+  <!-- Job Description -->
+  <div>
+    <label for="description" class="block font-semibold mb-2">
+      Job Description <span class="text-red-600">*</span> (max 250 characters)
+    </label>
+    <textarea id="description" name="description" rows="3" maxlength="250" required
+              class="limit-field w-full border border-gray-300 rounded-xl px-4 py-2"
+              data-limit="250"></textarea>
+    <p class="text-sm text-gray-600 mt-1"><span id="description-count">0</span> / 250</p>
+  </div>
 
-        <div>
-          <label for="requirements" class="block font-semibold mb-2">Requirements</label>
-          <textarea id="requirements" name="requirements" rows="3"
-                    class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all"></textarea>
-        </div>
+  <!-- Requirements -->
+  <div>
+    <label for="requirements" class="block font-semibold mb-2">
+      Requirements (max 100 characters)<span class="text-red-600">*</span>
+    </label>
+    <textarea id="requirements" name="requirements" rows="3" maxlength="100"
+              class="limit-field w-full border border-gray-300 rounded-xl px-4 py-2"
+              data-limit="100"></textarea>
+    <p class="text-sm text-gray-600 mt-1"><span id="requirements-count">0</span> / 100</p>
+  </div>
 
-        <div class="flex items-center">
-          <input type="checkbox" id="is_active" name="is_active" class="mr-2" checked>
-          <label for="is_active" class="font-semibold">Active Job Posting</label>
-        </div>
+  <div class="flex items-center">
+    <input type="checkbox" id="is_active" name="is_active" class="mr-2" checked>
+    <label for="is_active" class="font-semibold">Active Job Posting</label>
+  </div>
 
-        <div class="flex justify-center mt-6">
-          <button type="submit"
-                  class="bg-[#053830] text-white px-8 py-3 rounded-xl font-semibold hover:bg-[#FF9728] hover:text-[#053830] transition-all shadow-lg shadow-[#053830]/40 transform hover:scale-[1.02] hover:-translate-y-1">
-            Add Job
-          </button>
-        </div>
-      </form>
+  <div class="flex justify-center mt-6">
+    <button type="submit"
+            class="bg-[#053830] text-white px-8 py-3 rounded-xl font-semibold hover:bg-[#FF9728] hover:text-[#053830] transition-all shadow-lg shadow-[#053830]/40 transform hover:scale-[1.02] hover:-translate-y-1">
+      Add Job
+    </button>
+  </div>
+</form>
+
+      
     </div>
   </main>
 
@@ -184,7 +224,7 @@
           document.getElementById('overlay').classList.add('hidden');
 
           // send POST to your delete endpoint (adjust URL if needed)
-          fetch(`/dashboard/manage-jobs/delete/${jobToDelete}/`, {
+          fetch(/dashboard/manage-jobs/delete/${jobToDelete}/, {
             method: 'POST',
             headers: {
               'X-CSRFToken': getCookie('csrftoken'),
@@ -230,25 +270,59 @@
     }
   </script>
 
+
 <script>
-  // Show loader when DOM starts loading
+    setTimeout(() => {
+        const msg = document.getElementById("flash-msg-box");
+        if (msg) {
+            msg.style.transition = "opacity 0.5s";
+            msg.style.opacity = "0";
+
+            setTimeout(() => msg.style.display = "none", 500);
+        }
+    }, 2000); // Hide after 1 second
+    
+</script>
+<script>
+  document.querySelectorAll(".limit-field").forEach(input => {
+    const limit = parseInt(input.dataset.limit);
+
+    input.addEventListener("input", () => {
+      if (input.value.length > limit) {
+        input.value = input.value.substring(0, limit); // block extra typing
+      }
+
+      // update counter
+      const counterId = input.id + "-count";
+      const counter = document.getElementById(counterId);
+      if (counter) counter.textContent = input.value.length;
+    });
+  });
+</script>
+<script>
   document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("blur-loader").classList.remove("hidden");
   });
 
-  // Hide loader when page fully loaded
   window.addEventListener("load", () => {
       document.getElementById("blur-loader").classList.add("hidden");
   });
 
-  // Show loader on "Add Job" form submit
-  const jobForm = document.querySelector("form");
+  const jobForm = document.getElementById("jobForm");
+
+  if (!jobForm) {
+      console.error("❌ jobForm not found — add id='jobForm' to the form.");
+  }
+
   if (jobForm) {
       jobForm.addEventListener("submit", () => {
           document.getElementById("blur-loader").classList.remove("hidden");
       });
   }
 </script>
+
+
+
 
 </body>
 </html>

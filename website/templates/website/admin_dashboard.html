@@ -33,13 +33,22 @@
         background-color: #e2e8f0; /* Keeping soft gray background for clean admin readability */
     }
 
-    /* Custom scrollbar for better look in the sidebar */
-    .sidebar-nav::-webkit-scrollbar {
-        width: 4px;
+    /* Custom scrollbar for better look in the sidebar and main content */
+    .custom-scroll::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
     }
-    .sidebar-nav::-webkit-scrollbar-thumb {
+    .custom-scroll::-webkit-scrollbar-thumb {
         background-color: rgba(255, 255, 255, 0.2);
         border-radius: 2px;
+    }
+    /* Dark scrollbar for sidebar */
+    .sidebar-scroll::-webkit-scrollbar-thumb {
+         background-color: rgba(255, 255, 255, 0.2);
+    }
+    /* Light scrollbar for main content */
+    .main-scroll::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.2);
     }
 
     /* Ensure the chart container is responsive and has a clear minimum height */
@@ -49,14 +58,9 @@
         min-height: 350px; /* Ensure visibility */
     }
 
-    /* Make the entire main area scrollable if content overflows */
-    .flex-1 {
-        overflow-y: auto;
-    }
-
     /* Active state for navigation item using new colors */
     .nav-item.active {
-        background-color: '#155C54'; /* primary-green-hover */
+        background-color: #155C54; /* primary-green-hover */
         color: white;
     }
 </style>
@@ -67,61 +71,95 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | Propulsion Technology</title>
+
+        <link rel="icon" type="image/png" href="{% static 'img/logo6.png'%}">
+
+
+    
 </head>
-<body class="min-h-screen antialiased bg-gray-100" x-data="{ userDropdownOpen: false }">
+<!-- FIX: Added h-screen w-full overflow-hidden to body to prevent double scrolling -->
+<body class="h-screen w-full overflow-hidden antialiased bg-gray-100" x-data="{ userDropdownOpen: false }">
 
     <!-- ✨ Universal Page Loader -->
-<div id="pageLoader"
-     class="fixed inset-0 flex flex-col items-center justify-center bg-white/70 backdrop-blur-md z-[9999] transition-all duration-700">
-  <div class="relative">
-    <div class="w-20 h-20 border-[5px] border-[#053830]/20 border-t-[#053830] rounded-full animate-spin"></div>
-    <div class="absolute inset-2 w-16 h-16 border-[4px] border-[#FF9728]/30 border-t-[#FF9728] rounded-full animate-[spin_2.5s_linear_infinite]"></div>
-  </div>
-  <p class="mt-8 text-[#053830] text-lg font-semibold tracking-wide animate-pulse">Loading Dashboard...</p>
+    <div id="pageLoader"
+         class="fixed inset-0 flex flex-col items-center justify-center bg-white/70 backdrop-blur-md z-[9999] transition-all duration-700">
+      <div class="relative">
+        <div class="w-20 h-20 border-[5px] border-[#053830]/20 border-t-[#053830] rounded-full animate-spin"></div>
+        <div class="absolute inset-2 w-16 h-16 border-[4px] border-[#FF9728]/30 border-t-[#FF9728] rounded-full animate-[spin_2.5s_linear_infinite]"></div>
+      </div>
+      <p class="mt-8 text-[#053830] text-lg font-semibold tracking-wide animate-pulse">Loading Dashboard...</p>
+    </div>
+
+    <div id="welcome-msg" class="fixed top-19 left-1/2 transform -translate-x-1/2 bg-green-100 p-5 rounded-xl shadow-lg text-center transition-opacity duration-500 z-50">
+    <h1 class="text-2xl font-bold text-green-800">
+        Welcome, {{ request.user.first_name|default:request.user.username }} 👋
+    </h1>
+    <p class="text-sm text-green-700">
+        Glad to see you back in the admin panel. <span id="time"></span>
+    </p>
 </div>
 
     <!-- Preserve Django/Jinja message block -->
+    <!-- Fixed position to ensure it floats above content without breaking flex layout -->
     {% if messages %}
-        <div style="background:#d1e7dd;padding:1rem;border-radius:8px;max-width:900px;margin:1rem auto;color:#0f5132;font-weight:600;text-align:center;border:1px solid #badbcc;" class="mx-4 md:mx-auto">
-            {% for message in messages %}
-                {{ message }}
-            {% endfor %}
+        <div class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-4xl px-4">
+            <div style="background:#d1e7dd;padding:1rem;border-radius:8px;color:#0f5132;font-weight:600;text-align:center;border:1px solid #badbcc;box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+            </div>
         </div>
     {% endif %}
 
-
     <script>
-document.addEventListener('DOMContentLoaded', () => {
-    // Select the success message div (the one with the green background)
-    const msg = document.querySelector('[style*="background:#d1e7dd"]');
-    if (msg) {
-        // Wait 3 seconds before starting fade-out
-        setTimeout(() => {
-            msg.style.transition = "opacity 0.6s ease"; // smooth fade
-            msg.style.opacity = "0"; // fade out
-            // After fade-out animation ends, remove the element from DOM
-            setTimeout(() => msg.remove(), 600);
-        }, 3000);
-    }
-});
+    
+    // Auto-hide welcome message after 5 seconds
+    setTimeout(() => {
+        const welcome = document.getElementById('welcome-msg');
+        welcome.style.opacity = '0'; // fade out
+        setTimeout(() => welcome.remove(), 500); // remove from DOM after fade
+    }, 2000);
 </script>
 
 
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Select the success message div (the one with the green background)
+        const msg = document.querySelector('[style*="background:#d1e7dd"]');
+        if (msg) {
+            // Wait 3 seconds before starting fade-out
+            setTimeout(() => {
+                msg.style.transition = "opacity 0.6s ease"; // smooth fade
+                msg.style.opacity = "0"; // fade out
+                // After fade-out animation ends, remove the element from DOM
+                setTimeout(() => msg.parentNode.remove(), 600);
+            }, 3000);
+        }
+    });
+    </script>
+
+
     <!-- MAIN DASHBOARD LAYOUT -->
-    <div class="flex">
+    <!-- FIX: h-screen overflow-hidden to contain the layout -->
+    <div class="flex h-screen overflow-hidden">
 
         <!-- 1. LEFT SIDEBAR (Themed Dark Green) -->
+        <!-- FIX: flex-shrink-0 to prevent resizing, flex flex-col for internal layout -->
         <aside id="sidebar"
-                class="bg-primary-green text-white w-64 space-y-6 py-7 px-2 fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition duration-200 ease-in-out z-30 shadow-2xl"
+                class="bg-primary-green text-white w-64 flex-shrink-0 flex flex-col fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition duration-200 ease-in-out z-30 shadow-2xl"
                 x-ref="sidebar">
 
             <!-- Logo/Branding -->
-            <a href="{% url 'admin_dashboard' %}" class="text-white flex items-center space-x-2 px-4">
-                <span class="text-2xl font-extrabold tracking-wider">Propulsion <span class="text-highlight-gold">Admin</span></span>
-            </a>
+            <!-- FIXED: Added pl-14 on mobile to clear the fixed toggle button -->
+            <div class="flex-shrink-0 pl-14 pr-4 py-6 md:px-4 flex items-center">
+                <a href="{% url 'admin_dashboard' %}" class="text-white flex items-center space-x-2">
+                    <span class="text-xl sm:text-2xl font-extrabold tracking-wider">Propulsion <span class="text-highlight-gold">Admin</span></span>
+                </a>
+            </div>
 
             <!-- Navigation Links Wrapper -->
-            <nav class="sidebar-nav flex flex-col justify-between h-[calc(100vh-6rem)] overflow-y-auto">
+            <!-- FIX: flex-1 overflow-y-auto ensures ONLY the nav items scroll, not the logo -->
+            <nav class="sidebar-nav flex-1 overflow-y-auto custom-scroll sidebar-scroll px-2 pb-4 space-y-1">
                 <div>
                     <!-- Section Title (Main Menu) -->
                     <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest px-4 pt-4 pb-2">Main Menu</p>
@@ -136,36 +174,33 @@ document.addEventListener('DOMContentLoaded', () => {
                         <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.942 3.313.842 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.942 1.543-.842 3.313-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.942-3.313-.842-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.942-1.543.842-3.313 2.37-2.37a1.724 1.724 0 002.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                         <span>Manage Services</span>
                     </a>
-                    <a href="{% url 'manage_portfolio' %}" 
-   class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
-   <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l7 9 11-18"></path>
-   </svg>
-   <span>Manage Portfolio</span>
-</a>
+                    
+                    <a href="{% url 'manage_portfolio' %}" class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
+                        <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l7 9 11-18"></path>
+                        </svg>
+                        <span>Manage Portfolio</span>
+                    </a>
+                    
                     <a href="{% url 'manage_blog_posts' %}" class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
                         <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m-7 13v-6a2 2 0 012-2h2a2 2 0 012 2v6m-4 0h6"></path></svg>
                         <span>Manage Blog Posts</span>
                     </a>
 
-                    <a href="{% url 'manage_jobs' %}"
-                        class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
-                       <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                   d="M21 13.255A23.563 23.563 0 0112 15.31h0c-2.372 0-4.664-.23-6.917-.682A.75.75 0 013 14.28V11.25a3.75 3.75 0 013.75-3.75h1.5a.75.75 0 01.75.75v.75a.75.75 0 001.5 0v-.75a3.75 3.75 0 013.75-3.75h1.5a.75.75 0 01.75.75v.75a.75.75 0 001.5 0V7.5a3.75 3.75 0 013.75 3.75v3.03a.75.75 0 01-.682.745z"></path>
-                       </svg>
+                    <a href="{% url 'manage_jobs' %}" class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
+                        <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.563 23.563 0 0112 15.31h0c-2.372 0-4.664-.23-6.917-.682A.75.75 0 013 14.28V11.25a3.75 3.75 0 013.75-3.75h1.5a.75.75 0 01.75.75v.75a.75.75 0 001.5 0v-.75a3.75 3.75 0 013.75-3.75h1.5a.75.75 0 01.75.75v.75a.75.75 0 001.5 0V7.5a3.75 3.75 0 013.75 3.75v3.03a.75.75 0 01-.682.745z"></path>
+                        </svg>
                         <span>Manage Jobs</span>
                     </a>
 
-
-                    <a href="{% url 'manage_applications' %}"
-                        class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
-                       <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                   d="M12 4v16m8-8H4" />
-                       </svg>
+                    <a href="{% url 'manage_applications' %}" class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
+                        <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
                         <span>Manage Applications</span>
                     </a>
+                    
                     <!-- Direct link to custom Client Responses list -->
                     <a href="{% url 'manage_client_responses' %}" class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
                         <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8m-2 6V6a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2v-2"></path></svg>
@@ -175,70 +210,61 @@ document.addEventListener('DOMContentLoaded', () => {
                     <!-- Content Pages Management -->
                     <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest px-4 pt-4 pb-2">Content Pages</p>
 
-                    <a href="{% url 'manage_about_us' %}"
-                       class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
-                       <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <a href="{% url 'manage_about_us' %}" class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
+                        <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                       </svg>
+                        </svg>
                         <span>Manage About Us</span>
                     </a>
 
-                    <a href="{% url 'manage_team' %}"
-                        class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
-                       <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <a href="{% url 'manage_team' %}" class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
+                        <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                       </svg>
+                        </svg>
                         <span>Manage Team</span>
                     </a>
 
-                    <a href="{% url 'manage_mission' %}" 
-                        class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
+                    <a href="{% url 'manage_mission' %}" class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
                         <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-3-3v6m1-13h-2a2 2 0 00-2 2v2H6a2 2 0 00-2 2v4a2 2 0 002 2h2v2a2 2 0 002 2h2"></path>
                         </svg>
-                    <span>Manage Mission</span>
+                        <span>Manage Mission</span>
                     </a>
 
-                   <a href="{% url 'manage_our_values' %}"
-                        class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
-                       <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <a href="{% url 'manage_our_values' %}" class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
+                        <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                       </svg>
+                        </svg>
                         <span>Manage Our Values</span>
                     </a>
 
-                    <a href="{% url 'manage_privacy' %}"
-                        class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
-                       <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <a href="{% url 'manage_privacy' %}" class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
+                        <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                       </svg>
+                        </svg>
                         <span>Manage Privacy</span>
                     </a>
 
-                    <a href="{% url 'manage_terms' %}"
-                        class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
-                       <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <a href="{% url 'manage_terms' %}" class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
+                        <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                       </svg>
+                        </svg>
                         <span>Manage Terms</span>
                     </a>
 
-                    <a href="{% url 'manage_feedback' %}" 
-   class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
-   <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 9l-2 2m0 0l-2-2m2 2V5m0 4v10m0-4l2-2m-2 2l-2 2" />
-   </svg>
-   <span>Manage Feedback</span>
-</a>
+                    <a href="{% url 'manage_feedback' %}" class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
+                        <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 9l-2 2m0 0l-2-2m2 2V5m0 4v10m0-4l2-2m-2 2l-2 2" />
+                        </svg>
+                        <span>Manage Feedback</span>
+                    </a>
 
-                    <!-- NEW SECTION: EXPERT REQUEST MANAGEMENT -->
                     <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest px-4 pt-4 pb-2">Expert Request Management</p>
 
-                    <a href="{% url 'manage_expert_registrations' %}"
-                        class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
-                       <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <a href="{% url 'manage_expert_registrations' %}" class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
+                        <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-2m-4-1v8m0 0v8m0-8h8m-8 0H4"></path>
-                       </svg>
+                        </svg>
                         <span>Manage Expert Request</span>
                     </a>
 
@@ -246,29 +272,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     <!-- Expert Queries Section -->
                     <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest px-4 pt-4 pb-2">Expert Query Management</p>
 
-                    <a href="{% url 'manage_expert_queries' %}"
-                        class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
-                       <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <a href="{% url 'manage_expert_queries' %}" class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
+                        <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                       </svg>
+                        </svg>
                         <span>Pending Queries</span>
                     </a>
 
                     <!-- Assigned Queries -->
-                    <a href="{% url 'manage_assigned_queries' %}"
-                        class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
-                       <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <a href="{% url 'manage_assigned_queries' %}" class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
+                        <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                       </svg>
+                        </svg>
                         <span>Total Assigned Queries</span>
                     </a>
 
                     <!-- Declined Queries -->
-                    <a href="{% url 'manage_declined_queries' %}"
-                        class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
-                       <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <a href="{% url 'manage_declined_queries' %}" class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
+                        <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                       </svg>
+                        </svg>
                         <span>Total Declined Queries</span>
                     </a>
 
@@ -278,34 +301,90 @@ document.addEventListener('DOMContentLoaded', () => {
                         </svg>
                         <span>Demo Schedules</span>
                     </a>
+
+
+                    <!-- CLIENT PAGES SECTION -->
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest px-4 pt-6 pb-2">
+                        Client Pages
+                    </p>
+
+                    <!-- Add Manage Clients link -->
+                    <a href="{% url 'manage_clients' %}"
+                       class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-primary-green-hover transition">
+                        <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M16 11V7a4 4 0 10-8 0v4M5 20h14a1 1 0 001-1v-5a4 4 0 00-4-4H8a4 4 0 00-4 4v5a1 1 0 001 1z"/>
+                        </svg>
+                        <span class="font-medium">Manage Clients</span>
+                    </a>
+
+                    <a href="{% url 'assign_project' %}"
+                       class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-primary-green-hover transition">
+                        <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M12 4v16m8-8H4"/>
+                        </svg>
+                        <span class="font-medium">Assign Client Project</span>
+                    </a>
+
+                    <a href="{% url 'admin_project_list' %}"
+                       class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-primary-green-hover transition">
+                        <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h18M3 17h18" />
+                        </svg>
+                        <span class="font-medium">All Assigned Projects</span>
+                    </a>
+
+                    <a href="{% url 'payment_requests_list' %}"
+                       class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-primary-green-hover transition">
+                        <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2"/>
+                        </svg>
+                        <span class="font-medium">Client Payments</span>
+                    </a>
+
+                    <a href="{% url 'admin_client_register' %}"
+                       class="nav-item block py-2.5 px-4 rounded-lg transition duration-200 group flex 
+                              items-center space-x-3 text-sm font-medium hover:bg-primary-green-hover">
+                        <svg class="w-5 h-5 text-gray-300 group-hover:text-white" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M12 4v16m8-8H4"/>
+                        </svg>
+                        <span>Client Register</span>
+                    </a>
+
+                    <!-- Spacer -->
+                    <div class="h-24"></div>
                 </div>
+
+                <!-- Scroll to Top Button (Hidden in Nav now, moved to global context) -->
             </nav>
+            <!-- Scroll to Top Button is usually outside nav to prevent it from scrolling with the nav content if it is fixed -->
+             <button id="scrollTopBtn"
+                    class="fixed bottom-6 right-6 bg-highlight-gold text-white p-3 rounded-full shadow-lg 
+                           hover:bg-primary-green-hover transition-all duration-300 hidden z-[9999]">
+                ↑
+            </button>
         </aside>
 
         <!-- 2. MAIN CONTENT AREA -->
-        <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- FIX: flex-1 flex flex-col h-full overflow-hidden ensures the main area takes remaining space and handles its own scroll -->
+        <div class="flex-1 flex flex-col h-full overflow-hidden">
 
             <!-- Top Header Bar (White) -->
-            <header class="flex items-center justify-between p-4 bg-white border-b border-gray-200 shadow-sm sticky top-0 z-20">
-                <h1 class="text-2xl font-bold text-gray-800">Admin Control Panel</h1>
+            <!-- FIX: flex-shrink-0 to ensure header stays fixed size -->
+            <!-- FIXED: Added pl-14 on mobile to clear the fixed toggle button -->
+            <header class="flex-shrink-0 flex items-center justify-between p-4 pl-14 md:pl-4 bg-white border-b border-gray-200 shadow-sm sticky top-0 z-20">
+                <h1 class="text-lg sm:text-2xl font-bold text-gray-800 truncate">Admin Control Panel</h1>
 
                 <!-- Right Side: Search and User Profile/Logout -->
                 <div class="flex items-center space-x-4">
                 
-
-
-
                     <!-- Search Input -->
                     <div class="hidden sm:block">
                         <input type="text" placeholder="Search..." class="px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-highlight-gold focus:border-highlight-gold transition duration-150 text-sm">
-                    </div>
-
-
-
-                    <!-- Notification Icon (Placeholder) -->
-                    <div class="text-gray-600 hover:text-gray-800 transition duration-150 relative cursor-pointer">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-                        <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">3</span>
                     </div>
 
                     <!-- User Profile/Dropdown -->
@@ -347,7 +426,8 @@ document.addEventListener('DOMContentLoaded', () => {
             </header>
 
             <!-- Page Content (Dashboard Cards) -->
-            <main class="flex-1 overflow-x-hidden p-4 sm:p-6 md:p-8">
+            <!-- FIX: flex-1 overflow-y-auto ensures this section scrolls independently -->
+            <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 md:p-8 custom-scroll main-scroll">
 
                 <!-- Welcome Banner -->
                 <div class="bg-white p-6 rounded-xl shadow-lg mb-8 border-l-4 border-highlight-gold">
@@ -448,21 +528,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 <!-- Footer -->
 
                 <footer class="text-center text-gray-500 pt-10 pb-4 text-sm">
-  <div class="max-w-7xl mx-auto px-4">
+                    <div class="max-w-7xl mx-auto px-4">
 
-    <!-- Back to Home Button -->
-    <div class="mb-4">
-      <a href="{% url 'home' %}"
-         class="bg-[#053830] text-white px-8 py-3 rounded-xl font-semibold hover:bg-[#FF9728] hover:text-[#053830] transition-all shadow-lg shadow-[#053830]/40 transform hover:scale-[1.02] hover:-translate-y-1">
-         ⬅ Back to Home
-      </a>
-    </div>
-                <footer class="text-center text-gray-500 pt-10 pb-4 text-sm">
-                    <p>© 2025 <span class="text-highlight-gold font-semibold">Propulsion Technology</span>. All Rights Reserved.</p>
+                        <!-- Back to Home Button -->
+                        <div class="mb-4">
+                            <a href="{% url 'home' %}"
+                                class="bg-[#053830] text-white px-8 py-3 rounded-xl font-semibold hover:bg-[#FF9728] hover:text-[#053830] transition-all shadow-lg shadow-[#053830]/40 transform hover:scale-[1.02] hover:-translate-y-1">
+                                ⬅ Back to Home
+                            </a>
+                        </div>
+                        <p>© 2025 <span class="text-highlight-gold font-semibold">Propulsion Technology</span>. All Rights Reserved.</p>
+                    </div>
                 </footer>
             </main>
         </div>
     </div>
+    
 
     <!-- Mobile Menu Toggle Button (Must be accessed by JavaScript) -->
     <button id="mobile-menu-btn" class="fixed top-4 left-4 p-2 bg-primary-green text-white rounded-lg md:hidden z-40">
@@ -626,17 +707,38 @@ document.addEventListener('DOMContentLoaded', () => {
         window.addEventListener('resize', renderChart);
     </script>
 
-<script>
-window.addEventListener("load", () => {
-  const loader = document.getElementById("pageLoader");
-  if (loader) {
-    loader.style.opacity = "0";
-    loader.style.transform = "scale(1.05)";
-    setTimeout(() => loader.style.display = "none", 800);
-  }
-});
-</script>
+    <script>
+    window.addEventListener("load", () => {
+      const loader = document.getElementById("pageLoader");
+      if (loader) {
+        loader.style.opacity = "0";
+        loader.style.transform = "scale(1.05)";
+        setTimeout(() => loader.style.display = "none", 800);
+      }
+    });
+    </script>
 
+    <script>
+    // Logic to handle scroll to top inside the main content area
+    const mainContent = document.querySelector('main'); 
+    const scrollBtn = document.getElementById("scrollTopBtn");
+
+    // Attach scroll listener to the main content area instead of window
+    if(mainContent && scrollBtn) {
+        mainContent.addEventListener("scroll", () => {
+            if (mainContent.scrollTop > 200) {
+                scrollBtn.classList.remove("hidden");
+            } else {
+                scrollBtn.classList.add("hidden");
+            }
+        });
+
+        // Scroll to top smoothly
+        scrollBtn.addEventListener("click", () => {
+            mainContent.scrollTo({ top: 0, behavior: "smooth" });
+        });
+    }
+    </script>
     
 </body>
 </html>

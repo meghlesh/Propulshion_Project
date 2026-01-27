@@ -4,13 +4,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Manage Feedback | Propulsion Technology</title>
 
-    <!-- Tailwind CSS -->
+    <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
-
     <script>
         tailwind.config = {
             theme: {
@@ -28,10 +27,58 @@
             }
         }
     </script>
+
+    <style>
+      /* loader overlay */
+      #blur-loader {
+        position: fixed;
+        inset: 0;
+        background: rgba(255,255,255,0.75);
+        backdrop-filter: blur(4px);
+        z-index: 9999;
+        display: none;
+        align-items: center;
+        justify-content: center;
+      }
+      .btn-spinner {
+        display: inline-flex;
+        align-items: center;
+        gap: .6rem;
+      }
+      .spinner {
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(0,0,0,0.15);
+        border-top-color: rgba(0,0,0,0.6);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      /* required asterisk */
+      .required-field::after {
+        content: " *";
+        color:  #ff0000; /* red-600 */
+      }
+
+      /* inline error */
+      .error-msg { color: #dc2626; font-size: .9rem; margin-top: .25rem; display: none; }
+
+      /* disabled button look */
+      .btn-disabled { opacity: .7; cursor: not-allowed; transform: none !important; }
+    </style>
 </head>
 <body class="bg-gray-100 font-sans">
 
-    <!-- Top Bar -->
+  <!-- GLOBAL BLUR LOADER  -->
+  <div id="blur-loader" role="status" aria-hidden="true">
+    <div class="flex flex-col items-center">
+      <div class="w-16 h-16 border-4 border-[#053830] border-t-transparent rounded-full animate-spin"></div>
+      <div class="mt-4 text-[#053830] font-semibold">Processing...</div>
+    </div>
+  </div>
+
+  <!-- Top Bar -->
   <nav class="bg-[#053830] text-white p-5 flex justify-between items-center shadow-lg">
     <h1 class="text-2xl font-bold">Manage Feedback</h1>
     <div>
@@ -41,164 +88,477 @@
     </div>
   </nav>
 
-    <!-- Main Container -->
-    <main class="max-w-5xl mx-auto py-10 px-6">
+  <!-- Main Container -->
+  <main class="max-w-5xl mx-auto py-10 px-6">
 
-        <!-- Heading -->
-        <h2 class="text-3xl font-bold text-primary-green mb-8">Manage Feedback</h2>
+    <!-- Heading -->
+    <h2 class="text-3xl font-bold text-primary-green mb-8">Manage Feedback</h2>
 
-        <!-- ✅ Django Messages -->
-        {% if messages %}
-        <div class="mb-6">
-            {% for message in messages %}
-            <div class="p-4 mb-3 text-sm rounded-lg 
-                {% if message.tags == 'success' %}
-                    bg-green-100 text-green-800 border border-green-300
-                {% elif message.tags == 'error' %}
-                    bg-red-100 text-red-800 border border-red-300
-                {% else %}
-                    bg-gray-100 text-gray-800 border border-gray-300
-                {% endif %}">
-                {{ message }}
-            </div>
-            {% endfor %}
+    <!-- Django Messages -->
+   {% if messages %}
+<div id="flash-messages">
+    {% for message in messages %}
+        <div class="mb-3 px-4 py-3 rounded-lg font-medium transition-all duration-500
+            {% if message.tags == 'success' %} bg-green-100 text-green-800 border border-green-300
+            {% elif message.tags == 'error' %} bg-red-100 text-red-800 border border-red-300
+            {% elif message.tags == 'warning' %} bg-yellow-100 text-yellow-800 border border-yellow-300
+            {% else %} bg-blue-100 text-blue-800 border border-blue-300
+            {% endif %}
+        ">
+            {{ message }}
         </div>
-        {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
 
-        <!-- Add New Feedback Form -->
-        <div class="bg-white p-6 rounded-2xl shadow-lg mb-10">
-            <h3 class="text-xl font-semibold mb-4 text-primary-green">Add New Feedback</h3>
 
-            <form method="POST" novalidate id="feedbackForm">
-                {% csrf_token %}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Client Name</label>
-                        {{ form.client_name|add_class:"border border-gray-300 rounded-lg w-full p-2 focus:ring-highlight-gold focus:border-highlight-gold" }}
-                        <p id="clientNameError" class="text-red-500 text-sm mt-1 hidden"></p>
-                        {% if form.client_name.errors %}
-                            <p class="text-red-500 text-sm mt-1">{{ form.client_name.errors.0 }}</p>
-                        {% endif %}
-                    </div>
+    <!-- Add New Feedback Form -->
+    <div class="bg-white p-6 rounded-2xl shadow-lg mb-10">
+      <h3 class="text-xl font-semibold mb-4 text-primary-green">Add New Feedback</h3>
 
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Feedback</label>
-                        {{ form.feedback|add_class:"border border-gray-300 rounded-lg w-full p-2 focus:ring-highlight-gold focus:border-highlight-gold" }}
-                        <p id="feedbackError" class="text-red-500 text-sm mt-1 hidden"></p>
-                        {% if form.feedback.errors %}
-                            <p class="text-red-500 text-sm mt-1">{{ form.feedback.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-                </div>
+      <!-- note: novalidate removed so browser validation may run alongside our custom checks -->
+      <form method="POST" id="feedbackForm" class="feedback-form">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="id_client_name" class="block text-sm font-medium text-gray-700 mb-1 required-field">Client Name</label>
+            {# ensure the widget has name="client_name" and id="id_client_name" #}
+            {{ form.client_name|add_class:"border border-gray-300 rounded-lg w-full p-2 focus:ring-highlight-gold focus:border-highlight-gold" }}
+            <p id="clientNameError" class="error-msg" aria-live="polite"></p>
+           <p class="text-sm text-gray-500 text-right mt-1">
+    <span id="clientNameCount">0</span>/100
+</p>
 
-                <button type="submit" 
-                        class="mt-6 bg-primary-green text-white px-6 py-2 rounded-lg hover:bg-highlight-gold hover:text-primary-green font-semibold transition">
-                    Post Feedback
-                </button>
-            </form>
-        </div>
+            {% if form.client_name.errors %}
+              <p class="text-red-500 text-sm mt-1">{{ form.client_name.errors.0 }}</p>
+            {% endif %}
+          </div>
 
-        <!-- Feedback Table -->
-        <div class="bg-white p-6 rounded-2xl shadow-lg">
-            <h3 class="text-xl font-semibold mb-4 text-primary-green">All Feedbacks</h3>
+          <div class="md:col-span-2">
+            <label for="id_feedback" class="block text-sm font-medium text-gray-700 mb-1 required-field">Feedback</label>
+            {{ form.feedback|add_class:"border border-gray-300 rounded-lg w-full p-2 focus:ring-highlight-gold focus:border-highlight-gold" }}
+            <p class="text-sm text-gray-500 text-right mt-1">
+    <span id="feedbackCount">0</span>/300
+</p>
 
-            <table class="w-full table-auto border-collapse text-sm">
-                <thead>
-                    <tr class="bg-primary-green text-white text-left">
-                        <th class="px-4 py-2">Client Name</th>
-                        <th class="px-4 py-2">Feedback</th>
-                        <th class="px-4 py-2">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for fb in feedbacks %}
-                    <tr class="border-b hover:bg-accent-green/30">
-                        <td class="px-4 py-2 font-semibold text-dark-text">{{ fb.client_name }}</td>
-                        <td class="px-4 py-2 text-gray-700">{{ fb.feedback|truncatechars:80 }}</td>
-                        <td class="px-4 py-2">
-                            <a href="{% url 'edit_feedback' fb.id %}" 
-                               class="text-highlight-gold font-semibold hover:underline mr-2">
-                               Edit
-                            </a>
-                            <a href="{% url 'delete_feedback' fb.id %}" 
-                               class="text-red-600 font-semibold hover:underline"
-                               onclick="return confirm('Are you sure you want to delete this feedback?');">
-                               Delete
-                            </a>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="3" class="text-center text-gray-500 py-4 italic">No feedbacks yet.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <p id="feedbackError" class="error-msg" aria-live="polite"></p>
+            {% if form.feedback.errors %}
+              <p class="text-red-500 text-sm mt-1">{{ form.feedback.errors.0 }}</p>
+            {% endif %}
+          </div>
         </div>
 
-    </main>
+        <!-- Submit button shows spinner (Option A) and disables while submitting -->
+        <div class="mt-6">
+          <button id="feedbackSubmitBtn" type="submit"
+                  class="inline-flex items-center bg-primary-green text-white px-6 py-2 rounded-lg hover:bg-highlight-gold hover:text-primary-green font-semibold transition transform">
+            <span id="feedbackBtnContent">Post Feedback</span>
+          </button>
+        </div>
+      </form>
+    </div>
 
-    <!-- ✨ Real-Time Validation Script -->
-    <script>
-        const clientNameInput = document.querySelector('input[name="client_name"]');
-        const feedbackInput = document.querySelector('textarea[name="feedback"]');
-        const clientNameError = document.getElementById('clientNameError');
-        const feedbackError = document.getElementById('feedbackError');
-        const form = document.getElementById('feedbackForm');
+    <!-- Feedback Table -->
+    <div class="bg-white p-6 rounded-2xl shadow-lg">
+      <h3 class="text-xl font-semibold mb-4 text-primary-green">All Feedbacks</h3>
 
-        // Validate Client Name (letters & spaces only, no numbers)
-        clientNameInput.addEventListener('input', () => {
-            const nameVal = clientNameInput.value.trim();
-            if (!nameVal) {
-                clientNameError.textContent = "Client name cannot be empty.";
-                clientNameError.classList.remove('hidden');
-            } else if (!/^[A-Za-z\s]+$/.test(nameVal)) {
-                clientNameError.textContent = "Only letters and spaces are allowed.";
-                clientNameError.classList.remove('hidden');
+      <table class="w-full table-auto border-collapse text-sm">
+        <thead>
+          <tr class="bg-primary-green text-white text-left">
+            <th class="px-4 py-2">Client Name</th>
+            <th class="px-4 py-2">Feedback</th>
+            <th class="px-4 py-2">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for fb in feedbacks %}
+          <tr class="border-b hover:bg-accent-green/30">
+            <td class="px-4 py-2 font-semibold text-dark-text">{{ fb.client_name }}</td>
+            <td class="px-4 py-2 text-gray-700">{{ fb.feedback|truncatechars:80 }}</td>
+            <td class="px-4 py-2">
+              <a href="{% url 'edit_feedback' fb.id %}" class="text-highlight-gold font-semibold hover:underline mr-2">Edit</a>
+              <a href="{% url 'delete_feedback' fb.id %}" class="text-red-600 font-semibold hover:underline"
+                 onclick="return confirm('Are you sure you want to delete this feedback?');">Delete</a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="3" class="text-center text-gray-500 py-4 italic">No feedbacks yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+
+  <!-- Validation + Loader Script (covers Add and Edit forms) -->
+  <script>
+    (function () {
+      // Convenience selectors
+      const addForm = document.getElementById('feedbackForm');
+      const addName = addForm ? addForm.querySelector('input[name="client_name"]') : null;
+      const addFeedback = addForm ? addForm.querySelector('textarea[name="feedback"], input[name="feedback"]') : null;
+      const addNameErr = document.getElementById('clientNameError');
+      const addFeedbackErr = document.getElementById('feedbackError');
+      const addBtn = document.getElementById('feedbackSubmitBtn');
+      const addBtnContent = document.getElementById('feedbackBtnContent');
+      const blurLoader = document.getElementById('blur-loader');
+
+      // Also attempt to find an edit form if present (id convention: editFeedbackForm)
+      const editForm = document.getElementById('editFeedbackForm') || document.querySelector('form.edit-feedback-form');
+      const editName = editForm ? editForm.querySelector('input[name="client_name"]') : null;
+      const editFeedback = editForm ? editForm.querySelector('textarea[name="feedback"], input[name="feedback"]') : null;
+
+      // Utility: show blur loader (Option B)
+      function showBlurLoader() {
+        if (blurLoader) blurLoader.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function hideBlurLoader() {
+        if (blurLoader) blurLoader.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+
+      // Utility: set button to loading (Option A)
+      function setButtonLoading(btn, contentEl, text = 'Posting...') {
+        if (!btn) return;
+        btn.classList.add('btn-disabled');
+        btn.setAttribute('disabled', 'disabled');
+
+        // add spinner + text
+        contentEl.innerHTML = '<span class="btn-spinner"><span class="spinner" aria-hidden="true"></span><span>' + text + '</span></span>';
+      }
+      function resetButton(btn, contentEl, originalText = 'Post Feedback') {
+        if (!btn) return;
+        btn.classList.remove('btn-disabled');
+        btn.removeAttribute('disabled');
+        contentEl.textContent = originalText;
+      }
+
+      // Ensure required attributes exist on widgets (in case form fields aren't rendered with required)
+      function ensureRequired(field) {
+        if (!field) return;
+        field.setAttribute('required', 'required');
+        field.setAttribute('aria-required', 'true');
+      }
+      ensureRequired(addName); ensureRequired(addFeedback);
+      ensureRequired(editName); ensureRequired(editFeedback);
+
+      /* Validation rules:
+         - client_name: letters & spaces only, at least 2 chars
+         - feedback: letters, punctuation . , ! ? ' " - and spaces (no digits), at least 5 chars
+      */
+      function validateName(value) {
+        if (!value || !value.trim()) return { ok: false, msg: 'Client name cannot be empty.' };
+        const v = value.trim();
+        if (v.length < 2) return { ok: false, msg: 'Client name is too short.' };
+        if (!/^[A-Za-z\s]+$/.test(v)) return { ok: false, msg: 'Only letters and spaces are allowed.' };
+        return { ok: true };
+      }
+      function validateFeedback(value) {
+        if (!value || !value.trim()) return { ok: false, msg: 'Feedback cannot be empty.' };
+        const v = value.trim();
+        if (v.length < 5) return { ok: false, msg: 'Feedback is too short.' };
+        if (!/^[A-Za-z\s.,!?'"()\-\:;]+$/.test(v)) return { ok: false, msg: 'Feedback must not contain numbers or unusual special characters.' };
+        return { ok: true };
+      }
+
+      // Real-time validation helper
+      function attachRealtime(field, errEl, validator) {
+        if (!field) return;
+        field.addEventListener('input', () => {
+          const res = validator(field.value);
+          if (!res.ok) {
+            errEl.textContent = res.msg;
+            errEl.style.display = 'block';
+            field.setAttribute('aria-invalid', 'true');
+          } else {
+            errEl.textContent = '';
+            errEl.style.display = 'none';
+            field.removeAttribute('aria-invalid');
+          }
+        });
+        // blur: show message if invalid once leaving field
+        field.addEventListener('blur', () => {
+          const res = validator(field.value);
+          if (!res.ok) {
+            errEl.textContent = res.msg;
+            errEl.style.display = 'block';
+            field.setAttribute('aria-invalid', 'true');
+          } else {
+            errEl.textContent = '';
+            errEl.style.display = 'none';
+            field.removeAttribute('aria-invalid');
+          }
+        });
+      }
+
+      // Attach for Add form
+      attachRealtime(addName, addNameErr, validateName);
+      attachRealtime(addFeedback, addFeedbackErr, validateFeedback);
+
+      // Attach for Edit form inline errors if present
+      if (editForm) {
+        // create inline error elements for edit form if missing
+        function ensureEditErrorEl(el, id) {
+          if (!el) return null;
+          let next = el.nextElementSibling;
+          if (next && next.classList && next.classList.contains('error-msg')) return next;
+          const p = document.createElement('p');
+          p.className = 'error-msg';
+          p.id = id;
+          el.insertAdjacentElement('afterend', p);
+          return p;
+        }
+        const editNameErr = ensureEditErrorEl(editName, 'editClientNameError');
+        const editFeedbackErr = ensureEditErrorEl(editFeedback, 'editFeedbackError');
+        attachRealtime(editName, editNameErr, validateName);
+        attachRealtime(editFeedback, editFeedbackErr, validateFeedback);
+      }
+
+      // Final validation before submit; handles both add and edit
+      function finalValidateAndSubmit(formEl, nameField, feedbackField, nameErrEl, feedbackErrEl, submitBtn, submitBtnContent) {
+        formEl.addEventListener('submit', function (evt) {
+          let valid = true;
+          // validate name
+          const nameRes = validateName(nameField ? nameField.value : '');
+          if (!nameRes.ok) {
+            nameErrEl.textContent = nameRes.msg;
+            nameErrEl.style.display = 'block';
+            valid = false;
+          } else {
+            nameErrEl.textContent = '';
+            nameErrEl.style.display = 'none';
+          }
+
+          // validate feedback
+          const feedbackRes = validateFeedback(feedbackField ? feedbackField.value : '');
+          if (!feedbackRes.ok) {
+            feedbackErrEl.textContent = feedbackRes.msg;
+            feedbackErrEl.style.display = 'block';
+            valid = false;
+          } else {
+            feedbackErrEl.textContent = '';
+            feedbackErrEl.style.display = 'none';
+          }
+
+          if (!valid) {
+            // prevent submission
+            evt.preventDefault();
+            // focus first invalid
+            if (!nameRes.ok && nameField) nameField.focus();
+            else if (!feedbackRes.ok && feedbackField) feedbackField.focus();
+            return;
+          }
+
+          // VALID -> show loaders & disable button
+          // Option A: set button loading
+          if (submitBtn && submitBtnContent) {
+            setButtonLoading(submitBtn, submitBtnContent, 'Posting...');
+          }
+          // Option B: show blur loader overlay
+          showBlurLoader();
+
+          // Note: We don't call evt.preventDefault(); let the form submit normally.
+        });
+      }
+
+      // Hook add form submit
+      if (addForm) {
+        finalValidateAndSubmit(addForm, addName, addFeedback, addNameErr, addFeedbackErr, addBtn, addBtnContent);
+      }
+
+      // Hook edit form submit
+      if (editForm) {
+        // find or create error elements for edit form (if backend doesn't render them)
+        function ensureErrElFor(field, idName) {
+          if (!field) return null;
+          let next = field.nextElementSibling;
+          if (next && next.classList && next.classList.contains('error-msg')) return next;
+          const p = document.createElement('p');
+          p.className = 'error-msg';
+          p.id = idName;
+          field.insertAdjacentElement('afterend', p);
+          return p;
+        }
+        const editNameErr = ensureErrElFor(editName, 'editClientNameError');
+        const editFeedbackErr = ensureErrElFor(editFeedback, 'editFeedbackError');
+
+        // For edit form, find its submit button & content element - if none, create fallback variables
+        const editSubmitBtn = editForm.querySelector('button[type="submit"]');
+        // we'll try to preserve any existing button text; create a wrapper span inside if not present
+        let editBtnContent = null;
+        if (editSubmitBtn) {
+          // try to find a child span to update text; otherwise create one
+          editBtnContent = editSubmitBtn.querySelector('.btn-content');
+          if (!editBtnContent) {
+            editBtnContent = document.createElement('span');
+            editBtnContent.className = 'btn-content';
+            // move current text into this span
+            editBtnContent.textContent = editSubmitBtn.textContent.trim();
+            editSubmitBtn.textContent = '';
+            editSubmitBtn.appendChild(editBtnContent);
+          }
+        }
+
+        finalValidateAndSubmit(editForm, editName, editFeedback, editNameErr, editFeedbackErr, editSubmitBtn, editBtnContent);
+      }
+
+      // Accessibility: hide blur loader once page fully loaded
+      window.addEventListener('load', function () {
+        hideBlurLoader();
+      });
+
+      // If user navigates away or the form submission fails server-side and the page is returned,
+      // ensure the button is re-enabled (when DOM loaded).
+      document.addEventListener('DOMContentLoaded', function () {
+        if (addBtn && addBtnContent) resetButton(addBtn, addBtnContent, 'Post Feedback');
+      });
+
+    })();
+  </script>
+
+  <script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const nameInput = document.getElementById("id_client_name");
+    const nameError = document.getElementById("clientNameError");
+
+    const feedbackInput = document.getElementById("id_feedback");
+    const feedbackError = document.getElementById("feedbackError");
+    const feedbackCount = document.getElementById("feedbackCount");
+
+    const form = document.getElementById("feedbackForm");
+    const submitBtn = document.getElementById("feedbackSubmitBtn");
+
+    // -------------------------------
+    // CLIENT NAME VALIDATION
+    // -------------------------------
+    nameInput.addEventListener("input", () => {
+        let v = nameInput.value;
+
+        // Block digits
+        nameInput.value = v.replace(/[0-9]/g, "");
+        v = nameInput.value.trim();
+
+        if (v === "") {
+            nameError.textContent = "Client name is required.";
+            nameInput.classList.add("border-red-500");
+        } else if (!/^[A-Za-z ]+$/.test(v)) {
+            nameError.textContent = "Only letters are allowed.";
+            nameInput.classList.add("border-red-500");
+        } else {
+            nameError.textContent = "";
+            nameInput.classList.remove("border-red-500");
+        }
+    });
+
+    // -------------------------------
+    // FEEDBACK CHARACTER COUNTER
+    // -------------------------------
+    function updateCounter() {
+        let len = feedbackInput.value.length;
+        feedbackCount.textContent = len;
+
+        if (len > 300) {
+            feedbackError.textContent = "Feedback must be 300 characters or less.";
+            feedbackInput.classList.add("border-red-500");
+        } else {
+            feedbackError.textContent = "";
+            feedbackInput.classList.remove("border-red-500");
+        }
+    }
+
+    feedbackInput.addEventListener("input", updateCounter);
+    updateCounter(); // initialize on page load
+
+    // -------------------------------
+    // FORM SUBMIT VALIDATION
+    // -------------------------------
+    form.addEventListener("submit", function (e) {
+        let hasError = false;
+
+        // NAME CHECK
+        if (nameInput.value.trim() === "") {
+            nameError.textContent = "Client name is required.";
+            nameInput.classList.add("border-red-500");
+            hasError = true;
+        }
+
+        // FEEDBACK EMPTY CHECK
+        if (feedbackInput.value.trim() === "") {
+            feedbackError.textContent = "Feedback is required.";
+            feedbackInput.classList.add("border-red-500");
+            hasError = true;
+        }
+
+        // FEEDBACK LENGTH CHECK
+        if (feedbackInput.value.length > 300) {
+            feedbackError.textContent = "Feedback must be within 300 characters.";
+            feedbackInput.classList.add("border-red-500");
+            hasError = true;
+        }
+
+        if (hasError) {
+            e.preventDefault(); // stop submission
+        }
+    });
+
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const nameInput = document.getElementById("id_client_name");
+    const nameError = document.getElementById("clientNameError");
+    const nameCount = document.getElementById("clientNameCount");
+
+    if (nameInput) {
+
+        function updateNameCounter() {
+            let v = nameInput.value;
+
+            // Block numbers
+            nameInput.value = v.replace(/[0-9]/g, "");
+            v = nameInput.value;
+
+            // Update counter
+            nameCount.textContent = v.length;
+
+            // Validate length
+            if (v.length > 100) {
+                nameError.textContent = "Name must be under 100 characters.";
+                nameInput.classList.add("border-red-500");
             } else {
-                clientNameError.textContent = "";
-                clientNameError.classList.add('hidden');
+                nameError.textContent = "";
+                nameInput.classList.remove("border-red-500");
             }
-        });
+        }
 
-        // Validate Feedback (letters and punctuation only)
-        feedbackInput.addEventListener('input', () => {
-            const feedbackVal = feedbackInput.value.trim();
-            if (!feedbackVal) {
-                feedbackError.textContent = "Feedback cannot be empty.";
-                feedbackError.classList.remove('hidden');
-            } else if (!/^[A-Za-z\s.,!?'"-]+$/.test(feedbackVal)) {
-                feedbackError.textContent = "Feedback must not contain numbers or special characters.";
-                feedbackError.classList.remove('hidden');
-            } else {
-                feedbackError.textContent = "";
-                feedbackError.classList.add('hidden');
-            }
-        });
+        // Initial load
+        updateNameCounter();
 
-        // Final validation before submit
-        form.addEventListener('submit', (e) => {
-            const nameVal = clientNameInput.value.trim();
-            const feedbackVal = feedbackInput.value.trim();
-            let valid = true;
+        // Live update
+        nameInput.addEventListener("input", updateNameCounter);
+    }
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const flashBox = document.getElementById("flash-messages");
+    if (flashBox) {
+        setTimeout(() => {
+            flashBox.style.transition = "opacity 0.6s ease";
+            flashBox.style.opacity = "0";
 
-            if (!nameVal || !/^[A-Za-z\s]+$/.test(nameVal)) {
-                clientNameError.textContent = "Please enter a valid client name (letters only).";
-                clientNameError.classList.remove('hidden');
-                valid = false;
-            }
+            setTimeout(() => flashBox.remove(), 600);
+        }, 3000);  // 3 Seconds
+    }
+});
+</script>
 
-            if (!feedbackVal || !/^[A-Za-z\s.,!?'"-]+$/.test(feedbackVal)) {
-                feedbackError.textContent = "Please enter a valid feedback (no numbers or symbols).";
-                feedbackError.classList.remove('hidden');
-                valid = false;
-            }
 
-            if (!valid) {
-                e.preventDefault(); // Stop form submission
-            }
-        });
-    </script>
 
 </body>
 </html>

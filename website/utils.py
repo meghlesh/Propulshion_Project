@@ -2,7 +2,7 @@
 import logging
 from random import randint
 from typing import Tuple, Optional
-
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from cryptography.fernet import Fernet, InvalidToken
 from django.conf import settings
 from django.core.mail import send_mail
@@ -247,7 +247,6 @@ def send_confirmation_email(recipient_email, user_name, subject, details, cta_ur
     return False
 
 
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
 
 class ExpertTokenGenerator(PasswordResetTokenGenerator):
     def _make_hash_value(self, expert, timestamp):
@@ -255,3 +254,145 @@ class ExpertTokenGenerator(PasswordResetTokenGenerator):
         return str(expert.pk) + expert.password + str(timestamp)
 
 expert_token_generator = ExpertTokenGenerator()
+
+
+
+
+def send_expert_rejection_email(
+    client_email,
+    client_name,
+    expert_name,
+    request_type,
+    details
+):
+
+    subject = f"Your {request_type} Was Not Approved"
+
+    html_message = f"""
+    <div style="font-family:Poppins,sans-serif;background:#FDF4F4;padding:25px;">
+        <div style="max-width:600px;margin:auto;background:white;border-radius:12px;padding:30px;box-shadow:0 4px 12px rgba(0,0,0,0.1)">
+            
+            <h2 style="color:#8B0000;margin-bottom:10px;">Hello {client_name},</h2>
+
+            <p style="font-size:15px;color:#333;">
+                We regret to inform you that your 
+                <strong>{request_type}</strong> was 
+                <span style="color:#C62828;font-weight:bold;">rejected</span> 
+                by expert <strong>{expert_name}</strong>.
+            </p>
+
+            <div style="margin-top:20px;">
+                <h3 style="color:#053830;">Details:</h3>
+                <table width="100%" cellpadding="8" style="border-collapse:collapse;margin-top:10px;">
+    """
+
+    for key, value in details.items():
+        html_message += f"""
+            <tr>
+                <td style="background:#FCE8E6;color:#8B0000;border-radius:8px 0 0 8px;font-weight:bold;width:35%;">{key}</td>
+                <td style="background:#FFFFFF;border-radius:0 8px 8px 0;">{value}</td>
+            </tr>
+        """
+
+    html_message += """
+                </table>
+            </div>
+
+            <p style="margin-top:25px;color:#053830;">
+                You may submit a new request or contact our team for further assistance.
+            </p>
+
+            <p style="margin-top:30px;text-align:center;color:#999;">
+                © 2025 Propulsion Technology. All Rights Reserved.
+            </p>
+
+        </div>
+    </div>
+    """
+
+    try:
+        send_mail(
+            subject=subject,
+            message="Your request was rejected.",
+            html_message=html_message,
+            from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
+            recipient_list=[client_email],
+            fail_silently=False,
+        )
+        return True
+    except Exception as e:
+        print("Error:", e)
+        return False
+    
+
+
+
+def send_expert_accept_email(
+    client_email,
+    client_name,
+    expert_name,
+    request_type,
+    details
+):
+    """
+    Sends acceptance email to the customer when expert accepts
+    a query or demo request.
+    """
+
+    subject = f"Your {request_type} Has Been Accepted 🎉"
+
+    html_message = f"""
+    <div style="font-family: Poppins, sans-serif; background:#F4F8F1; padding:25px;">
+        <div style="max-width:600px;margin:auto;background:white;border-radius:12px;padding:30px;box-shadow:0 4px 12px rgba(0,0,0,0.1)">
+            
+            <h2 style="color:#053830;margin-bottom:10px;">Hello {client_name},</h2>
+
+            <p style="font-size:15px;color:#053830;">
+                Good news! Your <strong>{request_type}</strong> has been 
+                <span style="color:#1E8F5C;font-weight:bold;">accepted</span> by expert 
+                <strong>{expert_name}</strong>.
+            </p>
+
+            <div style="margin-top:20px;">
+                <h3 style="color:#053830;">Request Details:</h3>
+                <table width="100%" cellpadding="8" style="border-collapse:collapse;margin-top:10px;">
+    """
+
+    for key, value in details.items():
+        html_message += f"""
+            <tr>
+                <td style="background:#EAF4E0;color:#053830;border-radius:8px 0 0 8px;font-weight:bold;width:35%;">{key}</td>
+                <td style="background:#FFFFFF;border-radius:0 8px 8px 0;">{value}</td>
+            </tr>
+        """
+
+    html_message += """
+                </table>
+            </div>
+
+            <p style="margin-top:25px;color:#053830;">
+                Thank you for choosing <strong>Propulsion Technology</strong>.<br>
+                Our expert will contact you soon regarding the next steps.
+            </p>
+
+            <p style="margin-top:30px;text-align:center;color:#999">
+                © 2025 Propulsion Technology. All Rights Reserved.
+            </p>
+
+        </div>
+    </div>
+    """
+
+    try:
+        send_mail(
+            subject=subject,
+            message="Your request has been accepted.",
+            html_message=html_message,
+            from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
+            recipient_list=[client_email],
+            fail_silently=False,
+        )
+        return True
+    except Exception as e:
+        print("Email sending failed:", e)
+        return False

@@ -1,0 +1,1081 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assign Project | Admin</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script> 
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Flatpickr (date picker) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ["Poppins", "sans-serif"] },
+                    colors: {
+                        "primary-green": "#053830",
+                        "primary-green-hover": "#155C54",
+                        "highlight-gold": "#FF9728",
+                        "slate-light": "#F8FAFC",
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom CSS to style Django Form Fields automatically -->
+    <style>
+        /* This ensures your {{ form.field }} renders beautifully without changing python code */
+        form input[type="text"],
+        form input[type="email"],
+        form input[type="number"],
+        form input[type="date"],
+        form input[type="url"],
+        form select,
+        form textarea {
+            width: 100%;
+            background-color: #f8fafc; /* slate-50 */
+            border: 1px solid #cbd5e1; /* slate-300 */
+            border-radius: 0.5rem; /* rounded-lg */
+            padding: 0.75rem 1rem;
+            outline: none;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+            color: #334155;
+            -webkit-appearance: none; /* Removes default styling on iOS */
+        }
+
+        form input:focus,
+        form select:focus,
+        form textarea:focus {
+            border-color: #053830; /* primary-green */
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(5, 56, 48, 0.1);
+        }
+
+        form label {
+            display: block;
+            font-weight: 500;
+            color: #475569;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        /* File Input Styling - Responsive adjustments */
+        input[type="file"] {
+            width: 100%;
+            font-size: 0.875rem;
+            position: relative;   /* ensure lower z-index than the remove button */
+            z-index: 5;
+        }
+        
+        input[type="file"]::file-selector-button {
+            background-color: #053830;
+            color: white;
+            border: none;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            margin-right: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 640px) {
+            input[type="file"]::file-selector-button {
+                width: 100%;
+                margin-bottom: 0.5rem;
+                margin-right: 0;
+            }
+        }
+
+        input[type="file"]::file-selector-button:hover {
+            background-color: #155C54;
+        }
+
+        /* Ensure flatpickr popup appears above the card */
+        .flatpickr-calendar {
+            z-index: 99999;
+        }
+
+        .flatpickr-input[readonly] {
+            background-color: #f8fafc;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+            color: #334155;
+            cursor: pointer;
+        }
+
+        input[name="amount_total"],
+        input[name="amount_paid"] {
+            padding-left: 2.4rem !important;   /* creates space between ₹ and numbers */
+        }
+
+        /* NEW: make the upload wrapper relative so the remove button can be absolute-positioned inside it */
+        .file-upload-wrapper {
+            position: relative;
+            z-index: 1; /* keeps normal flow but allows absolutely positioned children */
+        }
+
+        /* NEW: style the remove button so it's above inputs and clickable */
+        #removeFileBtn {
+            position: absolute;
+            top: 12px;
+            right: 18px;
+            z-index: 99999;           /* very high so it sits on top of anything */
+            pointer-events: auto;     /* ensure clickable */
+            background: white;
+            border: 1px solid rgba(0,0,0,0.06);
+            padding: 6px 10px;
+            border-radius: 999px;
+            color: #e11d48; /* red-600 */
+            font-weight: 600;
+            font-size: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            cursor: pointer;
+        }
+        /* small responsive tweak */
+        @media (max-width: 640px) {
+            #removeFileBtn { top: 10px; right: 12px; padding: 5px 8px; font-size: 11px; }
+        }
+
+        /* Description popup modal styles */
+        .desc-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999999;
+        }
+        .desc-modal {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1.25rem 1.5rem;
+            max-width: 420px;
+            width: calc(100% - 40px);
+            box-shadow: 0 10px 30px rgba(2,6,23,0.2);
+        }
+        .desc-modal h4 { font-weight: 700; color: #053830; }
+        .desc-modal p { color: #334155; margin-top: 0.5rem; }
+        .desc-modal .close-btn { margin-top: 0.75rem; }
+
+    </style>
+</head>
+
+<body class="bg-slate-100 min-h-screen py-6 px-3 sm:px-6 lg:px-8 font-sans">
+
+    <div class="max-w-5xl mx-auto">
+        
+        <!-- Card Container -->
+        <div class="bg-white shadow-xl sm:shadow-2xl rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200">
+            
+            <!-- Decorative Header Bar -->
+            <div class="h-2 sm:h-3 bg-gradient-to-r from-primary-green via-teal-700 to-primary-green"></div>
+
+            <div class="p-5 sm:p-8 md:p-12">
+                
+                <!-- Header Section -->
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 sm:mb-10 border-b border-slate-100 pb-6 gap-4 sm:gap-6">
+                    <div>
+                        <h1 class="text-2xl sm:text-3xl font-bold text-primary-green flex items-center gap-2 sm:gap-3">
+                            <i data-lucide="briefcase" class="w-6 h-6 sm:w-8 sm:h-8 text-highlight-gold shrink-0"></i>
+                            Assign Project
+                        </h1>
+                        <p class="text-slate-500 mt-2 text-xs sm:text-sm">Create a new assignment timeline and deliverables for your client.</p>
+                    </div>
+                    
+<!-- Back to Dashboard Button -->
+                    <!-- Back to Home -->
+<a href="{% url 'home' %}" 
+   class="w-full sm:w-auto flex items-center justify-center gap-2 
+          px-5 py-2.5 bg-[#053830] text-white 
+          rounded-xl transition-all text-sm font-semibold 
+          border border-[#053830] shadow-sm 
+          hover:bg-[#FF9728] hover:text-[#053830] hover:border-[#FF9728] hover:scale-[1.02]">
+
+    <i data-lucide="arrow-left" class="w-4 h-4 transition-transform"></i>
+    Back to Home
+</a>
+
+<!-- Back to Dashboard -->
+<a href="{% url 'admin_dashboard' %}" 
+   class="w-full sm:w-auto flex items-center justify-center gap-2 
+          px-5 py-2.5 bg-[#053830] text-white 
+          rounded-xl transition-all text-sm font-semibold 
+          border border-[#053830] shadow-sm 
+          hover:bg-[#FF9728] hover:text-[#053830] hover:border-[#FF9728] hover:scale-[1.02]">
+
+    <i data-lucide="arrow-left" class="w-4 h-4 transition-transform"></i>
+    Back to Dashboard
+</a>
+                </div>
+
+                <!-- Messages / Alerts -->
+{% if messages %}
+<div class="mb-6 sm:mb-8 space-y-2">
+    {% for message in messages %}
+    <div class="auto-dismiss flex items-start sm:items-center p-3 sm:p-4 text-sm text-green-800 border border-green-200 rounded-xl bg-green-50" role="alert">
+        <i data-lucide="check-circle" class="w-5 h-5 mr-3 shrink-0 mt-0.5 sm:mt-0"></i>
+        <span class="font-medium">{{ message }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+                <form method="POST" enctype="multipart/form-data" class="space-y-6 sm:space-y-8" id="assignProjectForm" novalidate>
+                    {% csrf_token %}
+
+                    <!-- SECTION 1: Core Details -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+                        <!-- Client (Span 1) -->
+                        <div class="group w-full">
+                            <label>Select Client *</label>
+                            {{ form.client }}
+                        </div>
+
+                        <!-- Project Name (Span 1) -->
+                        <div class="group w-full">
+                            <label>Project Name *</label>
+                            {{ form.project_name }}
+                            <!-- live counter + error -->
+                            <div class="flex justify-between items-start">
+                                <p id="projectNameError" class="text-red-500 text-xs mt-1 hidden"></p>
+                                <p id="projectNameCount" class="text-xs text-gray-400 mt-1 ml-auto">0 / 100</p>
+                            </div>
+                        </div>
+
+                        <!-- Description (Full Width) -->
+                        <div class="col-span-1 md:col-span-2 group w-full">
+                            <label>Description *</label>
+                            {{ form.description }}
+                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start mt-1 gap-1">
+                                <p class="text-xs text-slate-400">Briefly explain the scope of the work.</p>
+                                <div class="flex items-center justify-between w-full sm:w-auto">
+                                    <p id="descriptionError" class="text-red-500 text-xs hidden mr-2"></p>
+                                    <p id="descriptionCount" class="text-xs text-gray-400 ml-auto sm:ml-0">0 / 1000</p>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="border-slate-100">
+
+                    <!-- SECTION 2: Timeline & Status -->
+                    <h3 class="text-base sm:text-lg font-semibold text-primary-green flex items-center gap-2">
+                        <i data-lucide="calendar-clock" class="w-5 h-5"></i> Timeline & Status
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Start Date -->
+                        <div class="w-full">
+                            <label>Start Date *</label>
+                            {{ form.start_date }}
+                            <p id="startDateError" class="text-red-500 text-xs mt-1 hidden"></p>
+                        </div>
+
+                        <!-- End Date -->
+                        <div class="w-full">
+                            <label>End Date *</label>
+                            {{ form.end_date }}
+                            <p id="endDateFormatError" class="text-red-500 text-xs mt-1 hidden"></p>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="w-full sm:col-span-2 lg:col-span-1">
+                            <label>Current Status *</label>
+                            {{ form.status }}
+                        </div>
+
+                        <!-- Deliverables (Full Width) -->
+                        <div class="col-span-1 sm:col-span-2 lg:col-span-2 group w-full">
+                            <label>Key Deliverables *</label>
+                            {{ form.deliverables }}
+                            <div class="flex justify-between items-start">
+                                <p id="deliverablesError" class="text-red-500 text-xs mt-1 hidden"></p>
+                                <p id="deliverablesCount" class="text-xs text-gray-400 mt-1 ml-auto">0 / 250</p>
+                            </div>
+                        </div>
+
+                        <!-- Progress -->
+<div class="w-full sm:col-span-2 lg:col-span-1">
+    <label>Progress (%) *</label>
+
+    <div class="flex flex-col">
+        {{ form.progress }}
+        <p id="progressError" class="text-red-500 text-xs mt-1 hidden"></p>
+    </div>
+</div>
+                    </div>
+
+                    <hr class="border-slate-100">
+
+                    <!-- SECTION 3: Financials & Assets -->
+                    <h3 class="text-base sm:text-lg font-semibold text-primary-green flex items-center gap-2">
+                        <i data-lucide="wallet" class="w-5 h-5"></i> Financials & Assets
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 bg-slate-50 p-4 sm:p-6 rounded-2xl border border-slate-100">
+                        <!-- Amount Wrapper -->
+                        <div class="w-full">
+                            <label>Total Amount (₹) *</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 font-bold">₹</span>
+                                {{ form.amount_total }}
+                                <p id="totalError" class="text-red-600 text-xs font-medium mt-1 hidden"></p>
+                            </div>
+                        </div>
+
+                        <div class="w-full">
+                            <label>Amount Paid (₹) *</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 font-bold">₹</span>
+                                {{ form.amount_paid }}
+                                <p id="paidError" class="text-red-600 text-xs font-medium mt-1 hidden"></p>
+                            </div>
+                        </div>
+
+                        <!-- File Upload (Full Width in this subsection) -->
+                        <div class="col-span-1 md:col-span-2 w-full">
+                            <label>Project Brief (PDF / DOCX) *</label>
+
+                            <!-- NOTE: added class file-upload-wrapper so remove button can be absolute-positioned inside -->
+                            <div class="mt-2 flex justify-center px-4 sm:px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-xl hover:border-primary-green transition-colors bg-white w-full overflow-hidden file-upload-wrapper">
+                                <div class="space-y-1 text-center w-full">
+                                    <!-- <i id="fileIcon" data-lucide="upload-cloud" class="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-slate-400"></i> -->
+                                    <div class="flex text-sm text-slate-600 justify-center">
+                                        <!-- We use the standard django file input here -->
+                                        <div class="w-full max-w-xs sm:max-w-md">
+                                            {{ form.brief }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Added Remove File button (hidden by default) -->
+                                    <button type="button" id="removeFileBtn" 
+                                            class="mt-2 text-red-600 text-xs font-semibold underline hidden" aria-label="Remove selected file">
+                                            Remove File ✕
+                                    </button>
+
+                                    <!-- file name + success + error placeholders -->
+                                    <p id="fileName" class="text-xs text-slate-700 font-medium mt-2 hidden break-all"></p>
+                                    <p id="fileError" class="text-red-600 text-xs font-medium mt-1 hidden"></p>
+                                    <p id="fileSuccess" class="text-green-600 text-xs font-medium mt-1 hidden"></p>
+
+                                    <p class="text-xs text-slate-500 mt-1">PDF, DOCX up to 10MB</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ACTIONS -->
+                    <div class="pt-4 flex flex-col-reverse sm:flex-row items-center justify-end gap-3 sm:gap-4">
+                        <button type="button" class="w-full sm:w-auto px-6 py-3 text-slate-600 font-medium hover:text-primary-green transition rounded-xl border border-transparent hover:border-slate-200" onclick="history.back()">
+                            Cancel
+                        </button>
+                        <button id="assignSubmitBtn" type="submit" class="w-full sm:w-auto px-8 py-3 bg-primary-green text-white font-semibold rounded-xl shadow-lg hover:bg-primary-green-hover hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2">
+                            <i data-lucide="save" class="w-4 h-4"></i>
+                            Assign Project
+                        </button>
+                    </div>
+
+                </form>
+
+                <!-- Success toast used by JS (will auto-hide) -->
+                <div id="successMsg"
+                     class="hidden fixed top-5 right-5 left-5 sm:left-auto bg-green-600 text-white px-5 py-3 rounded-lg shadow-xl text-sm font-semibold z-50 text-center sm:text-left animate-bounce">
+                    ✅ Project Assigned Successfully!
+                </div>
+
+                <!-- Description popup modal (hidden by default) -->
+                <div id="descPopup" class="desc-overlay hidden" aria-hidden="true">
+                    <div class="desc-modal">
+                        <h4>Short description</h4>
+                        <p id="descPopupText">Description must be at least 10 characters long. Please add more details about the project scope.</p>
+                        <div class="text-right">
+                            <button id="descPopupClose" class="close-btn inline-flex items-center px-3 py-1.5 rounded-lg bg-[#053830] text-white text-sm font-semibold">Okay</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="text-center mt-8 text-slate-400 text-xs sm:text-sm">
+            &copy; 2025 Admin Dashboard. All rights reserved.
+        </div>
+
+    </div>
+
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+    </script>
+
+    <!-- Flatpickr (DATE-ONLY) initialization -->
+    <script>
+        // Wait for DOM ready
+        document.addEventListener('DOMContentLoaded', function () {
+            // Try to find inputs rendered by Django form.
+            const startInput = document.querySelector('input[name$="start_date"]') || document.getElementById('id_start_date');
+            const endInput = document.querySelector('input[name$="end_date"]') || document.getElementById('id_end_date');
+
+            let endFp = null;
+
+            if (startInput) {
+                try { startInput.type = 'text'; } catch (e) {}
+                flatpickr(startInput, {
+                    enableTime: false,
+                    // Use d-m-Y so value will be DD-MM-YYYY (e.g. 28-11-2025)
+                    dateFormat: "d-m-Y",   // posted value in the input
+                    altInput: true,
+                    altFormat: "d-m-Y",    // shown to user
+                    allowInput: false,     // user picks via calendar (prevents typing wrong format)
+                    minDate: "today",      // restricts past dates
+                    onChange: function(selectedDates) {
+                        if (endFp) {
+                            if (selectedDates.length) {
+                                endFp.set('minDate', selectedDates[0]);
+                            } else {
+                                endFp.set('minDate', "today");
+                            }
+                        }
+                    }
+                });
+            }
+
+            if (endInput) {
+                try { endInput.type = 'text'; } catch (e) {}
+                endFp = flatpickr(endInput, {
+                    enableTime: false,
+                    dateFormat: "d-m-Y",
+                    altInput: true,
+                    altFormat: "d-m-Y",
+                    allowInput: false,  // Disables typing, forces calendar selection
+                    minDate: "today"    // initially restricts past dates
+                });
+            }
+
+            // If start date is pre-filled (e.g. edit mode), ensure end date respects it
+            if (startInput && endFp) {
+                const startVal = startInput._flatpickr?.selectedDates?.[0];
+                if (startVal) endFp.set('minDate', startVal);
+            }
+        });
+    </script>
+
+    <!-- ADDED: Live validation, counters, file handling, date format & amount checks -->
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+        // Grab elements (IDs are likely the ones Django renders, adjust if different)
+        const projectName = document.getElementById("id_project_name");
+        const description = document.getElementById("id_description");
+        const deliverables = document.getElementById("id_deliverables"); // Newly added to JS
+        const form = document.getElementById("assignProjectForm");
+        const submitBtn = document.getElementById("assignSubmitBtn");
+        const successBox = document.getElementById("successMsg");
+
+        // Helper: safe element getters
+        function el(id) { return document.getElementById(id); }
+
+        // Validate field helper
+        function validateField(input, errorField, min, max) {
+            if (!input) return true;
+            const value = input.value.trim();
+
+            if (value.length < min) {
+                input.classList.add("border-red-500");
+                if (errorField) {
+                    errorField.innerText = Minimum `${min} characters required`;
+                    errorField.classList.remove("hidden");
+                }
+                return false;
+            }
+
+            if (value.length > max) {
+                input.classList.add("border-red-500");
+                if (errorField) {
+                    errorField.innerText = Maximum `${max} characters allowed`;
+                    errorField.classList.remove("hidden");
+                }
+                return false;
+            }
+
+            input.classList.remove("border-red-500");
+            if (errorField) errorField.classList.add("hidden");
+            return true;
+        }
+
+        // Live Validation for project name + description + deliverables
+        if (projectName) {
+            const nameErr = el("projectNameError");
+            const nameCounter = el("projectNameCount");
+            projectName.addEventListener("input", () => {
+                const val = projectName.value || "";
+                if (nameCounter) nameCounter.textContent = `${val.length} / 100`;
+                validateField(projectName, nameErr, 3, 100);
+            });
+        }
+
+        if (description) {
+            const descErr = el("descriptionError");
+            const descCounter = el("descriptionCount");
+
+            description.addEventListener("input", () => {
+                let val = description.value || "";
+
+                // Hard limit characters
+                if (val.length > 1000) {
+                    description.value = val.substring(0, 1000); 
+                    val = description.value;
+                }
+
+                // Update counter
+                if (descCounter) descCounter.textContent = `${val.length} / 1000`;
+
+                // Validate for min 10 and max 1000
+                validateField(description, descErr, 10, 1000);
+            });
+
+            // Show popup on blur if too short (handles user's request)
+            description.addEventListener('blur', () => {
+                const len = (description.value || '').trim().length;
+                if (len > 0 && len < 10) {
+                    // show popup
+                    const popup = document.getElementById('descPopup');
+                    const popupText = document.getElementById('descPopupText');
+                    if (popup && popupText) {
+                        popupText.textContent = `Description is currently ${len} characters. Please provide at least 10 characters.`;
+                        popup.classList.remove('hidden');
+                        popup.setAttribute('aria-hidden', 'false');
+                    }
+                }
+            });
+
+            // Hide popup automatically once input reaches >=10
+            description.addEventListener('input', () => {
+                const popup = document.getElementById('descPopup');
+                if (!popup) return;
+                const len = (description.value || '').trim().length;
+                if (len >= 10) {
+                    popup.classList.add('hidden');
+                    popup.setAttribute('aria-hidden', 'true');
+                }
+            });
+        }
+
+        if (deliverables) {
+            // STRICT LIMIT: Add maxlength attribute to prevent typing beyond 250
+            deliverables.setAttribute("maxlength", "250");
+            
+            const delErr = el("deliverablesError");
+            const delCounter = el("deliverablesCount");
+            
+            deliverables.addEventListener("input", () => {
+                // Double check truncation (in case of paste)
+                if (deliverables.value.length > 250) {
+                    deliverables.value = deliverables.value.substring(0, 250);
+                }
+                
+                const val = deliverables.value || "";
+                // Note: liveCount helper handles text content, but we can do it here too for consistency with validateField trigger
+                validateField(deliverables, delErr, 3, 250); 
+            });
+        }
+
+        // Stop Submit If Invalid (we'll show in-page success for demo — remove preventDefault() to actually submit)
+        form.addEventListener("submit", (e) => {
+            // Validate required fields
+            const requiredFields = [
+                "id_client", "id_project_name", "id_description", 
+                "id_start_date", "id_end_date","id_status",
+                "id_deliverables","id_amount_total","id_amount_paid","id_brief"
+            ];
+
+            let valid = true;
+            requiredFields.forEach(id => {
+                const field = el(id);
+                if (!field) return; // skip missing
+                // for file inputs, check files
+                if (field.type === "file") {
+                    if (!field.files || !field.files.length) {
+                        field.classList.add("border-red-500");
+                        valid = false;
+                    } else {
+                        field.classList.remove("border-red-500");
+                    }
+                } else if (!String(field.value || "").trim()) {
+                    field.classList.add("border-red-500");
+                    valid = false;
+                } else {
+                    field.classList.remove("border-red-500");
+                }
+            });
+
+            const validName = validateField(projectName, el("projectNameError"), 3, 100);
+            const validDesc = validateField(description, el("descriptionError"), 10, 1000);
+            const validDeliverables = validateField(deliverables, el("deliverablesError"), 3, 250);
+
+            if (!valid || !validName || !validDesc || !validDeliverables) {
+                e.preventDefault();
+                return;
+            }
+
+        });
+
+        // Live count helper (callable)
+        function liveCount(elementId, counterId, min, max) {
+            const elField = document.getElementById(elementId);
+            const counter = document.getElementById(counterId);
+            if (!elField || !counter) return;
+            elField.addEventListener("input", function() {
+                const len = elField.value.length;
+                counter.textContent = `${len} / ${max}`;
+                if (len < min) counter.style.color = "orange";
+                else if (len >= max) counter.style.color = "red";
+                else counter.style.color = "green";
+            });
+            // initialize
+            counter.textContent = `${elField.value.length} / ${max}`;
+        }
+
+        // Initialize counts if present
+        liveCount("id_project_name", "projectNameCount", 3, 100);
+        liveCount("id_description", "descriptionCount", 10, 1000);
+        // ADDED: Initialize count for deliverables
+        liveCount("id_deliverables", "deliverablesCount", 3, 250);
+
+        // Success alert
+        function showSuccessAlert() {
+            if (!successBox) return;
+            successBox.classList.remove("hidden");
+            setTimeout(() => {
+                successBox.classList.add("hidden");
+                // reset form
+                form.reset();
+                // reset counters
+                document.querySelectorAll("#projectNameCount, #descriptionCount, #deliverablesCount")
+                    .forEach(el => el.textContent = "0 / 0"); // Note: usually resets to max if custom func, but simple reset here
+                
+                // Manually re-trigger live counts to show correct 0 / MAX
+                liveCount("id_project_name", "projectNameCount", 3, 100);
+                liveCount("id_description", "descriptionCount", 10, 1000);
+                liveCount("id_deliverables", "deliverablesCount", 3, 250);
+
+                // reset file UI
+                const fn = el("fileName"), fe = el("fileError"), fs = el("fileSuccess");
+                if (fn) { fn.classList.add("hidden"); fn.textContent = ""; }
+                if (fe) { fe.classList.add("hidden"); fe.textContent = ""; }
+                if (fs) { fs.classList.add("hidden"); fs.textContent = ""; }
+                // re-init icons
+                lucide.createIcons();
+            }, 1600);
+        }
+
+        // File input handling (validate extension + size)
+        (function fileHandler() {
+            const fileInput = document.querySelector("#id_brief");
+            if (!fileInput) return;
+            const fileName = el("fileName");
+            const fileError = el("fileError");
+            const fileSuccess = el("fileSuccess");
+            const fileIcon = el("fileIcon");
+            const submitBtnLocal = submitBtn;
+
+            function resetMessages(){
+                if (fileError) fileError.classList.add("hidden");
+                if (fileSuccess) fileSuccess.classList.add("hidden");
+                if (fileName) fileName.classList.add("hidden");
+            }
+
+            // Get remove button reference
+            const removeBtn = document.getElementById("removeFileBtn");
+
+            fileInput.addEventListener("change", function () {
+                resetMessages();
+                const file = fileInput.files[0];
+                if (!file) {
+                    // If user canceled file dialog, hide remove btn and return
+                    if (removeBtn) removeBtn.classList.add("hidden");
+                    return;
+                }
+
+                const ext = (file.name.split(".").pop() || "").toLowerCase();
+                const allowed = ["pdf", "docx"];
+                if (!allowed.includes(ext)) {
+                    if (fileError) {
+                        fileError.textContent = "❌ Only PDF & DOCX files are allowed.";
+                        fileError.classList.remove("hidden");
+                    }
+                    if (fileIcon) fileIcon.setAttribute("data-lucide", "x-circle");
+                    if (submitBtnLocal) submitBtnLocal.disabled = true;
+                    // clear the input value so browser won't attempt to upload invalid file
+                    fileInput.value = "";
+                    // IMPORTANT: keep the Remove button visible so user can clear state
+                    if (removeBtn) removeBtn.classList.remove("hidden");
+                    lucide.createIcons();
+                    return;
+                }
+
+                if (file.size > 10 * 1024 * 1024) {
+                    if (fileError) {
+                        fileError.textContent = "❌ File too large. Maximum allowed size is 10 MB.";
+                        fileError.classList.remove("hidden");
+                    }
+                    if (fileIcon) fileIcon.setAttribute("data-lucide", "x-circle");
+                    if (submitBtnLocal) submitBtnLocal.disabled = true;
+                    // clear the input value (so the invalid file isn't kept), but show remove button so user can clear UI
+                    fileInput.value = "";
+                    if (removeBtn) removeBtn.classList.remove("hidden");
+                    lucide.createIcons();
+                    return;
+                }
+
+                // Valid
+                if (fileSuccess) {
+                    fileSuccess.textContent = "✔ File Ready to Upload";
+                    fileSuccess.classList.remove("hidden");
+                }
+                if (fileName) {
+                    fileName.textContent = "📄 " + file.name;
+                    fileName.classList.remove("hidden");
+                }
+                if (fileIcon) fileIcon.setAttribute("data-lucide", ext === "pdf" ? "file-text" : "file");
+                if (submitBtnLocal) submitBtnLocal.disabled = false;
+                // Show remove button when valid file selected
+                if (removeBtn) removeBtn.classList.remove("hidden");
+                lucide.createIcons();
+            });
+
+            // <-- Remove button handler (clears the file input and resets UI)
+            if (removeBtn) {
+                removeBtn.addEventListener("click", function (e) {
+                    // stop propagation so underlying input doesn't intercept
+                    e.stopPropagation();
+                    e.preventDefault();
+
+                    // Clear actual file input
+                    try {
+                        // For modern browsers this clears selection
+                        fileInput.value = "";
+                    } catch (err) {
+                        // ignore
+                    }
+
+                    // Hide remove button
+                    removeBtn.classList.add("hidden");
+
+                    // Reset file messages
+                    if (fileName) { fileName.textContent = ""; fileName.classList.add("hidden"); }
+                    if (fileError) { fileError.textContent = ""; fileError.classList.add("hidden"); }
+                    if (fileSuccess) { fileSuccess.textContent = ""; fileSuccess.classList.add("hidden"); }
+
+                    // Reset icon back to upload-cloud
+                    if (fileIcon) {
+                        fileIcon.setAttribute("data-lucide", "upload-cloud");
+                        lucide.createIcons();
+                    }
+
+                    // Re-enable submit button
+                    if (submitBtnLocal) submitBtnLocal.disabled = false;
+                });
+            }
+            // --> end remove button handler
+
+        })();
+
+        // Date format validation (DD-MM-YYYY) — keep lightweight because flatpickr handles UI
+        (function dateValidator() {
+            const startDate = document.querySelector('input[name$="start_date"]') || document.getElementById("id_start_date");
+            const endDate = document.querySelector('input[name$="end_date"]') || document.getElementById("id_end_date");
+            const startError = el("startDateError");
+            const endFormatError = el("endDateFormatError");
+            const validFormat = /^\d{2}-\d{2}-\d{4}$/; // DD-MM-YYYY
+
+            function validateDateFormat(input, errorBox){
+                if (!input) return;
+                const value = (input.value || "").trim();
+                // Since allowInput is false, user can't type bad dates, but if they could:
+                if (value && !validFormat.test(value)) {
+                    if (errorBox) {
+                        errorBox.textContent = "❌ Invalid Date Format. Use DD-MM-YYYY.";
+                        errorBox.classList.remove("hidden");
+                    }
+                    input.classList.add("border-red-500");
+                    if (submitBtn) submitBtn.disabled = true;
+                } else {
+                    if (errorBox) errorBox.classList.add("hidden");
+                    input.classList.remove("border-red-500");
+                    if (submitBtn) submitBtn.disabled = false;
+                }
+            }
+            if (startDate) startDate.addEventListener("input", ()=> validateDateFormat(startDate, startError));
+            if (endDate) endDate.addEventListener("input", ()=> validateDateFormat(endDate, endFormatError));
+        })();
+
+        // Amount validation: paid <= total AND Prevent Negative
+     (function amountValidator() {
+    const totalEl = document.querySelector('#id_amount_total') || document.getElementById("id_amount_total");
+    const paidEl = document.querySelector('#id_amount_paid') || document.getElementById("id_amount_paid");
+
+    const paidError = el("paidError");
+    const totalError = el("totalError");
+
+    if (!totalEl || !paidEl) return;
+
+    // Define the maximum limit based on the Database constraints (Decimal(10,2) usually implies max 99999999.99)
+    const MAX_ALLOWED_AMOUNT = 99999999.99;
+
+    // Prevent negative numbers & set max attribute
+    [totalEl, paidEl].forEach(input => {
+        input.setAttribute("min", "0");
+        input.setAttribute("max", MAX_ALLOWED_AMOUNT);
+        input.addEventListener("input", function () {
+            if (this.value < 0) this.value = 0;
+        });
+    });
+
+    // Validate amounts
+    function validateAmount() {
+        let total = parseFloat(totalEl.value) || 0;
+        let paid = parseFloat(paidEl.value) || 0;
+        let isValid = true; // Use this to track if current check is valid
+
+        // Reset errors first
+        totalError.classList.add("hidden");
+        totalEl.classList.remove("border-red-500");
+        paidError.classList.add("hidden");
+        paidEl.classList.remove("border-red-500");
+
+        // 🔥 Rule 1: Total amount cannot be zero
+        if (total === 0 && totalEl.value !== "") {
+            totalError.innerText = "❌ Total amount cannot be zero.";
+            totalError.classList.remove("hidden");
+            totalEl.classList.add("border-red-500");
+            isValid = false;
+        } 
+        
+        // 🔥 Rule 2: Check Maximum Limit (Fix for Numeric Overflow)
+        if (total > MAX_ALLOWED_AMOUNT) {
+            totalError.innerText = "❌ Entered amount exceeds the maximum allowed limit.";
+            totalError.classList.remove("hidden");
+            totalEl.classList.add("border-red-500");
+            isValid = false;
+        }
+
+        if (paid > MAX_ALLOWED_AMOUNT) {
+            paidError.innerText = "❌ Entered amount exceeds the maximum allowed limit.";
+            paidError.classList.remove("hidden");
+            paidEl.classList.add("border-red-500");
+            isValid = false;
+        }
+
+        // 🔥 Rule 3: Amount Paid cannot be more than total
+        // Only check this if max limit isn't broken
+        if (isValid && paid > total) {
+            paidError.innerText = "Amount Paid cannot be more than Total Amount!";
+            paidError.classList.remove("hidden");
+            paidEl.classList.add("border-red-500");
+            isValid = false;
+        }
+
+        // Enable/Disable submit button based on validity
+        if (submitBtn) {
+            submitBtn.disabled = !isValid;
+        }
+    }
+
+    totalEl.addEventListener("input", validateAmount);
+    paidEl.addEventListener("input", validateAmount);
+})();
+        // --- NEW: Progress Validation (Strict 0 to 100) ---
+        (function progressValidator() {
+            // Find input by ID (standard Django) or fallback to name
+            const progressEl = document.getElementById("id_progress") || document.querySelector('input[name="progress"]');
+            
+            if (!progressEl) return;
+
+            // Set attributes so browser UI respects limits
+            progressEl.setAttribute("min", "0");
+            progressEl.setAttribute("max", "100");
+
+            // Event listener to strictly clamp values
+            progressEl.addEventListener("input", function() {
+                let val = parseInt(this.value);
+
+                // If user clears the input, let them (don't force 0 immediately while typing)
+                if (this.value === "") return;
+
+                if (val < 0) {
+                    this.value = 0;
+                } else if (val > 100) {
+                    this.value = 100;
+                }
+            });
+
+            // On blur (when they leave the field), ensure it's not empty or invalid
+            progressEl.addEventListener("blur", function() {
+                let val = parseInt(this.value);
+                if (isNaN(val) || val < 0) this.value = 0;
+                if (val > 100) this.value = 100;
+            });
+        })();
+
+    });
+    </script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const form = document.getElementById("assignProjectForm");
+
+    function showError(field, errorBox, msg) {
+        field.classList.add("border-red-500");
+        errorBox.innerText = msg;
+        errorBox.classList.remove("hidden");
+    }
+
+    function clearError(field, errorBox) {
+        field.classList.remove("border-red-500");
+        errorBox.innerText = "";
+        errorBox.classList.add("hidden");
+    }
+
+    form.addEventListener("submit", function (e) {
+
+        let isValid = true;
+
+        // 🔥 ALL REQUIRED FIELDS LIST MATCHING YOUR FORM EXACTLY
+        const requiredList = [
+            { el: document.querySelector('[name="client"]'), error: createErrorBox(document.querySelector('[name="client"]')) },
+
+            { el: document.querySelector('[name="project_name"]'), error: document.getElementById("projectNameError") },
+
+            { el: document.querySelector('[name="description"]'), error: document.getElementById("descriptionError") },
+
+            { el: document.querySelector('[name="start_date"]'), error: document.getElementById("startDateError") },
+
+            { el: document.querySelector('[name="end_date"]'), error: document.getElementById("endDateFormatError") },
+
+            { el: document.querySelector('[name="status"]'), error: createErrorBox(document.querySelector('[name="status"]')) },
+
+            { el: document.querySelector('[name="deliverables"]'), error: document.getElementById("deliverablesError") },
+
+            { el: document.querySelector('[name="progress"]'), error: createErrorBox(document.querySelector('[name="progress"]')) },
+
+            { el: document.querySelector('[name="amount_total"]'), error: document.getElementById("totalError") },
+
+            { el: document.querySelector('[name="amount_paid"]'), error: document.getElementById("paidError") },
+
+            { el: document.querySelector('[name="brief"]'), error: document.getElementById("fileError") }
+        ];
+
+        // VALIDATE EACH FIELD
+        requiredList.forEach(f => {
+            if (!f.el.value || f.el.value.trim() === "") {
+                showError(f.el, f.error, "This field is required.");
+                isValid = false;
+            } else {
+                clearError(f.el, f.error);
+            }
+        });
+
+        if (!isValid) {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+    });
+
+    // Clear error while typing
+    document.querySelectorAll("#assignProjectForm input, #assignProjectForm select, #assignProjectForm textarea")
+    .forEach(field => {
+        field.addEventListener("input", function () {
+            let errorBox = getErrorBox(this);
+            if (errorBox) clearError(this, errorBox);
+        });
+        field.addEventListener("change", function () {
+            let errorBox = getErrorBox(this);
+            if (errorBox) clearError(this, errorBox);
+        });
+    });
+
+    // Helper — for fields without predefined <p id="">
+    function createErrorBox(field) {
+        let next = field.parentElement.querySelector(".auto-error");
+        if (!next) {
+            next = document.createElement("p");
+            next.className = "auto-error text-red-500 text-xs mt-1 hidden";
+            field.parentElement.appendChild(next);
+        }
+        return next;
+    }
+
+    function getErrorBox(field) {
+        return (
+            field.parentElement.querySelector(".auto-error") ||
+            field.parentElement.querySelector(".text-red-500") ||
+            field.nextElementSibling
+        );
+    }
+
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const alerts = document.querySelectorAll(".auto-dismiss");
+
+    alerts.forEach((alert) => {
+        setTimeout(() => {
+            alert.style.transition = "opacity 0.7s ease, transform 0.7s ease";
+            alert.style.opacity = "0";
+            alert.style.transform = "translateY(-10px)";
+
+            setTimeout(() => alert.remove(), 700);
+        }, 3500); // closes after 3.5 seconds
+    });
+});
+</script>
+
+<!-- NEW: Small script to control the description popup (close on OK / click outside / ESC) -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const popup = document.getElementById('descPopup');
+    const closeBtn = document.getElementById('descPopupClose');
+
+    if (!popup) return;
+
+    function closePopup() {
+        popup.classList.add('hidden');
+        popup.setAttribute('aria-hidden', 'true');
+    }
+
+    // Close via button
+    if (closeBtn) closeBtn.addEventListener('click', closePopup);
+
+    // Close when clicking outside modal content
+    popup.addEventListener('click', function(e) {
+        if (e.target === popup) closePopup();
+    });
+
+    // Close on ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closePopup();
+    });
+});
+</script>
+
+</body>
+</html>

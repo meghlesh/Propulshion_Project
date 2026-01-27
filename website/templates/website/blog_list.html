@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Propulsion Blog | Insights & Resources</title>
-        <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+    
+        <link rel="icon" type="image/png" href="{% static 'img/logo6.png'%}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -38,10 +39,13 @@
 <body class="bg-card-bg text-dark-text font-sans antialiased" style="background-color: #F1F2F0;">
 
     <!-- Navbar -->
-    <nav class="bg-white px-5 py-4 md:px-10 flex justify-between items-center shadow-md border-b border-gray-100">
-        <a href="/" class="text-2xl font-extrabold text-primary-green">Propulsion</a>
+<nav class="bg-[#053830] text-white p-5 flex justify-between items-center shadow-lg sticky top-0 z-40">
+        <a href="/" class="text-2xl md:text-3xl font-extrabold tracking-tight">Propulsion Technology</a>
         <div class="flex gap-4">
-            <a href="{% url 'home' %}" class="px-4 py-2 rounded-lg bg-accent-green text-dark-text font-semibold hover:bg-primary-green hover:text-white transition-colors">Home</a>
+             <a href="{% url 'home' %}"
+                class="bg-[#FF9728] px-5 py-2 rounded-xl text-[#053830] font-semibold hover:bg-white hover:text-[#053830] transition-all shadow-md hover:shadow-lg">
+                Back to Home
+            </a>
             <!-- <a href="{% url 'blog_list' %}" class="px-4 py-2 rounded-lg bg-primary-green text-white font-semibold shadow-md">Blog</a> -->
         </div>
     </nav>

@@ -6,7 +6,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Candidate Registration | Propulsion Technology</title>
-  <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+  <link rel="icon" type="image/png" href="{% static 'img/logo6.png'%}">
   <script src="https://cdn.tailwindcss.com"></script>
 
   <script>
@@ -28,56 +28,50 @@
   </script>
 
   <style>
-    /* ✅ Default small screen fixes */
     @media (max-width: 450px) {
       form.grid {
         grid-template-columns: 1fr !important;
         gap: 0.75rem !important;
       }
-      label {
-        font-size: 12px !important;
-      }
+      label { font-size: 12px !important; }
       input, select, textarea {
         font-size: 13px !important;
-        width: 100% !important;
         padding: 6px 10px !important;
       }
-      h1, h2 {
-        font-size: 1rem !important;
-      }
-      button {
-        font-size: 0.9rem !important;
-        padding: 8px 12px !important;
-        width: 100%;
-      }
-      main {
-        padding: 1rem !important;
-        margin: 0.5rem !important;
-      }
+      h1, h2 { font-size: 1rem !important; }
+      button { font-size: 0.9rem !important; padding: 8px 12px !important; width: 100%; }
+      main { padding: 1rem !important; margin: 0.5rem !important; }
     }
 
     @media (max-width: 320px) {
-      main {
-        padding: 0.75rem !important;
-      }
-      h1 {
-        font-size: 0.95rem !important;
-      }
-      input, select, textarea {
-        font-size: 12px !important;
-      }
+      main { padding: 0.75rem !important; }
+      h1 { font-size: 0.95rem !important; }
+      input, select, textarea { font-size: 12px !important; }
     }
+    .loader {
+  width: 18px;
+  height: 18px;
+  border: 3px solid white;
+  border-top: 3px solid transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
   </style>
 </head>
 
 <body class="bg-lightbg font-sans text-primary min-h-screen flex flex-col">
 
-  <!-- Header -->
 <header class="bg-primary text-white py-4 shadow-md">
   <div class="max-w-6xl mx-auto flex justify-between items-center px-4 sm:px-6 flex-wrap gap-2">
     <h1 class="text-xl sm:text-2xl font-bold tracking-wide">Propulsion Technology</h1>
 
-    <!-- 🔹 Back to Home button (top-right only) -->
     <a href="{% url 'home' %}"
        class="bg-accent text-primary font-semibold px-4 sm:px-6 py-2 rounded-full
               hover:bg-white hover:text-primary transition-all duration-300 text-sm sm:text-base shadow-md">
@@ -85,282 +79,332 @@
     </a>
   </div>
 </header>
-  <!-- Form Container -->
-  <main class="flex-grow w-full max-w-5xl mx-auto my-4 sm:my-8 bg-white 
-               p-3 sm:p-6 md:p-10 rounded-3xl shadow-2xl border border-secondary/40 
-               overflow-x-hidden">
 
-    <h1 class="text-2xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-center text-primary">
-      Create Your Candidate Account
-    </h1>
+<main class="flex-grow w-full max-w-5xl mx-auto my-4 sm:my-8 bg-white 
+             p-3 sm:p-6 md:p-10 rounded-3xl shadow-2xl border border-secondary/40 
+             overflow-x-hidden">
 
-    <!-- Global Form Errors -->
-    {% if form.non_field_errors %}
-      <div class="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded mb-6 text-sm">
-        <strong class="font-semibold">⚠ Please fix the errors below:</strong>
-        <ul class="mt-2 list-disc list-inside">
-          {% for error in form.non_field_errors %}
-            <li>{{ error }}</li>
-          {% endfor %}
-        </ul>
-      </div>
-    {% endif %}
+  <h1 class="text-2xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-center text-primary">
+    Create Your Candidate Account
+  </h1>
 
-    <!-- Django Messages -->
-    {% if messages %}
-      <div class="mb-6">
-        {% for message in messages %}
-          <div class="p-3 mb-3 text-center rounded-lg 
-            {% if message.tags == 'success' %}bg-green-100 text-green-800 border border-green-300
-            {% elif message.tags == 'error' %}bg-red-100 text-red-700 border border-red-300
-            {% else %}bg-yellow-100 text-yellow-700 border border-yellow-300{% endif %}">
-            {{ message }}
-          </div>
+  {% if form.non_field_errors %}
+    <div class="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded mb-6 text-sm">
+      <strong class="font-semibold">⚠ Please fix the errors below:</strong>
+      <ul class="mt-2 list-disc list-inside">
+        {% for error in form.non_field_errors %}
+          <li>{{ error }}</li>
         {% endfor %}
-      </div>
-    {% endif %}
+      </ul>
+    </div>
+  {% endif %}
 
-    <!-- Registration Form -->
-    <form method="POST" 
-          class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-4 sm:gap-y-5 w-full">
-      {% csrf_token %}
+  {% if messages %}
+    <div class="mb-6">
+      {% for message in messages %}
+        <div class="p-3 mb-3 text-center rounded-lg 
+          {% if message.tags == 'success' %}bg-green-100 text-green-800 border border-green-300
+          {% elif message.tags == 'error' %}bg-red-100 text-red-700 border border-red-300
+          {% else %}bg-yellow-100 text-yellow-700 border border-yellow-300{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
 
-      <!-- PERSONAL INFORMATION -->
-      <div class="col-span-2">
-        <h2 class="text-base sm:text-lg md:text-xl font-semibold mb-3 text-primary border-b-2 border-secondary pb-1">
-          Personal Information
-        </h2>
-      </div>
+  <form method="POST" 
+        class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-4 sm:gap-y-5 w-full">
+    {% csrf_token %}
 
-      <div>
-        <label class="block text-sm font-semibold mb-1">First Name (Legal) *</label>
-        {{ form.first_name_legal|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
-        {% if form.first_name_legal.errors %}
-          <p class="text-red-600 text-sm mt-1">{{ form.first_name_legal.errors.0 }}</p>
-        {% endif %}
-      </div>
+    <div class="col-span-2">
+      <h2 class="text-base sm:text-lg md:text-xl font-semibold mb-3 text-primary border-b-2 border-secondary pb-1">
+        Personal Information
+      </h2>
+    </div>
 
-      <div>
-        <label class="block text-sm font-semibold mb-1">Username *</label>
-        {{ form.username|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
-        {% if form.username.errors %}
-          <p class="text-red-600 text-sm mt-1">{{ form.username.errors.0 }}</p>
-        {% endif %}
-      </div>
+    <div>
+  <label class="block text-sm font-semibold mb-1">First Name (Legal) *</label>
 
-      <div>
-        <label class="block text-sm font-semibold mb-1">Middle Name</label>
-        {{ form.middle_name|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
-        {% if form.middle_name.errors %}
-          <p class="text-red-600 text-sm mt-1">{{ form.middle_name.errors.0 }}</p>
-        {% endif %}
-      </div>
+  {{ form.first_name_legal|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
 
-      <div>
-        <label class="block text-sm font-semibold mb-1">Last Name *</label>
-        {{ form.last_name|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
-        {% if form.last_name.errors %}
-          <p class="text-red-600 text-sm mt-1">{{ form.last_name.errors.0 }}</p>
-        {% endif %}
-      </div>
+  <!-- Helper Label (like JPG/PNG label but for name) -->
+  <p class="text-gray-500 text-xs mt-1">
+    Only letters allowed. Maximum 20 characters.
+  </p>
 
-      <div>
-        <label class="block text-sm font-semibold mb-1">Preferred Email *</label>
-        {{ form.preferred_email|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
-        {% if form.preferred_email.errors %}
-          <p class="text-red-600 text-sm mt-1">{{ form.preferred_email.errors.0 }}</p>
-        {% endif %}
-      </div>
+  {% if form.first_name_legal.errors %}
+    <span class="error text-red-600 text-sm font-semibold"></span>
+    <p class="text-red-600 text-sm mt-1">{{ form.first_name_legal.errors.0 }}</p>
+  {% endif %}
+</div>
 
-      <div>
-        <label class="block text-sm font-semibold mb-1">Phone Number *</label>
-        {{ form.phone_number|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
-        {% if form.phone_number.errors %}
-          <p class="text-red-600 text-sm mt-1">{{ form.phone_number.errors.0 }}</p>
-        {% endif %}
-      </div>
 
-      <!-- ADDRESS INFORMATION -->
-      <div class="col-span-2 mt-4 sm:mt-6">
-        <h2 class="text-base sm:text-lg md:text-xl font-semibold mb-3 text-primary border-b-2 border-secondary pb-1">
-          Address Information
-        </h2>
-      </div>
+    <!-- <div>
+      <label class="block text-sm font-semibold mb-1">Username *</label>
+      {{ form.username|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
+      {% if form.username.errors %}
+      <span class="error text-red-600 text-sm font-semibold"></span>
 
-      <div>
-        <label class="block text-sm font-semibold mb-1">Address Line 1 *</label>
-        {{ form.address_line1|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
-        {% if form.address_line1.errors %}
-          <p class="text-red-600 text-sm mt-1">{{ form.address_line1.errors.0 }}</p>
-        {% endif %}
-      </div>
+        <p class="text-red-600 text-sm mt-1">{{ form.username.errors.0 }}</p>
+      {% endif %}
+    </div> -->
+    <div>
+  <label class="block text-sm font-semibold mb-1">Username *</label>
+  {{ form.username|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
+  <p class="text-gray-500 text-xs mt-1">
+  Only letters & spaces allowed (max 50 characters)
+</p>
 
-      <div>
-        <label class="block text-sm font-semibold mb-1">Country *</label>
-        {{ form.country|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
-        {% if form.country.errors %}
-          <p class="text-red-600 text-sm mt-1">{{ form.country.errors.0 }}</p>
-        {% endif %}
-      </div>
+  <script>
+    document.getElementById("id_username").setAttribute("maxlength", "20");
+  </script>
 
-      <div>
-        <label class="block text-sm font-semibold mb-1">State *</label>
-        {{ form.state|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
-        {% if form.state.errors %}
-          <p class="text-red-600 text-sm mt-1">{{ form.state.errors.0 }}</p>
-        {% endif %}
-      </div>
+  {% if form.username.errors %}
+    <span class="error text-red-600 text-sm font-semibold"></span>
+    <p class="text-red-600 text-sm mt-1">{{ form.username.errors.0 }}</p>
+  {% endif %}
+</div>
 
-      <div>
-        <label class="block text-sm font-semibold mb-1">City *</label>
-        {{ form.city|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
-        {% if form.city.errors %}
-          <p class="text-red-600 text-sm mt-1">{{ form.city.errors.0 }}</p>
-        {% endif %}
-      </div>
+    <div>
+      <label class="block text-sm font-semibold mb-1">Middle Name</label>
+      {{ form.middle_name|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
+      <p class="text-gray-500 text-xs mt-1">
+  Only letters & spaces allowed (max 20 characters)
+</p>
 
-      <!-- EDUCATION -->
-      <div class="col-span-2 mt-4 sm:mt-6">
-        <h2 class="text-base sm:text-lg md:text-xl font-semibold mb-3 text-primary border-b-2 border-secondary pb-1">
-          Education Details
-        </h2>
-      </div>
+      {% if form.middle_name.errors %}
+      <span class="error text-red-600 text-sm font-semibold"></span>
 
-      <div class="col-span-2">
-        <label class="block text-sm font-semibold mb-1">School / University *</label>
-        {{ form.school|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
-        {% if form.school.errors %}
-          <p class="text-red-600 text-sm mt-1">{{ form.school.errors.0 }}</p>
-        {% endif %}
-      </div>
+        <p class="text-red-600 text-sm mt-1">{{ form.middle_name.errors.0 }}</p>
+      {% endif %}
+    </div>
 
-      <!-- ACCOUNT SECURITY -->
-      <div class="col-span-2 mt-4 sm:mt-6">
-        <h2 class="text-base sm:text-lg md:text-xl font-semibold mb-3 text-primary border-b-2 border-secondary pb-1">
-          Account Security
-        </h2>
-      </div>
+    <div>
+      <label class="block text-sm font-semibold mb-1">Last Name *</label>
+      {{ form.last_name|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
+      <p class="text-gray-500 text-xs mt-1">
+  Only letters & spaces allowed (max 20 characters)
+</p>
 
-      <div>
-        <label class="block text-sm font-semibold mb-1">Password *</label>
-        {{ form.password|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
-        {% if form.password.errors %}
-          <p class="text-red-600 text-sm mt-1">{{ form.password.errors.0 }}</p>
-        {% endif %}
-      </div>
+      {% if form.last_name.errors %}
+      <span class="error text-red-600 text-sm font-semibold"></span>
 
-      <div>
-        <label class="block text-sm font-semibold mb-1">Confirm Password *</label>
-        {{ form.confirm_password|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
-        {% if form.confirm_password.errors %}
-          <p class="text-red-600 text-sm mt-1">{{ form.confirm_password.errors.0 }}</p>
-        {% endif %}
-      </div>
+        <p class="text-red-600 text-sm mt-1">{{ form.last_name.errors.0 }}</p>
+      {% endif %}
+    </div>
 
-      <!-- SUBMIT -->
-      <div class="col-span-2 text-center mt-6 sm:mt-8">
-        <button type="submit" 
-                class="bg-primary text-white px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base 
-                       rounded-full font-semibold hover:bg-accent hover:text-primary 
-                       transition-all shadow-md w-full sm:w-auto">
-          Register
+    <div>
+      <label class="block text-sm font-semibold mb-1">Preferred Email *</label>
+      {{ form.preferred_email|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
+      <p class="text-gray-500 text-xs mt-1">
+    Use a valid Gmail address (example: name@gmail.com)
+  </p>
+
+      {% if form.preferred_email.errors %}
+      <span class="error text-red-600 text-sm font-semibold"></span>
+
+        <p class="text-red-600 text-sm mt-1">{{ form.preferred_email.errors.0 }}</p>
+      {% endif %}
+    </div>
+
+    <div>
+      <label class="block text-sm font-semibold mb-1">Phone Number *</label>
+      {{ form.phone_number|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
+      <p class="text-gray-500 text-xs mt-1">
+    Enter a valid 10-digit mobile number 
+  </p>
+      {% if form.phone_number.errors %}
+      <span class="error text-red-600 text-sm font-semibold"></span>
+
+        <p class="text-red-600 text-sm mt-1">{{ form.phone_number.errors.0 }}</p>
+      {% endif %}
+    </div>
+
+    <div class="col-span-2 mt-4 sm:mt-6">
+      <h2 class="text-base sm:text-lg md:text-xl font-semibold mb-3 text-primary border-b-2 border-secondary pb-1">
+        Address Information
+      </h2>
+    </div>
+    <div>
+      <label class="block text-sm font-semibold mb-1">Address Line 1 *</label>
+      {{ form.address_line1|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
+      <p class="text-gray-500 text-xs mt-1">
+    This field is required
+  </p>
+      {% if form.address_line1.errors %}
+      <span class="error text-red-600 text-sm font-semibold"></span>
+
+        <p class="text-red-600 text-sm mt-1">{{ form.address_line1.errors.0 }}</p>
+      {% endif %}
+    </div>
+   <div>
+  <label class="block text-sm font-semibold mb-1">Pincode *</label>
+  {{ form.pincode|add_class:"w-full min-w-0 text-sm border border-gray-300 rounded-lg px-3 py-2" }}
+  
+  <p class="text-gray-500 text-xs mt-1">
+    Enter 6-digit valid  pincode
+  </p>
+
+  {% if form.pincode.errors %}
+    <p class="text-red-600 text-sm mt-1">{{ form.pincode.errors.0 }}</p>
+  {% endif %}
+</div>
+    <div>
+      <label class="block text-sm font-semibold mb-1">Country *</label>
+      {{ form.country|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
+      <p class="text-gray-500 text-xs mt-1">
+    This field is required
+  </p>
+      {% if form.country.errors %}
+      <span class="error text-red-600 text-sm font-semibold"></span>
+
+        <p class="text-red-600 text-sm mt-1">{{ form.country.errors.0 }}</p>
+      {% endif %}
+    </div>
+
+    <div>
+      <label class="block text-sm font-semibold mb-1">State *</label>
+      {{ form.state|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
+      <p class="text-gray-500 text-xs mt-1">
+    This field is required
+  </p>
+
+      <!-- {{ form.state|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }} -->
+      {% if form.state.errors %}
+      <span class="error text-red-600 text-sm font-semibold"></span>
+
+        <p class="text-red-600 text-sm mt-1">{{ form.state.errors.0 }}</p>
+      {% endif %}
+    </div>
+
+    <div>
+      <label class="block text-sm font-semibold mb-1">City *</label>
+      {{ form.city|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
+      <p class="text-gray-500 text-xs mt-1">
+    This field is required
+  </p>
+      {% if form.city.errors %}
+      <span class="error text-red-600 text-sm font-semibold"></span>
+
+        <p class="text-red-600 text-sm mt-1">{{ form.city.errors.0 }}</p>
+      {% endif %}
+    </div>
+
+    <div class="col-span-2 mt-4 sm:mt-6">
+      <h2 class="text-base sm:text-lg md:text-xl font-semibold mb-3 text-primary border-b-2 border-secondary pb-1">
+        Education Details
+      </h2>
+    </div>
+
+    <div class="col-span-2">
+      <label class="block text-sm font-semibold mb-1">School / University *</label>
+      {{ form.school|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
+      <p class="text-gray-500 text-xs mt-1">
+    This field is required
+  </p>
+      {% if form.school.errors %}
+      <span class="error text-red-600 text-sm font-semibold"></span>
+
+        <p class="text-red-600 text-sm mt-1">{{ form.school.errors.0 }}</p>
+      {% endif %}
+    </div>
+
+    <!-- ACCOUNT SECURITY -->
+    <div class="col-span-2 mt-4 sm:mt-6">
+      <h2 class="text-base sm:text-lg md:text-xl font-semibold mb-3 text-primary border-b-2 border-secondary pb-1">
+        Account Security
+      </h2>
+    </div>
+
+    <!-- PASSWORD FIELD WITH TOGGLE -->
+    <div>
+      <label class="block text-sm font-semibold mb-1">Password *</label>
+      <div class="relative">
+        {{ form.password|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 pr-12 focus:ring-2 focus:ring-accent outline-none transition" }}
+         <p class="text-gray-500 text-xs mt-1">
+    Password must be 5–10 characters long
+  </p>
+        <button type="button"
+                onclick="togglePassword('id_password', 'icon_password')"
+                class="absolute right-3 top-2.5 text-gray-600 hover:text-primary">
+          <svg id="icon_password" xmlns="http://www.w3.org/2000/svg"
+               class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <path d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7S3.732 16.057 2.458 12z"/>
+          </svg>
         </button>
-
-        <p class="text-gray-600 mt-3 text-sm sm:text-base">
-          Already registered?
-          <a href="{% url 'candidate_login' %}" class="text-accent font-semibold hover:underline">
-            Login here
-          </a>
-        </p>
       </div>
-    </form>
-  </main>
+      {% if form.password.errors %}
+        <p class="text-red-600 text-sm mt-1">{{ form.password.errors.0 }}</p>
+      {% endif %}
+    </div>
 
-  <footer class="bg-primary text-white py-4 text-center text-xs sm:text-sm mt-6">
-    © 2025 Propulsion Technology. All Rights Reserved.
-  </footer>
+    <!-- CONFIRM PASSWORD FIELD WITH TOGGLE -->
+    <div>
+      <label class="block text-sm font-semibold mb-1">Confirm Password *</label>
+      <div class="relative">
+        {{ form.confirm_password|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 pr-12 focus:ring-2 focus:ring-accent outline-none transition" }}
+        <p class="text-gray-500 text-xs mt-1">
+    Must match the password entered above
+  </p>
+        <button type="button"
+                onclick="togglePassword('id_confirm_password', 'icon_confirm')"
+                class="absolute right-3 top-2.5 text-gray-600 hover:text-primary">
+          <svg id="icon_confirm" xmlns="http://www.w3.org/2000/svg"
+               class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <path d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7S3.732 16.057 2.458 12z"/>
+          </svg>
+        </button>
+      </div>
+      {% if form.confirm_password.errors %}
+        <p class="text-red-600 text-sm mt-1">{{ form.confirm_password.errors.0 }}</p>
+      {% endif %}
+    </div>
 
-  <!-- Validation JS (no trim) -->
- <script>
-document.addEventListener("DOMContentLoaded", function () {
-  const form = document.querySelector("form");
-  const inputs = Array.from(form.querySelectorAll("input, select, textarea"))
-                      .filter(i => i.type !== "hidden" && i.type !== "submit" && i.type !== "button");
+    <!-- SUBMIT -->
+    <button type="submit" id="registerBtn"
+    class="bg-primary text-white px-6 py-2 rounded-full w-full sm:w-auto font-semibold 
+           flex items-center justify-center gap-2 hover:bg-accent hover:text-primary 
+           transition-all shadow-md">
+    <span id="btnText">Register</span>
+    <span id="btnLoader" class="hidden loader"></span>
+</button>
 
-  function getErrorElement(input) {
-    let error = input.parentNode.querySelector(".js-error-msg");
-    if (!error) {
-      error = document.createElement("p");
-      error.className = "js-error-msg text-red-600 text-sm mt-1";
-      input.parentNode.appendChild(error);
-    }
-    return error;
+
+      <p class="text-gray-600 mt-3 text-sm sm:text-base">
+        Already registered?
+        <a href="{% url 'candidate_login' %}" class="text-accent font-semibold hover:underline">
+          Login here
+        </a>
+      </p>
+    </div>
+  </form>
+</main>
+
+<footer class="bg-primary text-white py-4 text-center text-xs sm:text-sm mt-6">
+  © 2025 Propulsion Technology. All Rights Reserved.
+</footer>
+
+<!-- PASSWORD TOGGLE SCRIPT -->
+<script>
+function togglePassword(id, iconId) {
+  const input = document.getElementById(id);
+  const icon = document.getElementById(iconId);
+
+  if (input.type === "password") {
+    input.type = "text";
+    icon.classList.add("text-primary");
+  } else {
+    input.type = "password";
+    icon.classList.remove("text-primary");
   }
-
-  function validateField(input) {
-    const name = input.name;
-    const value = input.value;
-    const error = getErrorElement(input);
-    let message = "";
-
-    // Required check (uses input.required boolean)
-    if (input.required && !value) {
-      message = "This field is required.";
-    }
-    // Name fields: only letters, no spaces or symbols
-    else if (["first_name_legal", "middle_name", "last_name"].includes(name) && value) {
-      if (!/^[A-Za-z]+$/.test(value)) message = "Only letters allowed, no spaces or symbols.";
-    }
-    // Email validation
-    else if (name === "preferred_email" && value) {
-      // Note: basic email check (not exhaustive)
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) message = "Invalid email address.";
-    }
-    // Phone validation: digits only, 8-10 digits
-    else if (name === "phone_number" && value) {
-      if (!/^\d{8,10}$/.test(value)) message = "Phone number must be 8–10 digits.";
-    }
-    // Password length & no spaces
-    else if (name === "password" && value) {
-      if (value.length < 8) message = "Password must be at least 8 characters.";
-      else if (/\s/.test(value)) message = "Password cannot contain spaces.";
-    }
-    // Confirm password matches
-    else if (name === "confirm_password" && value) {
-      const pass = form.querySelector("input[name='password']").value;
-      if (value !== pass) message = "Passwords do not match.";
-    }
-
-    if (message) {
-      error.textContent = message;
-      input.classList.add("border-red-500");
-    } else {
-      error.textContent = "";
-      input.classList.remove("border-red-500");
-    }
-
-    return !message;
-  }
-
-  inputs.forEach(i => {
-    i.addEventListener("input", () => validateField(i));
-    i.addEventListener("blur", () => validateField(i));
-  });
-
-  form.addEventListener("submit", e => {
-    let valid = true;
-    inputs.forEach(i => { if (!validateField(i)) valid = false; });
-    if (!valid) {
-      e.preventDefault();
-      const firstInvalid = inputs.find(i => !validateField(i));
-      if (firstInvalid) firstInvalid.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-  });
-});
+}
 </script>
 
-
-<!-- ✅ Loader Overlay -->
+<!-- Loader Overlay -->
 <div id="loader-overlay" class="hidden fixed inset-0 bg-white/90 flex flex-col items-center justify-center z-50">
   <div class="w-14 h-14 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
   <p class="mt-4 text-primary font-semibold text-lg">Processing your registration...</p>
@@ -369,25 +413,497 @@ document.addEventListener("DOMContentLoaded", function () {
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   const form = document.querySelector("form");
-  const loader = document.getElementById("loader-overlay");
-
-  form.addEventListener("submit", function (e) {
-    // Run your existing validation logic
-    const inputs = Array.from(form.querySelectorAll("input, select, textarea"))
-                        .filter(i => i.type !== "hidden" && i.type !== "submit" && i.type !== "button");
-    let valid = true;
-    inputs.forEach(i => {
-      const errorEl = i.parentNode.querySelector(".js-error-msg");
-      if (errorEl && errorEl.textContent.trim() !== "") valid = false;
-    });
-
-    // If the form is valid, show loader immediately
-    if (valid) {
-      loader.classList.remove("hidden");
-    }
+  form.addEventListener("submit", function () {
+    document.getElementById("loader-overlay").classList.remove("hidden");
   });
 });
+
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const fields = [
+        { id: "id_first_name_legal", required: true, type: "text" },
+        { id: "id_middle_name", required: false, type: "text" },
+        { id: "id_last_name", required: true, type: "text" },
+        { id: "id_username", required: true, type: "text" },
+        { id: "id_preferred_email", required: true, type: "email" },
+        { id: "id_phone_number", required: true, type: "phone" },
+        { id: "id_address_line1", required: true, type: "text" },
+        { id: "id_country", required: true, type: "text" },
+        { id: "id_state", required: true, type: "text" },
+        { id: "id_city", required: true, type: "text" },
+        { id: "id_school", required: true, type: "text" },
+        { id: "id_password", required: true, type: "password" },
+        { id: "id_confirm_password", required: true, type: "confirm" }
+    ];
+
+    const setError = (input, errorEl, message) => {
+        errorEl.textContent = message;
+        input.classList.add("border-red-500");
+        input.classList.remove("border-green-500");
+    };
+
+    const clearError = (input, errorEl) => {
+        errorEl.textContent = "";
+        input.classList.remove("border-red-500");
+        input.classList.add("border-green-500");
+    };
+
+    fields.forEach(f => {
+        const input = document.getElementById(f.id);
+        if (!input) return;
+        const errorEl = input.parentElement.querySelector(".error");
+
+        input.addEventListener("input", () => {
+            let value = input.value.trim();
+            errorEl.textContent = "";   // reset
+
+            // Required
+            if (f.required && value === "") {
+                setError(input, errorEl, "This field is required.");
+                return;
+            }
+
+            // Email
+            if (f.type === "email" && value !== "" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                setError(input, errorEl, "Please enter a valid email address.");
+                return;
+            }
+
+            // Phone
+            if (f.type === "phone") {
+                if (!/^\d*$/.test(value)) {
+                    input.value = value.replace(/\D/g, "");
+                    setError(input, errorEl, "Phone number must contain digits only.");
+                    return;
+                }
+                if (value.length > 10) {
+                    input.value = value.substring(0, 10);
+                    setError(input, errorEl, "Phone number must be 10 digits.");
+                    return;
+                }
+                if (value.length < 10) {
+                    setError(input, errorEl, "Phone number must be 10 digits.");
+                    return;
+                }
+            }
+
+            // Password rule
+            // Password rule (min 5 max 10)
+if (f.type === "password") {
+    if (value.length < 5) {
+        setError(input, errorEl, "Password must be at least 5 characters.");
+        return;
+    }
+    if (value.length > 10) {
+        setError(input, errorEl, "Password cannot exceed 10 characters.");
+        input.value = value.slice(0, 10);
+        return;
+    }
+}
+
+// Confirm password
+if (f.type === "confirm") {
+    let pass = document.getElementById("id_password").value.trim();
+    if (pass.length < 5 || pass.length > 10) {
+        setError(input, errorEl, "Enter a valid password first.");
+        return;
+    }
+    if (value !== pass) {
+        setError(input, errorEl, "Passwords do not match.");
+        return;
+    }
+}
+
+// When valid
+clearError(input, errorEl);
+
+        });
+    });
+});
+
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const pinInput = document.getElementById("id_pincode");
+
+    pinInput.addEventListener("input", function () {
+        this.value = this.value.replace(/\D/g, "");  // remove all non-digits
+    });
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const restrictedNameFields = [
+        "id_first_name_legal",
+        "id_middle_name",
+        "id_last_name",
+        "id_city",
+        "id_state"
+    ];
+
+    // ❗ Username — different rule
+    const usernameField = document.getElementById("id_username");
+    if (usernameField) {
+        const unameErr = document.createElement("p");
+        unameErr.className = "text-red-600 text-sm mt-1";
+        usernameField.parentElement.appendChild(unameErr);
+
+        usernameField.addEventListener("input", () => {
+            let value = usernameField.value.replace(/[^A-Za-z0-9]/g, "");
+            if (value.length > 20) value = value.slice(0, 20);
+            usernameField.value = value;
+
+            if (value === "") {
+                unameErr.textContent = "Username required 50 character.";
+                usernameField.classList.add("border-red-500");
+                usernameField.classList.remove("border-green-500");
+                return;
+            }
+
+            unameErr.textContent = "";
+            usernameField.classList.remove("border-red-500");
+            usernameField.classList.add("border-green-500");
+        });
+    }
+
+    // ❗ For name-only fields
+    restrictedNameFields.forEach(id => {
+        const input = document.getElementById(id);
+        if (!input) return;
+
+        const errorEl = document.createElement("p");
+        errorEl.className = "text-red-600 text-sm mt-1";
+        input.parentElement.appendChild(errorEl);
+
+        input.addEventListener("input", () => {
+            let value = input.value.replace(/[^A-Za-z]/g, "");
+            if (value.length > 20) value = value.slice(0, 20);
+            input.value = value;
+
+            if (value === "") {
+                errorEl.textContent = "This field is required (maximum 20 characters).";
+                input.classList.add("border-red-500");
+                input.classList.remove("border-green-500");
+                return;
+            }
+
+            errorEl.textContent = "";
+            input.classList.remove("border-red-500");
+            input.classList.add("border-green-500");
+        });
+    });
+});
+
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // Try multiple selectors to locate the phone input
+  const selectors = [
+    '#id_phone',
+    '#id_phone_number',
+    'input[name="phone"]',
+    'input[name="phone_number"]',
+    'input[type="tel"]',
+    'input[name*="phone"]'
+  ];
+
+  let phoneInput = null;
+  for (const sel of selectors) {
+    const el = document.querySelector(sel);
+    if (el) { phoneInput = el; break; }
+  }
+  if (!phoneInput) return; // no phone field found
+
+  // Ensure input mode and pattern for better mobile keyboards
+  phoneInput.setAttribute("inputmode", "numeric");
+  phoneInput.setAttribute("pattern", "\\d{10}");
+
+  // Create or reuse an error element just after the input
+  let errorEl = phoneInput.parentElement.querySelector('.phone-error-inline');
+  if (!errorEl) {
+    errorEl = document.createElement('p');
+    errorEl.className = 'phone-error-inline text-red-600 text-sm mt-1 font-medium';
+    phoneInput.parentElement.appendChild(errorEl);
+  }
+
+  // Helper to set/clear error state
+  function setError(msg) {
+    errorEl.textContent = msg;
+    phoneInput.classList.add('border-red-500');
+    phoneInput.classList.remove('border-green-500');
+  }
+  function clearError() {
+    errorEl.textContent = '';
+    phoneInput.classList.remove('border-red-500');
+    phoneInput.classList.add('border-green-500');
+  }
+  function clearBorders() {
+    phoneInput.classList.remove('border-red-500','border-green-500');
+  }
+
+  // Keydown: allow control keys, digits only
+  phoneInput.addEventListener('keydown', (e) => {
+    // allow: backspace, delete, tab, escape, enter, arrows, home/end, ctrl/cmd combos
+    const allowed =
+      e.key === 'Backspace' || e.key === 'Delete' || e.key === 'Tab' ||
+      e.key === 'Escape' || e.key === 'Enter' ||
+      e.key === 'ArrowLeft' || e.key === 'ArrowRight' ||
+      e.key === 'Home' || e.key === 'End' ||
+      (e.ctrlKey || e.metaKey); // allow copy/paste/select all combos
+    if (allowed) return;
+
+    // allow digits only
+    if (!/^\d$/.test(e.key)) {
+      e.preventDefault();
+      setError('Only digits are allowed.');
+      // remove error after short delay so it doesn't permanently stick
+      setTimeout(() => {
+        if (phoneInput.value.length === 10) clearError(); else {/* keep if still invalid */}
+      }, 900);
+      return;
+    }
+
+    // If digits and length already 10, block typing
+    const selectionLength = phoneInput.selectionEnd - phoneInput.selectionStart;
+    if (phoneInput.value.replace(/\D/g,'').length - selectionLength >= 10) {
+      e.preventDefault();
+      setError('Phone number must be exactly 10 digits.');
+      return;
+    }
+  });
+
+  // Input event: filter non-digits, trim to 10, update error state
+  phoneInput.addEventListener('input', (e) => {
+    const raw = phoneInput.value;
+    const digits = raw.replace(/\D/g, '').slice(0, 10); // only digits and max 10
+    if (raw !== digits) {
+      // If we removed characters (non-digits or trimmed), show message
+      if (/\D/.test(raw)) {
+        setError('Only digits are allowed.');
+      } else {
+        setError('Phone number trimmed to 10 digits.');
+      }
+      // put caret at end
+      phoneInput.value = digits;
+      phoneInput.setSelectionRange(digits.length, digits.length);
+      // briefly clear the error if valid later
+      setTimeout(() => {
+        if (digits.length === 10) clearError();
+      }, 1000);
+    } else {
+      phoneInput.value = digits; // ensure trimmed to 10
+      // Validity messages
+      if (digits.length === 0) {
+        setError('Phone number is required.');
+        phoneInput.classList.remove('border-green-500');
+      } else if (digits.length < 10) {
+        setError('Phone number must be exactly 10 digits.');
+      } else {
+        clearError();
+      }
+    }
+  });
+
+  // Paste: sanitize pasted content and prevent >10 digits
+  phoneInput.addEventListener('paste', (e) => {
+    e.preventDefault();
+    const pasted = (e.clipboardData || window.clipboardData).getData('text') || '';
+    const digits = pasted.replace(/\D/g, '').slice(0, 10);
+    const current = phoneInput.value.replace(/\D/g, '');
+    // compute what the new value would be if we inserted pasted at caret position
+    const start = phoneInput.selectionStart;
+    const end = phoneInput.selectionEnd;
+    const before = phoneInput.value.slice(0, start).replace(/\D/g, '');
+    const after = phoneInput.value.slice(end).replace(/\D/g, '');
+    let newVal = (before + digits + after).slice(0, 10);
+    phoneInput.value = newVal;
+    phoneInput.setSelectionRange(newVal.length, newVal.length);
+
+    if (digits.length === 0) {
+      setError('Only digits are allowed in pasted content.');
+    } else if (newVal.length < 10) {
+      setError('Phone number must be exactly 10 digits.');
+    } else {
+      clearError();
+    }
+  });
+
+  // On blur, final validation
+  phoneInput.addEventListener('blur', () => {
+    const v = phoneInput.value.replace(/\D/g,'');
+    if (v.length === 0) {
+      setError('Phone number is required.');
+    } else if (v.length < 10) {
+      setError('Phone number must be exactly 10 digits.');
+    } else {
+      clearError();
+    }
+  });
+
+  // Optional: validate again on form submit and block if invalid
+  const form = phoneInput.closest('form');
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      const v = phoneInput.value.replace(/\D/g,'');
+      if (v.length !== 10) {
+        e.preventDefault();
+        setError(v.length === 0 ? 'Phone number is required.' : 'Phone number must be exactly 10 digits.');
+        phoneInput.focus();
+      }
+    });
+  }
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  /* ===================== SCHOOL / UNIVERSITY (MAX 100) ===================== */
+  const schoolField = document.querySelector('#id_school');
+if (schoolField) {
+  let errorEl = schoolField.parentElement.querySelector('.school-error');
+  if (!errorEl) {
+    errorEl = document.createElement('p');
+    errorEl.className = 'school-error text-red-600 text-sm mt-1 font-medium';
+    schoolField.parentElement.appendChild(errorEl);
+  }
+
+  schoolField.addEventListener("input", () => {
+    let val = schoolField.value;
+
+    // 🔢 Max limit control
+    if (val.length > 100) {
+      schoolField.value = val.slice(0, 100);
+      errorEl.textContent = "Maximum 100 characters allowed.";
+      schoolField.classList.add("border-red-500");
+      schoolField.classList.remove("border-green-500");
+      return;
+    }
+
+    // ❌ Required validation
+    if (val.trim().length === 0) {
+      errorEl.textContent = "This field is required (Maximum 100 characters).";
+      schoolField.classList.add("border-red-500");
+      schoolField.classList.remove("border-green-500");
+      return;
+    }
+
+    // 🟢 All good
+    errorEl.textContent = "";
+    schoolField.classList.remove("border-red-500");
+    schoolField.classList.add("border-green-500");
+  });
+}
+
+
+  /* ========================== PASSWORD (5–10 LIMIT) ========================== */
+  const passField = document.querySelector('#id_password');
+  if (passField) {
+    let errPass = passField.parentElement.querySelector('.pass-error');
+    if (!errPass) {
+      errPass = document.createElement('p');
+      errPass.className = 'pass-error text-red-600 text-sm mt-1 font-medium';
+      passField.parentElement.appendChild(errPass);
+    }
+
+    passField.addEventListener("input", () => {
+      let val = passField.value;
+
+      if (val.length < 5) {
+        errPass.textContent = "Password must be at least 5 characters.";
+        passField.classList.add("border-red-500");
+        passField.classList.remove("border-green-500");
+      } else if (val.length > 10) {
+        passField.value = val.slice(0, 10);
+        errPass.textContent = "Password cannot exceed 10 characters.";
+        passField.classList.add("border-red-500");
+        passField.classList.remove("border-green-500");
+      } else {
+        errPass.textContent = "";
+        passField.classList.remove("border-red-500");
+        passField.classList.add("border-green-500");
+      }
+    });
+  }
+
+});
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.querySelector("form");
+    const btn = document.getElementById("registerBtn");
+    const text = document.getElementById("btnText");
+    const loader = document.getElementById("btnLoader");
+
+    form.addEventListener("submit", () => {
+        btn.disabled = true;
+        text.textContent = "Please wait...";
+        loader.classList.remove("hidden");
+    });
+});
+document.addEventListener("DOMContentLoaded", function () {
+  const passField = document.getElementById("id_password");
+  const confirmField = document.getElementById("id_confirm_password");
+
+  // Create error message container if not exists
+  function getErrorBox(input, className) {
+    let errorEl = input.parentElement.querySelector("." + className);
+    if (!errorEl) {
+      errorEl = document.createElement("p");
+      errorEl.className = className + " text-red-600 text-sm mt-1 font-medium";
+      input.parentElement.appendChild(errorEl);
+    }
+    return errorEl;
+  }
+
+  // Validate Confirm Password
+  confirmField.addEventListener("input", function () {
+    let value = confirmField.value.trim();
+    let passValue = passField.value.trim();
+    let errorEl = getErrorBox(confirmField, "confirm-error");
+
+    // Required
+    if (value.length === 0) {
+      errorEl.textContent = "Confirm password is required.";
+      confirmField.classList.add("border-red-500");
+      confirmField.classList.remove("border-green-500");
+      return;
+    }
+
+    // Min 5
+    if (value.length < 5) {
+      errorEl.textContent = "Minimum 5 characters required.";
+      confirmField.classList.add("border-red-500");
+      confirmField.classList.remove("border-green-500");
+      return;
+    }
+
+    // Max 10
+    if (value.length > 10) {
+      confirmField.value = value.slice(0, 10);
+      errorEl.textContent = "Maximum 10 characters allowed.";
+      confirmField.classList.add("border-red-500");
+      confirmField.classList.remove("border-green-500");
+      return;
+    }
+
+    // Must match password
+    if (passValue !== value) {
+      errorEl.textContent = "Passwords do not match.";
+      confirmField.classList.add("border-red-500");
+      confirmField.classList.remove("border-green-500");
+      return;
+    }
+
+    // Valid
+    errorEl.textContent = "";
+    confirmField.classList.add("border-green-500");
+    confirmField.classList.remove("border-red-500");
+  });
+});
+
+
+</script>
+
 
 
 </body>

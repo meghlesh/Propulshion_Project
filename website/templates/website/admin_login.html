@@ -1,6 +1,7 @@
 {% load static %}
 <!-- Load Poppins Font -->
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
 <!-- Load Tailwind CSS -->
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
@@ -46,9 +47,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login | Propulsion Technology</title>
-    <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
-
+    <link rel="icon" type="image/png" href="{% static 'img/logo6.png'%}">
 </head>
+
 <body class="flex items-center justify-center min-h-screen p-4 font-sans text-dark-text">
 
     <!-- Login Card -->
@@ -64,7 +65,7 @@
         
         <h2 class="text-3xl font-extrabold text-center text-primary-green mb-6">Secure Access</h2>
 
-        <!-- Added Buttons -->
+        <!-- Buttons -->
         <div class="flex justify-center gap-4 mb-8">
             <a href="{% url 'admin_login' %}" 
                class="px-6 py-2.5 bg-primary-green text-white font-semibold rounded-xl hover:bg-highlight-gold hover:text-dark-text transition-all cta-button-shadow">
@@ -81,61 +82,114 @@
         {% endif %}
 
         <form method="POST" class="space-y-6" onsubmit="return validateLoginForm();">
-    {% csrf_token %}
+            {% csrf_token %}
 
-    <div>
-        <label class="block text-gray-700 font-semibold mb-2">Username</label>
-        <input type="text" id="username" name="username" required maxlength="30"
-               class="w-full px-5 py-3 border-2 border-accent-green rounded-xl bg-card-bg 
-                      focus:border-primary-green focus:ring-primary-green transition-all 
-                      shadow-inner placeholder-gray-400"
-               placeholder="Enter username (max 30 characters)">
-    </div>
+            <!-- Username -->
+            <div>
+                <label class="block text-gray-700 font-semibold mb-2">Username *</label>
+                <input type="text" id="username" name="username" required maxlength="30"
+                    class="w-full px-5 py-3 border-2 border-accent-green rounded-xl bg-card-bg 
+                    focus:border-primary-green focus:ring-primary-green transition-all 
+                    shadow-inner placeholder-gray-400"
+                    placeholder="Enter username (max 30 characters)">
+            </div>
 
-    <div>
-        <label class="block text-gray-700 font-semibold mb-2">Password</label>
-        <input type="password" id="password" name="password" required maxlength="30"
-               class="w-full px-5 py-3 border-2 border-accent-green rounded-xl bg-card-bg 
-                      focus:border-primary-green focus:ring-primary-green transition-all 
-                      shadow-inner placeholder-gray-400"
-               placeholder="Enter password (max 20 characters)">
-    </div>
+            <!-- Password with Eye Icon -->
+            <div>
+                <label class="block text-gray-700 font-semibold mb-2">Password *</label>
+                
+                <div class="relative">
+                    <input type="password" id="password" name="password" required maxlength="30"
+                        class="w-full px-5 py-3 border-2 border-accent-green rounded-xl bg-card-bg 
+                        focus:border-primary-green focus:ring-primary-green transition-all 
+                        shadow-inner placeholder-gray-400"
+                        placeholder="Enter password (max 30 characters)">
 
-    <!-- Validation Message -->
-    <p id="validation-error"
-       class="hidden text-center bg-red-100 text-red-700 p-3 rounded-xl font-semibold border border-red-200"></p>
+                    <!-- Eye Icon -->
+                    <span class="absolute right-4 top-3 cursor-pointer" onclick="togglePassword()">
+                        <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" 
+                             class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                d="M2.458 12C3.732 7.943 7.523 5 
+                                   12 5c4.477 0 8.268 2.943 
+                                   9.542 7-1.274 4.057-5.065 
+                                   7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
 
-    <button type="submit"
-            class="w-full bg-primary-green text-white font-bold py-3.5 rounded-xl 
-                   hover:bg-highlight-gold hover:text-dark-text transition-all 
-                   cta-button-shadow transform hover:scale-[1.01] hover:-translate-y-0.5">
-        Log In
-    </button>
+                        <svg id="eyeClosed" xmlns="http://www.w3.org/2000/svg" 
+                             class="w-6 h-6 text-gray-600 hidden" fill="none" 
+                             viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                d="M13.875 18.825A10.05 
+                                   10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7
+                                   a9.97 9.97 
+                                   0 012.31-4.568m3.672-2.568A9.956 
+                                   9.956 0 0112 5c4.477 0 8.268 
+                                   2.943 9.542 7a9.97 9.97 0 
+                                   01-1.23 2.626M15 12a3 3 0 
+                                   11-6 0 3 3 0 016 0z"/>
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                d="M3 3l18 18"/>
+                        </svg>
+                    </span>
+                </div>
+            </div>
 
-<!-- Forgot Password Link (centered, subtle) -->
-<div class="mt-3 text-center">
-  <a href="{% url 'admin_forgot_password' %}" 
-     class="text-sm font-semibold text-highlight-gold hover:text-primary-green transition-all hover:underline">
-     Forgot Password?
-  </a>
-</div>
+            <!-- Validation Error -->
+            <p id="validation-error"
+                class="hidden text-center bg-red-100 text-red-700 p-3 rounded-xl font-semibold border border-red-200"></p>
 
-</form>
+            <button type="submit"
+                class="w-full bg-primary-green text-white font-bold py-3.5 rounded-xl 
+                hover:bg-highlight-gold hover:text-dark-text transition-all 
+                cta-button-shadow transform hover:scale-[1.01] hover:-translate-y-0.5">
+                Log In
+            </button>
 
-<div class="mt-8 text-center border-t border-gray-100 pt-6">
+            <div class="mt-3 text-center">
+              <a href="{% url 'admin_forgot_password' %}" 
+                 class="text-sm font-semibold text-highlight-gold hover:text-primary-green transition-all hover:underline">
+                 Forgot Password?
+              </a>
+            </div>
+        </form>
+
+        <div class="mt-8 text-center border-t border-gray-100 pt-6">
             <a href="/"
-   class="inline-block bg-primary-green text-white font-bold py-2 px-6 rounded-2xl 
-          hover:bg-highlight-gold hover:text-dark-text transition-all 
-          cta-button-shadow transform hover:scale-[1.02] hover:-translate-y-0.5">
-   Back to Main Website
-</a>
+            class="inline-block bg-primary-green text-white font-bold py-2 px-6 rounded-2xl 
+            hover:bg-highlight-gold hover:text-dark-text transition-all 
+            cta-button-shadow transform hover:scale-[1.02] hover:-translate-y-0.5">
+               Back to Main Website
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const pwd = document.getElementById("password");
+            const eyeOpen = document.getElementById("eyeOpen");
+            const eyeClosed = document.getElementById("eyeClosed");
+
+            if (pwd.type === "password") {
+                pwd.type = "text";
+                eyeOpen.classList.add("hidden");
+                eyeClosed.classList.remove("hidden");
+            } else {
+                pwd.type = "password";
+                eyeOpen.classList.remove("hidden");
+                eyeClosed.classList.add("hidden");
+            }
+        }
+    </script>
+
 <script>
 document.addEventListener("DOMContentLoaded", function() {
   const usernameInput = document.getElementById("username");
   const passwordInput = document.getElementById("password");
   const errorMsg = document.getElementById("validation-error");
 
-  // 🔧 Helper functions
   function showError(message) {
     errorMsg.textContent = message;
     errorMsg.classList.remove("hidden");
@@ -154,7 +208,6 @@ document.addEventListener("DOMContentLoaded", function() {
     input.classList.remove("border-red-500");
   }
 
-  // 🔒 Prevent space input for both fields
   [usernameInput, passwordInput].forEach((input) => {
     input.addEventListener("keydown", function (e) {
       if (e.key === " ") {
@@ -165,7 +218,6 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 
-  // 🧩 Real-time username validation
   usernameInput.addEventListener("input", function () {
     const username = usernameInput.value.trim();
 
@@ -184,7 +236,6 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   });
 
-  // 🔐 Real-time password validation
   passwordInput.addEventListener("input", function () {
     const password = passwordInput.value.trim();
 
@@ -203,7 +254,6 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   });
 
-  // 🧾 Form submission validation
   window.validateLoginForm = function () {
     const username = usernameInput.value.trim();
     const password = passwordInput.value.trim();

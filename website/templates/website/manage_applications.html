@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Manage Job Applications | Propulsion Admin</title>
-  <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+  <link rel="icon" type="image/png" href="{% static 'img/logo6.png'%}">
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-[#EAF4E0] font-sans text-[#053830]">
@@ -33,6 +33,8 @@
     <!-- FILTERS -->
     <div class="bg-[#EAF4E0] p-6 rounded-2xl shadow-inner mb-10">
       <form method="get" class="grid md:grid-cols-4 gap-6 items-end">
+        <form id="filterForm" method="get" class="grid md:grid-cols-4 gap-6 items-end">
+
         <!-- Job Filter -->
         <div>
           <label class="block font-semibold mb-2">Filter by Job</label>
@@ -45,15 +47,29 @@
         </div>
 
         <!-- Date Range -->
-        <div>
+        <!-- <div>
           <label class="block font-semibold mb-2">From</label>
           <input type="date" name="start_date" value="{{ start_date }}" class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all">
         </div>
         <div>
           <label class="block font-semibold mb-2">To</label>
           <input type="date" name="end_date" value="{{ end_date }}" class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all">
-        </div>
+        </div> -->
+        <form id="filterForm" method="get" class="grid md:grid-cols-2 gap-6 items-end">
+  <div>
+    <label class="block font-semibold mb-2">From</label>
+    <input type="date" id="start_date" name="start_date" value="{{ start_date }}" 
+           class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all">
+  </div>
 
+  <div>
+    <label class="block font-semibold mb-2">To</label>
+    <input type="date" id="end_date" name="end_date" value="{{ end_date }}" 
+           class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#053830] focus:border-[#053830] transition-all">
+    <p id="date-error" class="text-red-600 text-sm mt-1 hidden">
+      "To" date cannot be in the past.
+    </p>
+  </div>
         <!-- Buttons -->
         <div class="flex justify-center md:justify-start gap-3">
           <button type="submit" class="bg-[#053830] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#FF9728] hover:text-[#053830] transition-all shadow-lg transform hover:scale-[1.02]">
@@ -227,13 +243,13 @@
            class="text-[#FF9728] hover:text-[#053830] font-medium text-sm">📎 View Attachment</a>
         <a href="${escapeHtml(attachmentUrl)}" download
            class="bg-[#053830] text-white text-sm px-3 py-1 rounded-md hover:bg-[#065a44] transition">
-           ⬇️ Download
+           ⬇ Download
         </a>
         <button id="printBtn" class="bg-gray-200 text-gray-700 text-sm px-3 py-1 rounded-md hover:bg-gray-300 transition">
-           🖨️ Print
+           🖨 Print
         </button>
       </div>` 
-      : `<p class='text-gray-500 text-sm'>No attachment uploaded.</p>`}
+      : <p class='text-gray-500 text-sm'>No attachment uploaded.</p>}
     </div>
   `;
 
@@ -252,7 +268,7 @@
           }
         })
         .catch((err) => {
-          content.innerHTML = `<p class="text-center text-red-500">Error loading details.</p>`;
+          content.innerHTML = <p class="text-center text-red-500">Error loading details.</p>;
         });
     }
 
@@ -264,21 +280,37 @@
   </script>
 
   <script>
-  document.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("blur-loader").classList.remove("hidden");
-  });
+document.addEventListener("DOMContentLoaded", () => {
+  const filterForm = document.getElementById("filterForm");
+  const endDateInput = document.getElementById("end_date");
+  const dateError = document.getElementById("date-error");
+  const loader = document.getElementById("blur-loader");
 
-  window.addEventListener("load", () => {
-      document.getElementById("blur-loader").classList.add("hidden");
-  });
-
-  const filterForm = document.querySelector("form[method='get']");
   if (filterForm) {
-      filterForm.addEventListener("submit", () => {
-          document.getElementById("blur-loader").classList.remove("hidden");
-      });
+    filterForm.addEventListener("submit", function(e) {
+      const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+      const endDate = endDateInput.value;
+
+      // If "To" date is in the past
+      if (endDate && endDate < today) {
+        e.preventDefault();
+        dateError.classList.remove("hidden");
+        endDateInput.classList.add("border-red-600");
+      } else {
+        dateError.classList.add("hidden");
+        endDateInput.classList.remove("border-red-600");
+        loader.classList.remove("hidden"); // show loader on valid submission
+      }
+    });
   }
+});
+
+window.addEventListener("load", () => {
+  document.getElementById("blur-loader").classList.add("hidden"); // hide loader after page load
+});
 </script>
+
+
 
 </body>
 </html>

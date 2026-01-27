@@ -1,12 +1,15 @@
 {% load static %}
+{% load widget_tweaks %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Apply — {{ job.title }}</title>
-  <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+  <link rel="icon" type="image/png" href="{% static 'img/logo6.png'%}">
   <script src="https://cdn.tailwindcss.com"></script>
+
+  
 </head>
 <body class="bg-[#F3F7F2] text-[#053830] font-sans">
 
@@ -51,7 +54,10 @@
         {% csrf_token %}
 
         <div>
-          <label class="block text-sm font-semibold mb-1">Full Name</label>
+          <label class="block text-sm font-semibold mb-1">
+  Full Name <span class="text-red-600">*</span>
+</label>
+
           {{ form.full_name }}
           {% if form.full_name.errors %}
             {% for err in form.full_name.errors %}
@@ -62,7 +68,10 @@
         </div>
 
         <div>
-          <label class="block text-sm font-semibold mb-1">Email</label>
+          <label class="block text-sm font-semibold mb-1">
+  Email <span class="text-red-600">*</span>
+</label>
+
           {{ form.email }}
           {% if form.email.errors %}
             {% for err in form.email.errors %}
@@ -73,7 +82,10 @@
         </div>
 
 <div>
-  <label for="id_phone" class="block text-sm font-semibold mb-1">Phone Number</label>
+  <label class="block text-sm font-semibold mb-1">
+  Phone Number <span class="text-red-600">*</span>
+</label>
+
 
   <input 
       type="text" 
@@ -90,7 +102,10 @@
   <p id="phoneError" class="text-red-600 text-sm mt-1 hidden">Please enter exactly 10 digits.</p>
 </div>
       <div>
-          <label class="block text-sm font-semibold mb-1">Graduation Year</label>
+          <label class="block text-sm font-semibold mb-1">
+  Graduation Year <span class="text-red-600">*</span>
+</label>
+
           {{ form.graduation_year }}
           {% if form.graduation_year.errors %}
             {% for err in form.graduation_year.errors %}
@@ -101,7 +116,10 @@
         </div>
 
         <div>
-          <label class="block text-sm font-semibold mb-1">Graduation Percentage / CGPA</label>
+          <label class="block text-sm font-semibold mb-1">
+  Graduation Percentage / CGPA <span class="text-red-600">*</span>
+</label>
+
           {{ form.graduation_percentage }}
           {% if form.graduation_percentage.errors %}
             {% for err in form.graduation_percentage.errors %}
@@ -112,7 +130,10 @@
         </div>
 
                 <div>
-                  <label class="block text-sm font-semibold mb-1">Work Experience (in Years)</label>
+                  <label class="block text-sm font-semibold mb-1">
+  Work Experience (in Years) <span class="text-red-600">*</span>
+</label>
+
                   <input 
                     type="text" 
                     id="experience_years" 
@@ -131,18 +152,34 @@
 
 
         <div>
-          <label class="block text-sm font-semibold mb-1">Key Skills</label>
-          {{ form.key_skills }}
-          {% if form.key_skills.errors %}
-            {% for err in form.key_skills.errors %}
-              <p class="text-sm text-red-600 mt-1">{{ err }}</p>
-            {% endfor %}
-          {% endif %}
-          <p class="text-sm text-red-600 mt-1 hidden field-error" id="err-key_skills"></p>
-        </div>
+  <label class="block text-sm font-semibold mb-1">
+    Key Skills <span class="text-red-600">*</span>
+  </label>
+
+  {{ form.key_skills|add_class:"w-full min-w-0 text-sm sm:text-base border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent outline-none transition" }}
+
+  <!-- Helper label -->
+  <p class="text-gray-500 text-xs mt-1">
+    Enter your key skills (Max 100 characters)
+  </p>
+
+  <!-- Error messages from Django -->
+  {% if form.key_skills.errors %}
+    {% for err in form.key_skills.errors %}
+      <p class="text-sm text-red-600 mt-1">{{ err }}</p>
+    {% endfor %}
+  {% endif %}
+
+  <!-- Inline JS error -->
+  <p class="text-sm text-red-600 mt-1 hidden field-error" id="err-key_skills"></p>
+</div>
+
 
         <div>
-          <label class="block text-sm font-semibold mb-1">Preferred Domain</label>
+          <label class="block text-sm font-semibold mb-1">
+  Preferred Domain <span class="text-red-600">*</span>
+</label>
+
           {{ form.preferred_domain }}
           {% if form.preferred_domain.errors %}
             {% for err in form.preferred_domain.errors %}
@@ -153,7 +190,10 @@
         </div>
 
         <div>
-          <label class="block text-sm font-semibold mb-1">Upload Resume (Max 5MB)</label>
+          <label class="block text-sm font-semibold mb-1">
+  Upload Resume (Max 5MB) <span class="text-red-600">*</span>
+</label>
+
           {{ form.resume }}
           {% if form.resume.errors %}
             {% for err in form.resume.errors %}
@@ -562,21 +602,7 @@ window.addEventListener("load", () => {
   }
 });
 
-// Inline form button loader
-document.querySelectorAll("form").forEach(form => {
-  form.addEventListener("submit", () => {
-    const btn = form.querySelector("button[type='submit']");
-    if (btn) {
-      btn.disabled = true;
-      btn.classList.add("opacity-75", "cursor-not-allowed");
-      btn.innerHTML = `
-        <div class='flex items-center justify-center gap-2'>
-          <div class='w-5 h-5 border-2 border-[#FF9728] border-t-transparent rounded-full animate-spin'></div>
-          <span>Submitting...</span>
-        </div>`;
-    }
-  });
-});
+
 </script>
 
 <script>
@@ -612,6 +638,296 @@ function validateExperienceYears(input) {
   }
 }
 </script>
+
+<script>
+const form = document.getElementById("jobApplyForm");
+const submitBtn = form.querySelector("button[type='submit']");
+const loader = document.getElementById("pageLoader");
+
+// Validate phone (10 digits)
+function isPhoneValid() {
+    const v = document.getElementById("id_phone").value.trim();
+    return /^\d{10}$/.test(v);
+}
+
+// Validate experience (0–50, only one decimal)
+function isExpValid() {
+    const v = document.getElementById("experience_years").value.trim();
+
+    // Empty value = NOT valid (since this field is required)
+    if (v === "") return false;
+
+    // Must be a number with optional one decimal place
+    if (!/^[0-9]{1,2}(\.[0-9])?$/.test(v)) return false;
+
+    const num = parseFloat(v);
+
+    // Must be between 0 and 50
+    if (num < 0 || num > 50) return false;
+
+    return true;  // VALID
+}
+
+
+// Validate resume (required + file type + size)
+function isResumeValid() {
+    const file = document.querySelector("input[name='resume']").files[0];
+    if (!file) return false;
+    const allowed = [".pdf", ".doc", ".docx"];
+    const name = file.name.toLowerCase();
+    const okExt = allowed.some(ext => name.endsWith(ext));
+    const okSize = file.size <= 5 * 1024 * 1024; 
+    return okExt && okSize;
+}
+
+function validateForm() {
+    const fields = [
+        "full_name",
+        "email",
+        "graduation_year",
+        "graduation_percentage",
+        "key_skills",
+        "preferred_domain",
+    ];
+
+    let valid = true;
+
+    fields.forEach(name => {
+        const el = document.querySelector([name="${name}"]);
+        if (el && !el.value.trim()) valid = false;
+    });
+
+    if (!isPhoneValid()) valid = false;
+    if (!isExpValid()) valid = false;
+    if (!isResumeValid()) valid = false;
+
+    submitBtn.disabled = !valid;
+
+    submitBtn.classList.toggle("opacity-50", !valid);
+    submitBtn.classList.toggle("cursor-not-allowed", !valid);
+}
+
+document.querySelectorAll("input, select, textarea")
+    .forEach(el => el.addEventListener("input", validateForm));
+
+validateForm();
+
+// Show loader on valid form submit
+let isSubmitting = false;
+
+form.addEventListener("submit", function (e) {
+    // Prevent multiple submits
+    if (isSubmitting) {
+        e.preventDefault();
+        return;
+    }
+
+    // Stop submitting if form is invalid
+    if (submitBtn.disabled) {
+        e.preventDefault();
+        return;
+    }
+
+    // Mark as submitting
+    isSubmitting = true;
+
+    // Show loader
+    loader.classList.remove("hidden");
+
+    // Make button look disabled but do NOT disable actual HTML button
+    submitBtn.style.opacity = "0.6";
+    submitBtn.style.pointerEvents = "none";
+});
+
+</script>
+
+
+<script>
+window.addEventListener("load", () => {
+    document.getElementById("pageLoader").classList.add("hidden");
+});
+</script>
+
+<!-- ============================
+ APPLY JOB - FRONTEND VALIDATION
+=============================== -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const form = document.getElementById("jobApplyForm");
+
+    const fields = {
+        full_name: {
+            el: document.querySelector("[name='full_name']"),
+            err: document.getElementById("err-full_name"),
+            validate: v => /^[A-Za-z ]{3,50}$/.test(v),
+            msg: "Enter a valid name (only letters, min 3 characters)"
+        },
+        email: {
+            el: document.querySelector("[name='email']"),
+            err: document.getElementById("err-email"),
+            validate: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
+            msg: "Enter a valid email address"
+        },
+        graduation_year: {
+            el: document.querySelector("[name='graduation_year']"),
+            err: document.getElementById("err-graduation_year"),
+            validate: v => /^[0-9]{4}$/.test(v) && v >= 1980 && v <= 2035,
+            msg: "Enter a valid year between 1980–2035"
+        },
+        graduation_percentage: {
+            el: document.querySelector("[name='graduation_percentage']"),
+            err: document.getElementById("err-graduation_percentage"),
+            validate: v => /^(\d{1,2}(\.\d{1,2})?|100)$/.test(v),
+            msg: "Enter a valid percentage (0–100)"
+        },
+        key_skills: {
+            el: document.querySelector("[name='key_skills']"),
+            err: document.getElementById("err-key_skills"),
+            validate: v => v.trim().length >= 3,
+            msg: "Enter at least one skill"
+        },
+        preferred_domain: {
+            el: document.querySelector("[name='preferred_domain']"),
+            err: document.getElementById("err-preferred_domain"),
+            validate: v => v.trim().length >= 2,
+            msg: "Please enter a domain"
+        },
+        cover_letter: {
+            el: document.querySelector("[name='cover_letter']"),
+            err: document.getElementById("err-cover_letter"),
+            validate: v => v.trim().length >= 10,
+            msg: "Cover letter must be at least 10 characters"
+        }
+    };
+
+    /* PHONE FIELD */
+    const phoneInput = document.getElementById("id_phone");
+    const phoneError = document.getElementById("phoneError");
+
+    phoneInput.addEventListener("input", () => {
+        const val = phoneInput.value.trim();
+        if (/^\d{10}$/.test(val)) {
+            phoneError.classList.add("hidden");
+        } else {
+            phoneError.classList.remove("hidden");
+        }
+    });
+
+    /* EXPERIENCE FIELD */
+    const expInput = document.getElementById("experience_years");
+    const expError = document.getElementById("experienceError");
+
+    expInput.addEventListener("input", () => {
+        const val = expInput.value.trim();
+        if (/^(?:[0-9]|[1-4][0-9]|50)(?:\.[0-9])?$/.test(val)) {
+            expError.classList.add("hidden");
+        } else {
+            expError.classList.remove("hidden");
+        }
+    });
+
+    /* RESUME VALIDATION */
+    const resumeInput = document.querySelector("[name='resume']");
+    const resumeErr = document.getElementById("err-resume");
+
+    resumeInput.addEventListener("change", () => {
+        const file = resumeInput.files[0];
+        if (!file) return;
+
+        const allowed = ["pdf", "doc", "docx"];
+        const ext = file.name.split(".").pop().toLowerCase();
+        
+        if (!allowed.includes(ext)) {
+            resumeErr.textContent = "Allowed: PDF, DOC, DOCX only";
+            resumeErr.classList.remove("hidden");
+            resumeInput.value = "";
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            resumeErr.textContent = "File size must be below 5MB";
+            resumeErr.classList.remove("hidden");
+            resumeInput.value = "";
+            return;
+        }
+
+        resumeErr.classList.add("hidden");
+    });
+
+    /* FINAL SUBMIT VALIDATION */
+    form.addEventListener("submit", (e) => {
+        let valid = true;
+
+        Object.values(fields).forEach(f => {
+            const value = f.el.value.trim();
+            if (!f.validate(value)) {
+                f.err.textContent = f.msg;
+                f.err.classList.remove("hidden");
+                valid = false;
+            } else {
+                f.err.classList.add("hidden");
+            }
+        });
+
+        if (!/^\d{10}$/.test(phoneInput.value.trim())) valid = false;
+        if (!/^(?:[0-9]|[1-4][0-9]|50)(?:\.[0-9])?$/.test(expInput.value.trim())) valid = false;
+
+        if (!valid) {
+            e.preventDefault();
+            return;
+        }
+
+        /* SHOW LOADER */
+        document.getElementById("pageLoader").classList.remove("hidden");
+
+    });
+
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const keySkills = document.getElementById("id_key_skills");
+  const errEl = document.getElementById("err-key_skills");
+
+  if (!keySkills) return;
+
+  keySkills.addEventListener("input", () => {
+    let val = keySkills.value;
+
+    // Max 100 characters
+    if (val.length > 100) {
+      keySkills.value = val.slice(0, 100);
+      errEl.textContent = "Maximum 100 characters allowed.";
+      errEl.classList.remove("hidden");
+      keySkills.classList.add("border-red-500");
+      keySkills.classList.remove("border-green-500");
+      return;
+    }
+
+    // Required validation
+    if (val.trim().length === 0) {
+      errEl.textContent = "This field is required.";
+      errEl.classList.remove("hidden");
+      keySkills.classList.add("border-red-500");
+      keySkills.classList.remove("border-green-500");
+      return;
+    }
+
+    // Clear error
+    errEl.textContent = "";
+    errEl.classList.add("hidden");
+    keySkills.classList.remove("border-red-500");
+    keySkills.classList.add("border-green-500");
+  });
+});
+</script>
+<!-- ============================
+ FULL PAGE LOADER (OPTION B)
+=============================== -->
+<div id="pageLoader" class="hidden fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-[9999]">
+  <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-white"></div>
+</div>
 
 
 

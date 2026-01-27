@@ -1,0 +1,369 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assigned Projects | Admin Dashboard</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts: Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ["Outfit", "sans-serif"],
+                    },
+                    colors: {
+                        primary: {
+                            DEFAULT: "#053830",
+                            dark: "#022c25",
+                            light: "#155C54",
+                        },
+                        accent: "#FF9728",
+                        surface: "#F8FAFC",
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                        'glow': '0 0 20px rgba(255, 151, 40, 0.15)',
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02)',
+                    },
+                    animation: {
+                        'enter': 'enter 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        enter: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Smooth Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        
+        /* Utility to hide scrollbar on mobile but allow functionality */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+
+<body class="bg-surface min-h-screen text-slate-800 font-sans antialiased overflow-x-hidden flex flex-col">
+
+    <!-- HERO HEADER SECTION -->
+    <div class="relative bg-gradient-to-r from-primary-dark via-primary to-primary-dark pb-32 md:pb-40 pt-8 md:pt-12 px-4 md:px-6 overflow-hidden shadow-2xl shrink-0">
+        <!-- Decorative Background Elements -->
+        <div class="absolute top-0 right-0 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-white opacity-[0.03] rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none animate-pulse"></div>
+        <div class="absolute bottom-0 left-0 w-64 md:w-96 h-64 md:h-96 bg-accent opacity-[0.05] rounded-full blur-3xl -ml-20 -mb-10 pointer-events-none"></div>
+        <div class="absolute top-20 left-1/3 w-24 h-24 bg-emerald-400 opacity-[0.1] rounded-full blur-xl animate-bounce duration-[3000ms]"></div>
+
+        <div class="max-w-7xl mx-auto relative z-10">
+            
+            <!-- Top Navigation Bar -->
+            <!-- FIX: Flex-col on mobile to stack nav items -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 opacity-0 animate-enter">
+                
+             <!-- Back to Dashboard Button -->
+                 
+                <div class="flex justify-end w-full gap-4">
+    <a href="{% url 'home' %}" 
+       class="text-[#053830] bg-[#FF9728] font-semibold 
+              px-6 py-2.5 rounded-xl shadow-sm hover:scale-[1.02] 
+              transition-all flex items-center gap-2">
+        ← Back to Home
+    </a>
+
+
+                <a href="{% url 'admin_dashboard' %}" class="w-full sm:w-auto flex items-center justify-center gap-2 
+          px-5 py-2.5 bg-[#FF9728] text-[#053830] 
+          rounded-xl transition-all text-sm font-semibold 
+          border border-[#FF9728] shadow-sm hover:scale-[1.02]">
+          
+    <i data-lucide="arrow-left" class="w-4 h-4 transition-transform"></i>
+                        Back to Dashboard
+                    </a>
+                    </div>
+
+                <!-- Profile / Notifications -->
+                <div class="flex items-center justify-end gap-4">
+                    <!-- <div class="h-10 w-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white border border-white/10 hover:bg-white/20 transition-colors cursor-pointer">
+                        <i data-lucide="bell" class="w-5 h-5"></i>
+                    </div> -->
+                    <!-- <div class="h-10 w-10 rounded-full bg-gradient-to-br from-accent to-orange-600 flex items-center justify-center text-white font-bold shadow-glow">
+                        A
+                    </div> -->
+                </div>
+            </div>
+
+            <!-- Header Content -->
+            <!-- FIX: Stacked layout for mobile -->
+            <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 opacity-0 animate-enter delay-100">
+                <div class="text-center lg:text-left">
+                    <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight leading-tight mb-2">
+                        Assigned <span class="text-emerald-300">Projects</span>
+                    </h1>
+                    <p class="text-emerald-100/70 text-base md:text-lg max-w-xl mx-auto lg:mx-0">
+                        Monitor client progress, track deadlines, and manage project statuses efficiently.
+                    </p>
+                </div>
+
+                <!-- Quick Stat (Visual Only) -->
+                <div class="flex items-center gap-4 bg-white/5 backdrop-blur-md p-4 rounded-2xl border border-white/10 hover:bg-white/10 transition-all w-full lg:w-auto justify-center lg:justify-start">
+                    <div class="p-3 bg-accent/20 rounded-xl text-accent">
+                        <i data-lucide="briefcase" class="w-6 h-6"></i>
+                    </div>
+                    <div class="text-left">
+                        <p class="text-white font-bold text-xl">{{ projects|length }}</p>
+                        <p class="text-emerald-100/60 text-xs uppercase tracking-wider">Active Projects</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT CONTAINER (Floating Effect) -->
+    <div class="max-w-7xl mx-auto px-4 md:px-6 -mt-20 md:-mt-24 relative z-20 pb-10 w-full flex-grow">
+        
+        <!-- TOOLBAR (Glassmorphism) -->
+        <form id="filterForm" method="GET" class="bg-white/80 backdrop-blur-xl p-4 rounded-2xl shadow-lg border border-white/40 mb-8 flex flex-col md:flex-row items-center justify-between gap-4 opacity-0 animate-enter delay-200">
+
+            <!-- Search Bar -->
+            <!-- <div class="relative w-full md:w-96 group">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <i data-lucide="search" class="w-5 h-5 text-slate-400 group-focus-within:text-primary transition-colors"></i>
+                </div>
+
+                <input 
+                    type="text" 
+                    name="search"
+                    value="{{ search }}"
+                    oninput="document.getElementById('filterForm').submit()"
+                    class="block w-full pl-11 pr-4 py-3 bg-white border-none ring-1 ring-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all shadow-sm" 
+                    placeholder="Search..."
+                >
+            </div> -->
+
+            <!-- Filters & Buttons -->
+            <!-- FIX: Buttons span full width on small mobile screens -->
+            <div class="flex flex-row items-center gap-3 w-full md:w-auto">
+                <button type="button" onclick="toggleFilters()" 
+                    class="flex-1 md:flex-none justify-center flex items-center gap-2 px-4 py-2.5 bg-white ring-1 ring-slate-200 rounded-xl text-slate-600 font-medium hover:text-primary hover:ring-primary/30 transition-all shadow-sm whitespace-nowrap">
+                    <i data-lucide="filter" class="w-4 h-4"></i>
+                    <span>Filter</span>
+                </button>
+
+                <a href="{% url 'assign_project' %}" 
+                   class="flex-1 md:flex-none justify-center flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl font-medium hover:bg-primary-light shadow-lg shadow-primary/20 transition whitespace-nowrap">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>New Project</span>
+                </a>
+            </div>
+
+            <!-- FILTER DROPDOWN -->
+            <div id="filtersBox" class="hidden w-full bg-white/95 backdrop-blur-xl mt-4 md:mt-0 p-4 rounded-2xl shadow-inner border border-slate-100">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Client Filter -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs font-semibold text-slate-500 uppercase ml-1">Client</label>
+                        <input type="text" name="client" value="{{ client }}" placeholder="Client name" class="px-4 py-3 rounded-xl ring-1 ring-slate-200 bg-white text-slate-700 focus:ring-primary/20 focus:outline-none">
+                    </div>
+
+                    <!-- Start Date -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs font-semibold text-slate-500 uppercase ml-1">Start Date</label>
+                        <input type="date" name="start_date" value="{{ start_date }}" class="px-4 py-3 rounded-xl ring-1 ring-slate-200 bg-white text-slate-700 focus:ring-primary/20 focus:outline-none">
+                    </div>
+
+                    <!-- End Date -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs font-semibold text-slate-500 uppercase ml-1">End Date</label>
+                        <input type="date" name="end_date" value="{{ end_date }}" class="px-4 py-3 rounded-xl ring-1 ring-slate-200 bg-white text-slate-700 focus:ring-primary/20 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-4">
+                    <a href="{% url 'admin_project_list' %}" class="px-4 py-2 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-xl transition text-sm font-medium">Reset</a>
+                    <button type="submit" class="px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary-light transition text-sm font-medium">Apply Filters</button>
+                </div>
+            </div>
+        </form>
+
+        <script>
+        function toggleFilters() {
+            const box = document.getElementById("filtersBox");
+            if (box.classList.contains('hidden')) {
+                box.classList.remove("hidden");
+                // Move filtersBox inside the form container logic if needed, 
+                // but currently it is inside the flex container. 
+                // On mobile flex-col handles it, on desktop it might distort row layout if not handled.
+                // Best to make it absolutely positioned or full width break.
+                // For simplicity here, we let it expand natural flow or:
+                box.classList.add("animate-fade-in");
+                
+                // If on desktop, force it to wrap to next line by ensuring parent wraps or moving it
+                const form = document.getElementById("filterForm");
+                form.classList.add("flex-wrap");
+            } else {
+                box.classList.add("hidden");
+            }
+        }
+        </script>
+
+        <!-- PROJECTS TABLE CARD -->
+        <div class="bg-white rounded-3xl shadow-soft border border-slate-100 overflow-hidden opacity-0 animate-enter delay-300">
+            <!-- FIX: overflow-x-auto handles horizontal scroll on small screens -->
+            <div class="overflow-x-auto w-full">
+                <table class="w-full whitespace-nowrap min-w-[800px]">
+                    <thead>
+                        <tr class="bg-slate-50/80 border-b border-slate-100 text-left">
+                            <th class="py-5 px-6 md:px-8 text-xs font-bold text-slate-400 uppercase tracking-wider">Project Info</th>
+                            <th class="py-5 px-6 md:px-8 text-xs font-bold text-slate-400 uppercase tracking-wider">Client</th>
+                            <th class="py-5 px-6 md:px-8 text-xs font-bold text-slate-400 uppercase tracking-wider">Timeline</th>
+                            <th class="py-5 px-6 md:px-8 text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                            <th class="py-5 px-6 md:px-8 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="divide-y divide-slate-100">
+                        {% for project in projects %}
+                        <tr class="group hover:bg-slate-50/80 transition-colors duration-200">
+                            
+                            <!-- Project Name -->
+                            <td class="py-5 px-6 md:px-8">
+                                <div class="flex items-center gap-4">
+                                    <div class="h-12 w-12 rounded-2xl bg-emerald-50 text-primary flex shrink-0 items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+                                        <i data-lucide="layout-template" class="w-6 h-6"></i>
+                                    </div>
+                                    <div>
+                                        <span class="block font-bold text-slate-800 text-base group-hover:text-primary transition-colors">
+                                            {{ project.project_name }}
+                                        </span>
+                                        <span class="text-xs text-slate-400 font-medium">ID: #{{ project.id }}</span>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Client -->
+                            <td class="py-5 px-6 md:px-8">
+                                <div class="flex items-center gap-3">
+                                    <div class="h-9 w-9 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 border border-white shadow-sm flex shrink-0 items-center justify-center text-xs font-bold text-blue-600 uppercase">
+                                        {{ project.client.user.username|slice:":1" }}
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-semibold text-slate-700">{{ project.client.user.username }}</p>
+                                        <p class="text-xs text-slate-400">Client</p>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Start Date -->
+                            <td class="py-5 px-6 md:px-8">
+                                <div class="flex items-center gap-2 text-sm text-slate-500">
+                                    <div class="p-1.5 rounded-md bg-slate-100 text-slate-400">
+                                        <i data-lucide="calendar" class="w-4 h-4"></i>
+                                    </div>
+                                    <span class="font-medium">{{ project.start_date|date:"M d, Y" }}</span>
+                                </div>
+                            </td>
+
+                            <!-- Status Badge -->
+                            <td class="py-5 px-6 md:px-8">
+                                {% if project.status == 'Completed' %}
+                                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100">
+                                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                        <span class="text-xs font-bold text-emerald-700 uppercase tracking-wide">Completed</span>
+                                    </div>
+                                {% elif project.status == 'In Progress' %}
+                                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100">
+                                        <span class="relative flex h-2 w-2">
+                                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                            <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                                        </span>
+                                        <span class="text-xs font-bold text-blue-700 uppercase tracking-wide">Active</span>
+                                    </div>
+                                {% else %}
+                                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-100">
+                                        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                                        <span class="text-xs font-bold text-amber-700 uppercase tracking-wide">{{ project.status }}</span>
+                                    </div>
+                                {% endif %}
+                            </td>
+
+                            <!-- Action -->
+                            <td class="py-5 px-6 md:px-8 text-right">
+                                <a href="{% url 'admin_project_details' project.id %}" 
+                                   class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white border border-slate-200 text-slate-500 hover:bg-primary hover:text-white hover:border-primary transition-all shadow-sm group-hover:shadow-md">
+                                    <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <!-- Empty State -->
+                        <tr>
+                            <td colspan="5" class="py-20 text-center">
+                                <div class="flex flex-col items-center justify-center">
+                                    <div class="p-6 bg-slate-50 rounded-full mb-4 border border-slate-100 animate-bounce">
+                                        <i data-lucide="folder-open" class="w-10 h-10 text-slate-300"></i>
+                                    </div>
+                                    <h3 class="text-xl font-bold text-slate-800">No projects found</h3>
+                                    <p class="text-slate-500 text-sm mt-1 max-w-xs mx-auto">
+                                        Start by assigning a new project to your clients.
+                                    </p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination Footer (Visual) -->
+            {% if projects %}
+            <div class="px-6 md:px-8 py-5 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row gap-4 items-center justify-between">
+                <p class="text-xs font-medium text-slate-500 order-2 sm:order-1">Showing all <span class="text-slate-900 font-bold">{{ projects|length }}</span> projects</p>
+                <div class="flex gap-2 order-1 sm:order-2">
+                    <button class="p-2 rounded-lg hover:bg-white border border-transparent hover:border-slate-200 text-slate-400 hover:text-slate-600 transition-all disabled:opacity-50">
+                        <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                    </button>
+                    <button class="p-2 rounded-lg hover:bg-white border border-transparent hover:border-slate-200 text-slate-400 hover:text-slate-600 transition-all">
+                        <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Back to Home Section -->
+
+        
+    </div>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>

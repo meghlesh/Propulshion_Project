@@ -5,9 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Terms & Conditions | Propulsion Technology</title>
-    <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+    <link rel="icon" type="image/png" href="{% static 'img/logo6.png'%}">
     <script src="https://cdn.tailwindcss.com"></script>
+
     <style>
+        /* Input & Textarea Styling */
         #form-section input[type="text"],
         #form-section textarea {
             width: 100%;
@@ -27,8 +29,24 @@
             min-height: 200px;
             resize: vertical;
         }
+
+        /* Asterisk for Required Fields */
+        label.required-field::after {
+            content: " *";
+            color: rgb(14, 13, 13);
+            font-weight: bold;
+        }
+
+        /* Inline Error Message */
+        .error-msg {
+            color: red;
+            font-size: 0.9rem;
+            margin-top: 4px;
+            display: none;
+        }
     </style>
 </head>
+
 <body class="bg-[#EAF4E0] font-sans text-[#053830]">
 
 <!-- Blur Loader -->
@@ -37,142 +55,260 @@
   <div class="w-16 h-16 border-4 border-[#053830] border-t-transparent rounded-full animate-spin"></div>
 </div>
 
-
-    <!-- Navbar -->
-    <nav class="bg-[#053830] text-white p-5 flex justify-between items-center shadow-lg">
-        <h1 class="text-2xl font-bold">Manage Terms & Conditions</h1>
-        <div>
-            <a href="{% url 'home' %}" class="text-[#FF9728] font-semibold hover:text-white mr-6 transition-colors">Back To Home</a>
-            <a href="{% url 'admin_dashboard' %}" class="text-[#FF9728] font-semibold hover:text-white mr-6">Dashboard</a>
-            <a href="{% url 'admin_logout' %}" class="bg-[#FF9728] text-[#053830] px-4 py-2 rounded-xl font-semibold hover:bg-white hover:text-[#053830] transition-all">Logout</a>
-        </div>
-    </nav>
-
-    <!-- Success Messages -->
-    {% if messages %}
-    <div class="max-w-5xl mx-auto mt-6 px-4">
-        {% for message in messages %}
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-xl shadow-md">
-            ✅ {{ message }}
-        </div>
-        {% endfor %}
+<!-- Navbar -->
+<nav class="bg-[#053830] text-white p-5 flex justify-between items-center shadow-lg">
+    <h1 class="text-2xl font-bold">Manage Terms & Conditions</h1>
+    <div>
+        <a href="{% url 'home' %}" class="text-[#FF9728] font-semibold hover:text-white mr-6 transition-colors">Back To Home</a>
+        <a href="{% url 'admin_dashboard' %}" class="text-[#FF9728] font-semibold hover:text-white mr-6">Dashboard</a>
+        <a href="{% url 'admin_logout' %}" class="bg-[#FF9728] text-[#053830] px-4 py-2 rounded-xl font-semibold hover:bg-white hover:text-[#053830] transition-all">Logout</a>
     </div>
-    {% endif %}
+</nav>
 
-    <!-- Main Content -->
-    <main class="max-w-6xl mx-auto mt-10 px-4 pb-10">
-        <!-- Form Section -->
-        <section id="form-section" class="bg-white rounded-3xl shadow-2xl p-8 mb-10">
-            <h2 class="text-3xl font-extrabold mb-8 text-center text-[#053830]">Add or Edit Terms & Conditions</h2>
+<!-- Success Message -->
+{% if messages %}
+<div id="flash-messages">
+    {% for message in messages %}
+        <div class="mb-3 px-4 py-3 rounded-lg font-medium transition-all duration-500
+            {% if message.tags == 'success' %} bg-green-100 text-green-800 border border-green-300
+            {% elif message.tags == 'error' %} bg-red-100 text-red-800 border border-red-300
+            {% elif message.tags == 'warning' %} bg-yellow-100 text-yellow-800 border border-yellow-300
+            {% else %} bg-blue-100 text-blue-800 border border-blue-300
+            {% endif %}
+        ">
+            {{ message }}
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
 
-            <form method="POST" class="space-y-6">
-                {% csrf_token %}
+
+<!-- Main Content -->
+<main class="max-w-6xl mx-auto mt-10 px-4 pb-10">
+
+    <!-- Form Section -->
+    <section id="form-section" class="bg-white rounded-3xl shadow-2xl p-8 mb-10">
+        <h2 class="text-3xl font-extrabold mb-8 text-center text-[#053830]">Add or Edit Terms & Conditions</h2>
+
+        <form id="termsForm" method="POST" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- Form Fields Auto Converted to Required with Asterisk -->
+            <div id="form-fields">
                 {{ form.as_p }}
-                <div class="flex justify-center pt-6">
-                    <button type="submit"
-                        class="bg-[#053830] text-white px-10 py-4 rounded-xl font-semibold text-lg hover:bg-[#FF9728] hover:text-[#053830] transition-all shadow-lg shadow-[#053830]/40 transform hover:scale-105 hover:-translate-y-1">
-                        Save Changes
-                    </button>
-                </div>
-            </form>
-        </section>
-
-        <!-- Terms Table -->
-        <section class="bg-white rounded-3xl shadow-2xl p-8 border-l-4 border-[#FF9728]">
-            <h2 class="text-2xl font-bold mb-6 text-[#053830]">Existing Terms & Conditions</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border border-gray-200 rounded-lg overflow-hidden">
-                    <thead class="bg-[#053830] text-white">
-                        <tr>
-                            <th class="py-3 px-4">Title</th>
-                            <th class="py-3 px-4">Status</th>
-                            <th class="py-3 px-4 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200">
-                        {% for t in terms %}
-                        <tr class="hover:bg-[#F3F7F2] transition-all">
-                            <td class="py-3 px-4 font-medium">{{ t.title }}</td>
-                            <td class="py-3 px-4">
-                                {% if t.is_active %}
-                                    <span class="text-green-700 font-semibold">Active</span>
-                                {% else %}
-                                    <span class="text-red-600 font-semibold">Inactive</span>
-                                {% endif %}
-                            </td>
-                            <td class="py-3 px-4 text-right space-x-4">
-                                <a href="{% url 'edit_terms' t.pk %}" class="text-blue-600 font-semibold hover:underline">Edit</a>
-                                <a href="{% url 'delete_terms' t.pk %}" class="text-red-600 font-semibold hover:underline">Delete</a>
-                                <a href="{% url 'toggle_terms_status' t.pk %}" class="text-yellow-600 font-semibold hover:underline">
-                                    {% if t.is_active %}Deactivate{% else %}Activate{% endif %}
-                                </a>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="3" class="text-center py-6 text-gray-500 text-lg">No Terms & Conditions found.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
             </div>
-        </section>
-    </main>
 
-    <script>
-        setTimeout(() => {
-            const msgs = document.querySelectorAll('[class*="bg-green-100"]');
-            msgs.forEach(m => {
-                m.style.transition = 'opacity 0.5s';
-                m.style.opacity = '0';
-                setTimeout(() => m.remove(), 500);
-            });
-        }, 5000);
-    </script>
+            <div class="flex justify-center pt-6">
+                <button type="submit"
+                    class="bg-[#053830] text-white px-10 py-4 rounded-xl font-semibold text-lg hover:bg-[#FF9728] hover:text-[#053830] transition-all shadow-lg shadow-[#053830]/40 transform hover:scale-105 hover:-translate-y-1">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </section>
 
+    <!-- Terms Table -->
+    <section class="bg-white rounded-3xl shadow-2xl p-8 border-l-4 border-[#FF9728]">
+        <h2 class="text-2xl font-bold mb-6 text-[#053830]">Existing Terms & Conditions</h2>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border border-gray-200 rounded-lg overflow-hidden">
+                <thead class="bg-[#053830] text-white">
+                    <tr>
+                        <th class="py-3 px-4">Title</th>
+                        <th class="py-3 px-4">Status</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for t in terms %}
+                    <tr class="hover:bg-[#F3F7F2] transition-all">
+                        <td class="py-3 px-4 font-medium">{{ t.title }}</td>
+                        <td class="py-3 px-4">
+                            {% if t.is_active %}
+                                <span class="text-green-700 font-semibold">Active</span>
+                            {% else %}
+                                <span class="text-red-600 font-semibold">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3 px-4 text-right space-x-4">
+                            <a href="{% url 'edit_terms' t.pk %}" class="text-blue-600 font-semibold hover:underline">Edit</a>
+                            <a href="{% url 'delete_terms' t.pk %}" class="text-red-600 font-semibold hover:underline">Delete</a>
+                            <a href="{% url 'toggle_terms_status' t.pk %}" class="text-yellow-600 font-semibold hover:underline">
+                                {% if t.is_active %}Deactivate{% else %}Activate{% endif %}
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="text-center py-6 text-gray-500 text-lg">No Terms & Conditions found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<!-- Auto Hide Success Message -->
 <script>
-  // Show loader when DOM starts loading
-  document.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("blur-loader").classList.remove("hidden");
-  });
-
-  // Hide loader when page fully loaded
-  window.addEventListener("load", () => {
-      document.getElementById("blur-loader").classList.add("hidden");
-  });
-
-  // Show loader when clicking Save Changes
-  const termsForm = document.querySelector("form[method='POST']");
-  if (termsForm) {
-      termsForm.addEventListener("submit", () => {
-          document.getElementById("blur-loader").classList.remove("hidden");
-      });
-  }
-
-  // Optional: Loader for Edit
-  const editLinks = document.querySelectorAll("a[href*='edit_terms']");
-  editLinks.forEach(link => {
-      link.addEventListener("click", () => {
-          document.getElementById("blur-loader").classList.remove("hidden");
-      });
-  });
-
-  // Optional: Loader for Delete
-  const deleteLinks = document.querySelectorAll("a[href*='delete_terms']");
-  deleteLinks.forEach(link => {
-      link.addEventListener("click", () => {
-          document.getElementById("blur-loader").classList.remove("hidden");
-      });
-  });
-
-  // Optional: Loader for Activate/Deactivate
-  const toggleLinks = document.querySelectorAll("a[href*='toggle_terms_status']");
-  toggleLinks.forEach(link => {
-      link.addEventListener("click", () => {
-          document.getElementById("blur-loader").classList.remove("hidden");
-      });
-  });
+setTimeout(() => {
+    const msgs = document.querySelectorAll('[class*="bg-green-100"]');
+    msgs.forEach(m => {
+        m.style.transition = 'opacity 0.5s';
+        m.style.opacity = '0';
+        setTimeout(() => m.remove(), 500);
+    });
+}, 5000);
 </script>
+
+<!-- Loader Control -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("blur-loader").classList.remove("hidden");
+});
+window.addEventListener("load", () => {
+    document.getElementById("blur-loader").classList.add("hidden");
+});
+</script>
+
+<!-- ★★★ FRONT-END VALIDATION SCRIPT ★★★ -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // Add asterisks to required fields
+    document.querySelectorAll("input[required], textarea[required]").forEach(field => {
+        let label = field.closest("p").querySelector("label");
+        if (label) label.classList.add("required-field");
+    });
+
+    // Validation
+    document.getElementById("termsForm").addEventListener("submit", function (e) {
+        let valid = true;
+
+        document.querySelectorAll(".error-msg").forEach(el => el.remove());
+
+        document.querySelectorAll("input[required], textarea[required]").forEach(field => {
+            if (field.value.trim() === "") {
+                valid = false;
+
+                let error = document.createElement("div");
+                error.className = "error-msg";
+                error.innerText = "This field is required.";
+
+                field.insertAdjacentElement("afterend", error);
+                error.style.display = "block";
+            }
+        });
+
+        if (!valid) e.preventDefault();
+    });
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const titleField = document.querySelector("#id_title");
+    const contentField = document.querySelector("#id_content");
+    const form = document.querySelector("#termsForm");
+
+    // -------------------------------------
+    // ADD CHARACTER COUNTERS
+    // -------------------------------------
+    function addCounter(field, max, id) {
+        if (!field) return;
+        const counter = document.createElement("p");
+        counter.id = id;
+        counter.className = "text-sm text-gray-600 mt-1";
+        field.insertAdjacentElement("afterend", counter);
+
+        const updateCount = () => {
+            counter.textContent = `${field.value.length}/${max}`;
+        };
+        updateCount();
+        field.addEventListener("input", updateCount);
+    }
+
+    addCounter(titleField, 100, "titleCounter");
+    addCounter(contentField, 10000, "contentCounter");
+
+    // -------------------------------------
+    // VALIDATION
+    // -------------------------------------
+    form.addEventListener("submit", function(e) {
+        let valid = true;
+
+        // Remove old errors
+        document.querySelectorAll(".error-msg").forEach(el => el.remove());
+
+        // TITLE VALIDATIONS
+        if (titleField) {
+            const title = titleField.value.trim();
+
+            if (title === "") {
+                showError(titleField, "Title is required");
+                valid = false;
+            } 
+            else if (/\d/.test(title)) {
+                showError(titleField, "Numbers are not allowed in the title");
+                valid = false;
+            }
+            else if (title.length > 100) {
+                showError(titleField, "Title cannot exceed 100 characters");
+                valid = false;
+            }
+        }
+
+        // CONTENT VALIDATIONS
+        if (contentField) {
+            const content = contentField.value.trim();
+
+            if (content === "") {
+                showError(contentField, "Content is required");
+                valid = false;
+            }
+            else if (content.length > 10000) {
+                showError(contentField, "Content cannot exceed 10000 characters");
+                valid = false;
+            }
+        }
+
+        // STOP submit if errors exist
+        if (!valid) {
+            e.preventDefault();
+            return;
+        }
+
+        // SHOW LOADER IF VALID
+        document.getElementById("blur-loader").classList.remove("hidden");
+    });
+
+    // -------------------------------------
+    // ERROR MESSAGE FUNCTION
+    // -------------------------------------
+    function showError(field, msg) {
+        const err = document.createElement("div");
+        err.className = "error-msg text-red-600 mt-1";
+        err.textContent = msg;
+        field.insertAdjacentElement("afterend", err);
+    }
+
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const flashBox = document.getElementById("flash-messages");
+    if (flashBox) {
+        setTimeout(() => {
+            flashBox.style.transition = "opacity 0.6s ease";
+            flashBox.style.opacity = "0";
+
+            setTimeout(() => flashBox.remove(), 600);
+        }, 3000);  // 3 Seconds
+    }
+});
+</script>
+
+
 
 
 </body>

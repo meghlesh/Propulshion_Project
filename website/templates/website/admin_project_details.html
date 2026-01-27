@@ -1,0 +1,466 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ project.project_name }} | Executive View</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ["Outfit", "sans-serif"] },
+                    colors: {
+                        "primary": "#053830",
+                        "primary-dark": "#022c25",
+                        "accent": "#FF9728",
+                        "surface": "#F8FAFC",
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                        'glow': '0 0 20px rgba(255, 151, 40, 0.3)'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .animate-enter {
+            animation: enter 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        @keyframes enter {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Utility for horizontal scroll on mobile */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+
+<body class="bg-surface min-h-screen text-slate-800 overflow-x-hidden font-sans">
+
+    <!-- HERO HEADER SECTION -->
+    <div class="relative bg-gradient-to-r from-primary-dark via-primary to-primary-dark pb-28 md:pb-32 pt-6 md:pt-10 px-4 md:px-6 shadow-lg">
+        <!-- Decorative Background Elements -->
+        <div class="absolute top-0 right-0 w-64 md:w-96 h-64 md:h-96 bg-white opacity-5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
+        <div class="absolute bottom-0 left-0 w-48 md:w-64 h-48 md:h-64 bg-accent opacity-5 rounded-full blur-3xl -ml-20 -mb-10 pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto relative z-10">
+            <!-- Navigation -->
+            <!-- FIX: Added flex-wrap for small screens to prevent overlap -->
+            <nav class="flex flex-wrap items-center justify-between gap-4 mb-6 md:mb-8">
+
+    <!-- STATUS BADGE -->
+    <div class="px-4 py-1.5 rounded-full bg-accent/20 text-accent 
+                border border-accent/30 text-xs font-bold uppercase 
+                tracking-wide shadow-glow backdrop-blur-md whitespace-nowrap">
+        {{ project.status }}
+    </div>
+
+    <!-- BUTTONS WRAPPER -->
+    <div class="flex items-center gap-3">
+
+        <!-- BACK TO PROJECT LIST BUTTON -->
+        <a href="{% url 'admin_project_list' %}"
+           class="group flex items-center text-[#053830] bg-[#FF9728]
+                  px-4 py-2 rounded-full text-sm font-medium 
+                  transition-all shadow-sm hover:scale-[1.02]">
+            <i data-lucide="arrow-left"
+               class="w-4 h-4 mr-2 transition-transform group-hover:-translate-x-1"></i>
+            Back to Project List
+        </a>
+
+        <!-- BACK TO DASHBOARD BUTTON -->
+        <a href="{% url 'admin_dashboard' %}"
+           class="group flex items-center text-[#053830] bg-[#FF9728]
+                  px-4 py-2 rounded-full text-sm font-medium 
+                  transition-all shadow-sm hover:scale-[1.02]">
+            <i data-lucide="arrow-left"
+               class="w-4 h-4 mr-2 transition-transform group-hover:-translate-x-1"></i>
+            Back to Dashboard
+        </a>
+
+    </div>
+
+</nav>
+            
+
+            <!-- Title & Quick Info -->
+            <!-- FIX: Changed to flex-col on mobile/tablet, row on large screens. Added w-full handling. -->
+            <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 md:gap-8 animate-enter">
+                
+                <!-- Title Block -->
+                <div class="w-full lg:w-auto">
+                    <p class="text-emerald-200/80 text-xs md:text-sm font-medium uppercase tracking-wider mb-2">Client Project</p>
+                    <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight leading-tight break-words">
+                        {{ project.project_name }}
+                    </h1>
+                    
+                    <!-- FIX: Wraps on small screens, adjusts spacing -->
+                    <div class="flex flex-wrap items-center gap-4 md:gap-6 mt-4 text-emerald-100/70 text-sm">
+                        <span class="flex items-center gap-2"><i data-lucide="user" class="w-4 h-4 text-accent"></i> {{ project.client.user.username }}</span>
+                        <span class="flex items-center gap-2"><i data-lucide="calendar" class="w-4 h-4 text-accent"></i> Started {{ project.start_date }}</span>
+                    </div>
+                </div>
+                
+
+                <!-- Right Side Actions (Progress + Payment) -->
+                <!-- FIX: Full width on mobile, row on tablet+. Stacked logic for better touch targets. -->
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full lg:w-auto mt-2 lg:mt-0">
+                    
+                    
+                    <!-- Progress Circle -->
+                    <div class="flex items-center gap-4 bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10 flex-1 sm:flex-none">
+                        <div class="relative w-14 h-14 md:w-16 md:h-16 shrink-0">
+                            <svg class="w-full h-full rotate-[-90deg]" viewBox="0 0 36 36">
+                                <path class="text-emerald-900/50" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3" />
+                                <path class="text-accent drop-shadow-[0_0_10px_rgba(255,151,40,0.5)]" stroke-dasharray="{{ project.progress|default:0 }}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+                            </svg>
+                            
+                            <div class="absolute inset-0 flex items-center justify-center text-xs font-bold text-white">
+                                {{ project.progress|default:0 }}%
+                            </div>
+                        </div>
+                        <div>
+                            
+                            <p class="text-white font-semibold text-sm md:text-base">Completion</p>
+                            <p class="text-emerald-200/70 text-xs">Tracked Progress</p>
+                        </div>
+                    </div>
+
+                    <!-- Add Payment Button -->
+                    <a href="{% url 'admin_add_payment' project.id %}" class="bg-accent hover:bg-primary-dark text-white font-semibold px-6 py-3 rounded-xl shadow-lg shadow-accent/30 hover:shadow-primary/40 transition-all flex items-center justify-center gap-2 h-auto min-h-[4rem] sm:min-h-0 sm:h-full active:scale-95">
+                        <i data-lucide="wallet" class="w-5 h-5"></i>
+                        Add Payment
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT (Floating Negative Margin) -->
+    <div class="max-w-7xl mx-auto px-4 md:px-6 -mt-16 md:-mt-20 relative z-20 pb-20">
+        
+        <!-- FINANCIAL CARDS ROW -->
+        <!-- FIX: grid-cols-1 for mobile, sm:grid-cols-2 for tablets, lg:grid-cols-3 for desktop -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8 animate-enter delay-100">
+            <!-- Total Value -->
+            <div class="bg-white p-5 md:p-6 rounded-2xl shadow-soft border border-slate-100 group hover:border-primary/20 transition-all duration-300 hover:-translate-y-1">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-3 bg-blue-50 text-blue-600 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <i data-lucide="briefcase" class="w-6 h-6"></i>
+                    </div>
+                    <span class="text-[10px] md:text-xs font-medium text-slate-400 uppercase bg-slate-50 px-2 py-1 rounded whitespace-nowrap">Project Value</span>
+                </div>
+                <h3 class="text-2xl md:text-3xl font-bold text-slate-800 break-words">
+                    {% if payments %}₹{{ payments.0.amount_total }}{% else %}₹0{% endif %}
+                </h3>
+                <p class="text-slate-500 text-sm mt-1">Total contracted amount</p>
+            </div>
+
+            <!-- Paid Amount -->
+            <div class="bg-white p-5 md:p-6 rounded-2xl shadow-soft border border-slate-100 group hover:border-emerald-500/20 transition-all duration-300 hover:-translate-y-1">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                        <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+                    </div>
+                    <span class="text-[10px] md:text-xs font-medium text-emerald-600 uppercase bg-emerald-50 px-2 py-1 rounded whitespace-nowrap">Received</span>
+                </div>
+                <h3 class="text-2xl md:text-3xl font-bold text-slate-800 break-words">
+                    {% if payments %}₹{{ payments.0.amount_paid }}{% else %}₹0{% endif %}
+                </h3>
+                <p class="text-slate-500 text-sm mt-1">Successfully processed</p>
+            </div>
+
+            <!-- Due Amount -->
+            <div class="bg-white p-5 md:p-6 rounded-2xl shadow-soft border border-slate-100 group hover:border-accent/20 transition-all duration-300 hover:-translate-y-1 sm:col-span-2 lg:col-span-1">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-3 bg-orange-50 text-orange-600 rounded-xl group-hover:bg-accent group-hover:text-white transition-colors">
+                        <i data-lucide="clock" class="w-6 h-6"></i>
+                    </div>
+                    <span class="text-[10px] md:text-xs font-medium text-orange-600 uppercase bg-orange-50 px-2 py-1 rounded whitespace-nowrap">Outstanding</span>
+                </div>
+                <h3 class="text-2xl md:text-3xl font-bold text-slate-800 break-words">
+                    {% if payments %}₹{{ payments.0.balance_amount }}{% else %}₹0{% endif %}
+                </h3>
+                <p class="text-slate-500 text-sm mt-1">Pending payment</p>
+            </div>
+        </div>
+
+        <!-- GRID CONTENT -->
+        <!-- FIX: grid-cols-1 for mobile/tablet, lg:grid-cols-3 for desktop -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 animate-enter delay-200">
+
+            <!-- LEFT COLUMN: DETAILS & DOCS -->
+            <div class="lg:col-span-2 space-y-6 md:space-y-8 order-2 lg:order-1">
+                
+                <!-- PROJECT SCOPE CARD -->
+                <div class="bg-white rounded-2xl shadow-soft border border-slate-100 overflow-hidden">
+                    <div class="px-6 md:px-8 py-5 md:py-6 border-b border-slate-50 flex items-center gap-3">
+                        <div class="w-1 h-6 bg-primary rounded-full"></div>
+                        <h2 class="text-lg md:text-xl font-bold text-slate-800">Project Scope</h2>
+                    </div>
+                    <div class="p-6 md:p-8">
+                        <div class="prose prose-slate max-w-none">
+                            <h4 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Description</h4>
+                            <p class="text-slate-600 leading-relaxed mb-8 bg-slate-50 p-4 md:p-5 rounded-xl border border-slate-100 text-sm md:text-base">
+                                {{ project.description|linebreaksbr }}
+                            </p>
+                            
+                            <h4 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Deliverables</h4>
+                            <div class="grid grid-cols-1 gap-3">
+                                <div class="flex items-start gap-3 p-4 rounded-xl border border-slate-100 bg-white hover:shadow-md transition-shadow">
+                                    <i data-lucide="target" class="w-5 h-5 text-accent mt-0.5 shrink-0"></i>
+                                    <span class="text-slate-700 font-medium text-sm md:text-base break-words">{{ project.deliverables }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DOCUMENTS CARD -->
+                <div class="bg-white rounded-2xl shadow-soft border border-slate-100 overflow-hidden">
+                    <!-- FIX: Flex-col on mobile to stack Header Title and Action Buttons -->
+                    <div class="px-6 md:px-8 py-5 md:py-6 border-b border-slate-50 flex flex-col md:flex-row justify-between md:items-center gap-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-1 h-6 bg-accent rounded-full"></div>
+                            <h2 class="text-lg md:text-xl font-bold text-slate-800">Documents & Assets</h2>
+                        </div>
+
+                        <!-- FIX: Flex-wrap for buttons on small screens -->
+                        <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                            <!-- ADMIN UPLOAD DOCUMENT BUTTON -->
+                            <form method="post" action="{% url 'admin_upload_document' project.id %}" enctype="multipart/form-data" class="flex-1 md:flex-none">
+                                {% csrf_token %}
+                                <label class="cursor-pointer bg-primary text-white px-4 py-2.5 md:py-2 rounded-lg text-sm md:text-xs font-semibold hover:bg-primary-dark transition flex items-center justify-center gap-2 w-full md:w-auto active:scale-95">
+                                    <i data-lucide="upload" class="w-4 h-4 md:hidden"></i>
+                                    Upload Document
+                                    <input type="file" name="document" class="hidden" onchange="this.form.submit()">
+                                </label>
+                            </form>
+
+                            <!-- EXISTING DOWNLOAD BRIEF BUTTON -->
+                            {% if project.brief %}
+                            <a href="{{ project.brief.url }}" download class="px-4 py-2.5 md:py-2 rounded-lg border border-slate-200 text-sm md:text-xs font-bold text-primary hover:text-accent hover:border-accent transition-colors flex items-center justify-center gap-2 flex-1 md:flex-none active:scale-95">
+                                <i data-lucide="download" class="w-3 h-3"></i> Brief
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="p-6 md:p-8 bg-slate-50/50">
+                        {% if documents %}
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {% for doc in documents %}
+                                <div class="group bg-white p-4 rounded-xl border border-slate-200 hover:border-primary/50 hover:shadow-lg transition-all duration-300 relative">
+                                    
+                                    <!-- TOP ROW -->
+                                    <div class="flex items-start justify-between mb-3">
+                                        <div class="p-2.5 bg-slate-100 rounded-lg group-hover:bg-primary group-hover:text-white transition-colors text-slate-500">
+                                            <i data-lucide="file-text" class="w-6 h-6"></i>
+                                        </div>
+                                        <a href="{{ doc.attachment.url }}" download class="p-2 -mr-2 text-slate-400 hover:text-primary transition hover:bg-slate-50 rounded-full">
+                                            <i data-lucide="download-cloud" class="w-5 h-5"></i>
+                                        </a>
+                                    </div>
+
+                                    <!-- FILE NAME -->
+                                    <p class="font-bold text-slate-800 truncate pr-2 text-sm md:text-base">{{ doc.attachment.name }}</p>
+                                    
+                                    <!-- STATUS / ACTIONS -->
+                                    <div class="mt-3">
+                                        {% if doc.uploaded_by == "client" %}
+                                            {% if doc.status == "pending" %}
+                                                <span class="inline-block px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded text-[10px] font-bold uppercase tracking-wide mb-2">Pending Review</span>
+                                                <div class="flex gap-2 z-20 relative mt-1">
+                                                    <a href="{% url 'approve_document' doc.id %}" class="flex-1 text-center px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs font-medium hover:bg-green-700 active:scale-95 transition">Approve</a>
+                                                    <a href="{% url 'reject_document' doc.id %}" class="flex-1 text-center px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-medium hover:bg-red-700 active:scale-95 transition">Reject</a>
+                                                </div>
+                                            {% elif doc.status == "rejected" %}
+                                                <span class="text-red-600 font-bold text-xs flex items-center gap-1">
+                                                    <i data-lucide="x-circle" class="w-3 h-3"></i> Rejected
+                                                </span>
+                                                <p class="text-xs text-red-400 mt-1 truncate">{{ doc.rejection_reason }}</p>
+                                            {% elif doc.status == "approved" %}
+                                                <span class="text-green-600 font-bold text-xs flex items-center gap-1">
+                                                    <i data-lucide="check-circle" class="w-3 h-3"></i> Approved
+                                                </span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-blue-600 text-xs flex items-center gap-1 font-medium">
+                                                <i data-lucide="shield" class="w-3 h-3"></i> Admin Upload
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="flex flex-col items-center justify-center py-10 border-2 border-dashed border-slate-200 rounded-xl bg-white">
+                                <div class="p-4 bg-slate-50 rounded-full mb-3">
+                                    <i data-lucide="folder-open" class="w-8 h-8 text-slate-300"></i>
+                                </div>
+                                <p class="text-slate-500 font-medium">No documents attached</p>
+                                <p class="text-xs text-slate-400">Uploads will appear here</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: TIMELINE & PAYMENTS -->
+            <!-- FIX: Order changed for mobile (Details first, then Timeline) using flex order classes above -->
+            <div class="space-y-6 md:space-y-8 order-1 lg:order-2">
+                
+                <!-- TIMELINE WIDGET -->
+                <div class="bg-white rounded-2xl shadow-soft border border-slate-100 p-6 md:p-6">
+                    <h3 class="font-bold text-slate-800 mb-6 flex items-center gap-2 text-lg">
+                        <i data-lucide="calendar-clock" class="w-5 h-5 text-primary"></i> Timeline
+                    </h3>
+                    
+                    <div class="relative border-l-2 border-slate-100 ml-3 space-y-8 pb-2">
+                        <!-- Start -->
+                        <div class="relative pl-8">
+                            <div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-emerald-100 border-2 border-emerald-500"></div>
+                            <p class="text-xs font-bold text-emerald-600 uppercase tracking-wide mb-1">Start Date</p>
+                            <p class="text-slate-800 font-medium">{{ project.start_date }}</p>
+                        </div>
+
+                        <!-- Deadline -->
+                        <div class="relative pl-8">
+                            <div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-white border-2 border-slate-300 group-hover:border-accent"></div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Deadline</p>
+                            <p class="text-slate-800 font-medium">{{ project.end_date|default:"Ongoing" }}</p>
+                        </div>
+                    </div>
+
+                    {% if project.brief %}
+                    <div class="mt-6 pt-6 border-t border-slate-100">
+                        <a href="{{ project.brief.url }}" download class="flex items-center justify-center w-full py-3.5 bg-slate-900 text-white rounded-xl hover:bg-primary transition-all shadow-lg hover:shadow-primary/30 text-sm font-medium active:scale-95">
+                            <i data-lucide="file-down" class="w-4 h-4 mr-2"></i>
+                            Review Project Brief
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- PAYMENT HISTORY MINI TABLE -->
+                <div class="bg-white rounded-2xl shadow-soft border border-slate-100 overflow-hidden">
+                    <div class="p-5 md:p-6 bg-gradient-to-br from-primary to-primary-dark text-white flex justify-between items-center">
+                        <h3 class="font-bold flex items-center gap-2 text-base md:text-lg">
+                            <i data-lucide="receipt" class="w-5 h-5 text-emerald-300"></i> Recent Payments
+                        </h3>
+                    </div>
+                    
+                    <div class="divide-y divide-slate-100">
+                        {% if payments %}
+                            {% for p in payments %}
+                            <div class="p-4 hover:bg-slate-50 transition-colors flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="bg-emerald-100 text-emerald-700 p-2 rounded-lg shrink-0">
+                                        <i data-lucide="arrow-down-left" class="w-4 h-4"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-800">₹{{ p.amount_paid }}</p>
+                                        <p class="text-xs text-slate-400">{{ p.payment_date }}</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    {% if p.balance_amount == 0 %}
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-100 text-emerald-800 uppercase tracking-wide">Paid</span>
+                                    {% else %}
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-amber-100 text-amber-800 uppercase tracking-wide">Due: ₹{{ p.balance_amount }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="p-6 text-center text-slate-400 text-sm">
+                                No payment records found.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- FULL TRANSACTION HISTORY -->
+                <div class="bg-white rounded-2xl shadow-soft border border-slate-100 overflow-hidden">
+                    <div class="p-5 md:p-6 bg-gradient-to-br from-primary to-primary-dark text-white">
+                        <h3 class="font-bold flex items-center gap-2 text-base md:text-lg">
+                            <i data-lucide="list" class="w-5 h-5 text-emerald-300"></i> Transaction Log
+                        </h3>
+                    </div>
+
+                    <!-- FIX: Added overflow-x-auto to handle table width on small screens -->
+                    <div class="p-0 md:p-0 overflow-x-auto">
+                        <table class="w-full text-sm min-w-[600px]">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-600">
+                                    <th class="p-3 text-left font-semibold">Date</th>
+                                    <th class="p-3 text-left font-semibold">Amount</th>
+                                    <th class="p-3 text-left font-semibold">Mode</th>
+                                    <th class="p-3 text-left font-semibold">Added By</th>
+                                    <th class="p-3 text-left font-semibold">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for h in history %}
+                                <tr class="border-b hover:bg-slate-50 last:border-0">
+                                    <td class="p-3 text-slate-600">{{ h.created_at|date:"M d, Y" }}</td>
+                                    <td class="p-3 font-medium text-slate-800">₹{{ h.amount }}</td>
+                                    <td class="p-3 capitalize text-slate-600">{{ h.mode }}</td>
+                                    <td class="p-3">
+                                        {% if h.added_by_admin %}
+                                            <span class="inline-flex px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs font-medium border border-blue-100">Admin</span>
+                                        {% else %}
+                                            <span class="inline-flex px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded text-xs font-medium border border-emerald-100">Client</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="p-3">
+                                        {% if h.status == "Approved" %}
+                                            <span class="text-emerald-600 font-bold text-xs">Approved</span>
+                                        {% elif h.status == "Rejected" %}
+                                            <span class="text-red-600 font-bold text-xs">Rejected</span>
+                                        {% else %}
+                                            <span class="text-yellow-600 font-bold text-xs">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="p-6 text-center text-slate-400">No transactions recorded yet.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

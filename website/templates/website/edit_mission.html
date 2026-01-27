@@ -1,88 +1,186 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Edit Feedback | Propulsion Technology</title>
-    <link rel="icon" type="image/png" href="{% static 'img/logo.png' %}">
+    <title>Edit Mission | Propulsion Admin</title>
+    <link rel="icon" type="image/png" href="{% static 'img/logo6.png'%}">
     <script src="https://cdn.tailwindcss.com"></script>
-</head>
+    <style>
+        /* General Input Styles */
+        input[type="text"],
+        input[type="date"],
+        textarea {
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 1rem;
+            transition: all 0.2s ease-in-out;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #FF9728;
+            box-shadow: 0 0 0 3px rgba(255, 151, 40, 0.3);
+        }
 
+        textarea { resize: vertical; max-width: 100%; line-height: 1.5; }
+        
+        label { display: block; font-weight: 600; margin-bottom: 0.25rem; color: #053830; }
+        
+        .field-row { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0.8rem; }
+        .field-error { color: #dc2626; font-size: 0.875rem; margin-top: 0.25rem; }
+
+        /* --- CHECKBOX ALIGNMENT FIX --- */
+        /* Detects if the row contains a checkbox and switches to horizontal layout */
+        .field-row:has(input[type="checkbox"]) {
+            flex-direction: row-reverse; /* Puts checkbox on left, label on right */
+            align-items: center;
+            justify-content: flex-end; /* Aligns the group to the left */
+        }
+
+        /* Adjust label spacing when next to a checkbox */
+        .field-row:has(input[type="checkbox"]) label {
+            margin-bottom: 0;
+            margin-left: 0.5rem;
+            cursor: pointer;
+        }
+
+        /* Specific styling for the checkbox widget */
+        .field-row input[type="checkbox"] {
+            width: 1.25rem;
+            height: 1.25rem;
+            accent-color: #FF9728; /* Theme Orange */
+            cursor: pointer;
+            box-shadow: none; /* Removes the heavy focus ring */
+        }
+    </style>
+</head>
 <body class="bg-[#EAF4E0] font-sans text-[#053830]">
 
-    <!-- Header -->
-    <header class="bg-[#053830] text-white shadow-2xl">
-        <div class="max-w-6xl mx-auto px-6 py-16 text-center">
-            <h1 class="text-5xl font-extrabold mb-4">Edit Feedback</h1>
-            <p class="text-xl text-[#FF9728] font-semibold">Update client feedback details.</p>
+<!-- Top Navbar -->
+<nav class="bg-[#053830] text-white p-5 flex justify-between items-center shadow-lg">
+    <h1 class="text-2xl font-bold">Edit Mission</h1>
+    <div>
+        <a href="{% url 'manage_mission' %}" class="text-[#FF9728] font-semibold hover:text-[#FFB857] mr-6 transition">Back To Missions</a>
+        <!-- <a href="{% url 'admin_dashboard' %}" class="text-[#FF9728] font-semibold hover:text-[#FFB857] mr-6">Dashboard</a> -->
+        <a href="{% url 'admin_logout' %}" class="bg-[#FF9728] text-[#053830] px-5 py-1.5 rounded-xl font-semibold hover:bg-[#FFB857] transition">Logout</a>
+    </div>
+</nav>
+
+<main class="max-w-6xl mx-auto mt-10 bg-white p-8 rounded-2xl shadow-xl space-y-10">
+
+    <!-- Flash Messages -->
+    {% if messages %}
+    <div>
+        {% for message in messages %}
+        <div class="mb-3 px-4 py-3 rounded-lg font-medium 
+            {% if message.tags == 'success' %}bg-green-100 text-green-800
+            {% elif message.tags == 'error' %}bg-red-100 text-red-800
+            {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+            {{ message }}
         </div>
-    </header>
+        {% endfor %}
+    </div>
+    {% endif %}
 
-    <main class="max-w-6xl mx-auto px-6 py-12">
+    <!-- Edit Mission Form -->
+    <section class="p-6 rounded-xl border-l-4 border-[#FF9728] bg-white shadow-md hover:shadow-lg transition-all duration-300">
+        <h2 class="text-2xl font-semibold mb-4">Edit Mission</h2>
+        <p class="text-sm text-gray-500 mb-4">Fields marked with <span class="text-red-600">*</span> are mandatory</p>
 
-        <!-- Messages -->
-        {% if messages %}
-        <ul class="mb-4">
-            {% for message in messages %}
-                <li class="text-{{ message.tags }}-600 font-semibold mb-2">{{ message }}</li>
-            {% endfor %}
-        </ul>
-        {% endif %}
+        <form method="POST" id="editMissionForm">
+            {% csrf_token %}
+            <div class="space-y-5">
+                {% for field in form %}
+                    <div class="field-row">
+                        <label for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                            {% if field.field.required %}<span class="text-red-600">*</span>{% endif %}
+                        </label>
+                        {{ field }}
+                        {% if field.help_text %}
+                        <p class="text-sm text-gray-500">{{ field.help_text }}</p>
+                        {% endif %}
+                        {% if field.errors %}
+                        <p class="field-error">{{ field.errors|striptags }}</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+             
+            <p id="dateError" class="text-red-600 font-semibold mt-2 hidden"></p>
 
-        <!-- Form Section -->
-        <section class="bg-white rounded-3xl shadow-2xl p-8 border-l-4 border-[#FF9728]">
+            <button type="submit" 
+                    class="mt-4 bg-[#FF9728] text-white px-6 py-2 rounded-lg font-semibold hover:bg-[#053830] hover:text-[#FF9728] transition-all">
+                Save Changes
+            </button>
+        </form>
+    </section>
+</main>
+<footer class="bg-[#053830] text-white text-center py-8 mt-16 shadow-2xl">
+    <div class="max-w-6xl mx-auto px-6">
+        <p class="text-lg font-semibold">© {{ now|date:"Y" }} <span class="text-[#FF9728]">Propulsion Technology</span>. All rights reserved.</p>
+        <p class="text-sm text-gray-400 mt-2">Building the future, one innovation at a time.</p>
+    </div>
+</footer>
 
-            <form method="POST" novalidate>
-                {% csrf_token %}
+<!-- 🔥 Character Limits + Live Counters + Description Required Validation -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const titleField = document.querySelector('input[name="title"]');
+    const descField = document.querySelector('textarea[name="description"]');
 
-                <!-- Client Name -->
-                <label class="block font-semibold mb-2">Client Name</label>
-                <input type="text" name="client_name"
-                       value="{{ feedback.client_name }}"
-                       class="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 
-                              focus:ring-[#053830] mb-6">
+    if (titleField && descField) {
+        const titleCounter = document.createElement("p");
+        const descCounter = document.createElement("p");
+        titleCounter.className = "text-sm text-gray-500";
+        descCounter.className = "text-sm text-gray-500";
 
-                <!-- Feedback Text -->
-                <label class="block font-semibold mb-2">Feedback</label>
-                <textarea name="feedback" rows="6"
-                          class="w-full px-4 py-3 border rounded-xl focus:outline-none 
-                                 focus:ring-2 focus:ring-[#053830] mb-6">{{ feedback.feedback }}</textarea>
+        titleField.insertAdjacentElement("afterend", titleCounter);
+        descField.insertAdjacentElement("afterend", descCounter);
 
-                <!-- Submit Button -->
-                <button type="submit"
-                        class="mt-4 bg-[#FF9728] text-white px-10 py-4 rounded-xl font-semibold
-                               hover:bg-[#053830] hover:text-[#FF9728] transition-colors duration-300 shadow">
-                    Save Changes
-                </button>
+        const updateCounters = () => {
+            if (titleField.value.length > 100) titleField.value = titleField.value.slice(0, 100);
+            if (descField.value.length > 500) descField.value = descField.value.slice(0, 500);
 
-            </form>
+            titleCounter.textContent = `${titleField.value.length} / 100`;
+            descCounter.textContent = `${descField.value.length} / 500`;
+        };
 
-        </section>
+        titleField.addEventListener("input", updateCounters);
+        descField.addEventListener("input", updateCounters);
+        updateCounters();
 
-        <!-- Back Button -->
-        <div class="text-center mt-16">
-            <a href="{% url 'manage_feedback' %}"
-               class="inline-block bg-[#053830] text-white px-10 py-4 rounded-xl font-semibold text-lg
-                      hover:bg-[#FF9728] hover:text-[#053830] transition-all shadow-lg shadow-[#053830]/40 
-                      transform hover:scale-105 hover:-translate-y-1">
-                Back to Feedback List
-            </a>
-        </div>
+        // ❗ Prevent saving if description is empty
+        document.getElementById("editMissionForm").addEventListener("submit", (e) => {
+            if (!descField.value.trim()) {
+                e.preventDefault();
+                alert("❗ Description cannot be empty.");
+                descField.style.border = "2px solid red";
+            } else {
+                descField.style.border = "";
+            }
+        });
+    }
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
 
-    </main>
+    const REQUIRED_LABELS = ["Title", "Description", "Start Date", "End Date"];
 
-    <!-- Footer -->
-    <footer class="bg-[#053830] text-white text-center py-8 mt-16 shadow-2xl">
-        <div class="max-w-6xl mx-auto px-6">
-            <p class="text-lg font-semibold">© {{ now|date:"Y" }}
-                <span class="text-[#FF9728]">Propulsion Technology</span>.
-                All rights reserved.
-            </p>
-            <p class="text-sm text-gray-400 mt-2">Building the future, one innovation at a time.</p>
-        </div>
-    </footer>
+    document.querySelectorAll("form#editMissionForm p label").forEach(label => {
+        const text = label.textContent.trim().replace(":", "");
+        if (REQUIRED_LABELS.includes(text)) {
+            label.innerHTML = text + ' <span style="color:black;font-weight:bold">*</span>';
+        }
+    });
+
+});
+</script>
 
 </body>
 </html>

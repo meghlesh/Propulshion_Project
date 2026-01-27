@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Manage Demo Requests | Propulsion Admin</title>
-  <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+  <link rel="icon" type="image/png" href="{% static 'img/logo6.png'%}">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <style>
@@ -30,19 +30,32 @@
 
   <!-- MAIN CONTENT -->
   <main class="max-w-7xl mx-auto mt-10 p-8 bg-white rounded-3xl shadow-2xl" 
-        x-data="{ showDeclineModal: false, selectedId: null, selectedType: '' }">
+        x-data="{ showDeclineModal: false, selectedId: null }">
     
     <h2 class="text-3xl font-extrabold mb-8 text-center tracking-tight">
       Demo Schedules Overview
     </h2>
 
     {% if messages %}
-      <ul class="mb-6 text-center">
-        {% for message in messages %}
-          <li class="text-green-700 font-medium mb-2">{{ message }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
+<div class="mb-6">
+  {% for message in messages %}
+      <div id="msg{{ forloop.counter }}"
+           class="px-4 py-2 rounded-lg mb-2 font-semibold border
+           {% if message.tags == 'error' %}
+               text-red-700 bg-red-100 border-red-300
+           {% elif message.tags == 'success' %}
+               text-green-700 bg-green-100 border-green-300
+           {% elif message.tags == 'warning' %}
+               text-yellow-700 bg-yellow-100 border-yellow-300
+           {% else %}
+               text-blue-700 bg-blue-100 border-blue-300
+           {% endif %}
+      ">
+          {{ message }}
+      </div>
+  {% endfor %}
+</div>
+{% endif %}
 
     {% if demo_requests %}
     <div class="overflow-x-auto bg-[#EAF4E0] p-6 rounded-2xl shadow-inner">
@@ -84,31 +97,33 @@
 
             <!-- Status Badge -->
             <td class="px-6 py-3">
-{% if demo.status == "assigned" %}
-  <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs font-medium">Assigned</span>
+              {% if demo.status == "assigned" %}
+                <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs font-medium">Assigned</span>
 
-{% elif demo.status == "accepted" %}
-  <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-medium">Accepted</span>
+              {% elif demo.status == "accepted" %}
+                <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-medium">Accepted</span>
 
-{% elif demo.status == "rejected" %}
-  <span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-medium">Rejected</span>
+              {% elif demo.status == "rejected" %}
+                <span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-medium">Rejected</span>
 
-{% elif demo.status == "declined" %}
-  <span class="bg-red-200 text-red-800 px-2 py-1 rounded text-xs font-medium">Declined</span>
+              {% elif demo.status == "declined" %}
+                <span class="bg-red-200 text-red-800 px-2 py-1 rounded text-xs font-medium">Declined</span>
 
-{% else %}
-  <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-medium">Pending</span>
-{% endif %}
+              {% else %}
+                <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-medium">Pending</span>
+              {% endif %}
             </td>
 
-            <!-- Assign/Decline Form -->
+            <!-- Action Buttons -->
             <td class="px-6 py-3">
               <form method="POST" class="flex items-center gap-2">
                 {% csrf_token %}
                 <input type="hidden" name="demo_id" value="{{ demo.id }}">
 
-                {% if demo.status == "pending" %}
-                  <select name="expert_id" class="border rounded-lg px-2 py-1 text-sm focus:ring-2 focus:ring-[#053830] focus:border-[#053830]">
+                {% if demo.status == "pending" or not demo.status %}
+                
+                  <select name="expert_id" 
+                          class="border rounded-lg px-2 py-1 text-sm focus:ring-2 focus:ring-[#053830] focus:border-[#053830]">
                     <option value="">-- Select Expert --</option>
                     {% for expert in experts %}
                       <option value="{{ expert.id }}" {% if demo.assigned_expert == expert %}selected{% endif %}>
@@ -122,12 +137,12 @@
                     Assign
                   </button>
 
-                  <!-- Decline Button -->
                   <button type="button"
                           @click="selectedId = '{{ demo.id }}'; showDeclineModal = true"
                           class="bg-red-500 text-white px-3 py-1 rounded text-xs font-semibold hover:bg-red-600 transition">
                     Decline
                   </button>
+
                 {% else %}
                   <span class="text-gray-500 italic text-sm">Action Finalized</span>
                 {% endif %}
@@ -138,6 +153,7 @@
         </tbody>
       </table>
     </div>
+
     {% else %}
     <div class="text-center py-10 bg-[#EAF4E0] rounded-xl shadow-inner text-gray-600 text-lg italic">
       No demo requests found yet.
@@ -178,11 +194,30 @@
         </form>
       </div>
     </div>
+
   </main>
 
-  <!-- FOOTER -->
   <footer class="text-center text-gray-600 mt-8 text-sm pb-6">
     © 2025 <span class="text-[#FF9728] font-semibold">Propulsion Technology</span>. All Rights Reserved.
   </footer>
+
+  <script>
+document.addEventListener("DOMContentLoaded", () => {
+    const messages = document.querySelectorAll("[id^='msg']");
+    
+    messages.forEach((msg) => {
+        setTimeout(() => {
+            msg.style.transition = "opacity 0.7s ease, transform 0.7s ease";
+            msg.style.opacity = "0";
+            msg.style.transform = "translateY(-10px)";
+
+            setTimeout(() => msg.remove(), 700);
+        }, 3000); // 3 seconds
+    });
+});
+</script>
+
+  
+
 </body>
 </html>

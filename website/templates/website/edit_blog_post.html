@@ -2,125 +2,213 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Post | {{ post.title }}</title>
-    <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        // Configure Tailwind to match theme colors
-        tailwind.config = {
-          theme: {
-            extend: {
-              colors: {
-                'primary-green': '#053830',
-                'accent-green': '#D2E8B8',
-                'highlight-gold': '#FF9728',
-                'primary-green-hover': '#155C54'
-              },
-              fontFamily: {
-                'sans': ['Poppins', 'sans-serif']
-              }
-            }
-          }
-        }
-    </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edit Post | {{ post.title }}</title>
+<link rel="icon" type="image/png" href="{% static 'img/logo6.png'%}">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+      extend: {
+          colors:{
+              'primary-green':'#053830',
+              'highlight-gold':'#FF9728'
+          },
+          fontFamily:{ 'sans':['Poppins','sans-serif']}
+      }
+  }
+}
+</script>
 </head>
+
 <body class="bg-[#EAF4E0] font-sans text-[#053830]">
 
-    <!-- Navbar -->
-    <nav class="bg-[#053830] text-white p-5 flex justify-between items-center shadow-lg">
-        <h1 class="text-2xl font-bold">Edit Blog Post</h1>
-        <div>
-            <a href="{% url 'manage_blog_posts' %}" class="text-[#FF9728] font-semibold hover:text-white mr-6">Back to Posts</a>
-            <a href="{% url 'admin_logout' %}" class="bg-[#FF9728] text-[#053830] px-4 py-2 rounded-xl font-semibold hover:bg-white hover:text-[#053830] transition-all">Logout</a>
-        </div>
-    </nav>
+<!-- Navbar -->
+<nav class="bg-[#053830] text-white p-5 flex justify-between items-center shadow-lg">
+    <h1 class="text-2xl font-bold">Edit Blog Post</h1>
+    <div>
+        <a href="{% url 'manage_blog_posts' %}" class="text-[#FF9728] font-semibold mr-6">Back to Posts</a>
+        <a href="{% url 'admin_logout' %}" class="bg-[#FF9728] text-[#053830] px-4 py-2 rounded-xl font-semibold hover:bg-white transition">Logout</a>
+    </div>
+</nav>
 
-    <!-- Edit Post Form -->
-    <main class="max-w-4xl mx-auto mt-10 p-6 bg-white rounded-3xl shadow-2xl">
-        <h2 class="text-3xl font-extrabold mb-6 text-center">Edit: {{ post.title }}</h2>
+<main class="max-w-5xl mx-auto mt-10 p-8 bg-white rounded-3xl shadow-2xl">
 
-        <form method="POST" enctype="multipart/form-data" class="space-y-6">
-            {% csrf_token %}
+<h2 class="text-3xl font-bold text-center mb-6">Editing: {{ post.title }}</h2>
 
-            <div class="grid md:grid-cols-2 gap-6">
-                <!-- Title -->
-                <div>
-                    <label for="title" class="block font-semibold mb-2">Title</label>
-                    <input type="text" id="title" name="title" value="{{ post.title }}" required
-                        class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-primary-green focus:border-primary-green transition-all">
-                </div>
+<form id="editPostForm" method="POST" enctype="multipart/form-data" class="space-y-7">
+{% csrf_token %}
 
-                <!-- Status -->
-                <div>
-                    <label for="status" class="block font-semibold mb-2">Status</label>
-                    <select id="status" name="status"
-                        class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-primary-green focus:border-primary-green transition-all">
-                        <option value="draft" {% if post.status == 'draft' %}selected{% endif %}>Draft</option>
-                        <option value="published" {% if post.status == 'published' %}selected{% endif %}>Published</option>
-                    </select>
-                </div>
-            </div>
+<!-- Title -->
+<div>
+<label class="font-semibold mb-2 block">Title <span class="text-red-600">*</span> (Max 50)</label>
+<input type="text" id="title" name="title" maxlength="50" value="{{ post.title }}" required
+class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-primary-green">
+<p id="titleError" class="hidden text-red-600 text-sm"></p>
+</div>
 
-            <!-- Summary -->
-            <div>
-                <label for="summary" class="block font-semibold mb-2">Summary</label>
-                <textarea id="summary" name="summary" rows="3" required
-                    class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-primary-green focus:border-primary-green transition-all">{{ post.summary }}</textarea>
-            </div>
+<!-- Summary -->
+<div>
+<label class="block font-semibold mb-2">Summary <span class="text-red-600">*</span> (Max 250)</label>
+<textarea id="summary" name="summary" maxlength="250" rows="3" required
+class="w-full border rounded-xl px-4 py-2 focus:ring-2 focus:ring-primary-green">{{ post.summary }}</textarea>
+<p id="summaryCounter" class="text-right text-sm text-gray-600">0 / 250</p>
+</div>
 
-            <!-- Content -->
-            <div>
-                <label for="content" class="block font-semibold mb-2">Full Content</label>
-                <textarea id="content" name="content" rows="15" required
-                    class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-primary-green focus:border-primary-green transition-all">{{ post.content }}</textarea>
-            </div>
+<!-- Content -->
+<div>
+<label class="block font-semibold mb-2">Full Content <span class="text-red-600">*</span></label>
+<textarea name="content" id="content" rows="10" required
+class="w-full border rounded-xl px-4 py-2 focus:ring-2 focus:ring-primary-green">{{ post.content }}</textarea>
+</div>
 
-            <!-- Featured Image -->
-            <div>
-                <label for="featured_image" class="block font-semibold mb-2">Featured Image</label>
-                {% if post.featured_image %}
-                    <p class="text-sm text-gray-600 mb-2">Current Image:</p>
-                    <img src="{{ post.featured_image.url }}" alt="{{ post.title }}" class="h-32 w-auto object-cover rounded-lg mb-3 border border-gray-300">
-                {% endif %}
-                <input type="file" id="featured_image" name="featured_image" accept="image/*"
-                    class="w-full border border-gray-300 rounded-xl px-4 py-2 bg-white">
-            </div>
-            
-            <!-- Slug -->
-            <div>
-                <label for="slug" class="block font-semibold mb-2">Slug</label>
-                <input type="text" id="slug" name="slug" value="{{ post.slug }}"
-                    class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-primary-green focus:border-primary-green transition-all">
-            </div>
+<!-- Status -->
+<div>
+<label class="block font-semibold mb-2">Status*</label>
+<select name="status" class="w-full border rounded-xl px-4 py-2 focus:ring-2 focus:ring-primary-green">
+    <option value="draft" {% if post.status == 'draft' %}selected{% endif %}>Draft</option>
+    <option value="published" {% if post.status == 'published' %}selected{% endif %}>Published</option>
+</select>
+</div>
+
+<!-- Featured Image -->
+<div>
+<label class="block font-semibold mb-2">Featured Image <span class="text-red-600">*</span></label>
+
+{% if post.featured_image %}
+<p class="text-sm mb-1">Current Image:</p>
+<img src="{{ post.featured_image.url }}" class="h-32 rounded-md border mb-3">
+{% endif %}
+
+<input type="file" id="featured_image" name="featured_image" accept="image/*"
+class="w-full border rounded-xl px-4 py-2" onchange="imageChange(event)">
+
+<p id="imgError" class="hidden text-red-600 mt-2"></p>
+
+<div id="imgInfo" class="hidden text-sm mt-2">
+<p id="imgName"></p>
+<p id="imgSize"></p>
+<img id="imgPreview" class="hidden mt-2 max-w-xs rounded-lg border"/>
+<button type="button" onclick="removeImg()" id="removeBtn" class="hidden bg-red-200 text-red-700 px-2 py-1 rounded mt-2">Remove</button>
+</div>
+</div>
+
+<div class="flex justify-center">
+<button type="submit" class="px-8 py-3 bg-[#053830] text-white rounded-xl font-semibold hover:bg-[#FF9728] hover:text-[#053830] transition">
+Update Post
+</button>
+</div>
+
+</form>
+</main>
 
 
-            <!-- Update Button -->
-            <div class="flex justify-center mt-6">
-                <button type="submit"
-                    class="bg-[#053830] text-white px-8 py-3 rounded-xl font-semibold hover:bg-[#FF9728] hover:text-[#053830] transition-all shadow-lg shadow-[#053830]/40 transform hover:scale-[1.02] hover:-translate-y-1">
-                    Update Post
-                </button>
-            </div>
-        </form>
-    </main>
+<!-- Loader -->
+<div id="blur-loader" class="fixed inset-0 flex items-center justify-center bg-white/70 backdrop-blur-md z-[999] hidden">
+<div class="w-14 h-14 border-4 border-[#053830] border-t-transparent rounded-full animate-spin"></div>
+</div>
 
-    <script>
-        // Auto-generate slug on title edit
-        document.getElementById('title').addEventListener('input', function() {
-            const title = this.value.toLowerCase().trim();
-            // Only auto-generate if the slug field is empty or unchanged
-            const slugField = document.getElementById('slug');
-            
-            // FIX: Using string concatenation with double quotes inside the JS to safely embed the single-quoted Django variable output.
-            // This prevents a SyntaxError if the slug itself contained a single quote (though unlikely for a slug).
-            const initialSlug = "{{ post.slug|default:'' }}"; 
 
-            if (!slugField.value || slugField.value === initialSlug) {
-                slugField.value = title.replace(/[^a-z0-9]+/g, '-');
-            }
-        });
-    </script>
+
+<script>
+/* ================= FINAL VALIDATION SCRIPT ================= */
+const img = document.getElementById("featured_image");
+const form = document.getElementById("editPostForm");
+const submitBtn = form.querySelector("button[type='submit']");
+
+const fileError = document.getElementById("imgError");
+const box = document.getElementById("imgInfo");
+const prev = document.getElementById("imgPreview");
+const removeBtn = document.getElementById("removeBtn");
+
+const VALID_TYPES = ["image/jpeg","image/png","image/jpg","image/webp"];
+const MAX_MB = 5;
+let validImage = true;
+
+/* On file change */
+img.addEventListener("change", ()=> {
+    const file = img.files[0];
+
+    if(!file){ reset(); return; }
+
+    const sizeMB = (file.size/(1024*1024)).toFixed(2);
+
+    /* ❌ Large file */
+    if(sizeMB > MAX_MB){
+        showError(`❌ File too large (${sizeMB}MB). Max 5MB allowed.`);
+        return;
+    }
+
+    /* ❌ Wrong type */
+    if(!VALID_TYPES.includes(file.type)){
+        showError("❌ Invalid image format. Only JPG, PNG, WEBP allowed.");
+        return;
+    }
+
+    /* ✔ Valid */
+    validImage = true;
+    fileError.classList.add("hidden");
+    submitBtn.disabled = false;
+    submitBtn.classList.remove("opacity-50","cursor-not-allowed");
+
+    box.classList.remove("hidden");
+    document.getElementById("imgName").innerText="Name: "+file.name;
+    document.getElementById("imgSize").innerText="Size: "+sizeMB+" MB";
+
+    let r = new FileReader();
+    r.onload = e => {
+        prev.src = e.target.result;
+        prev.classList.remove("hidden");
+        removeBtn.classList.remove("hidden");
+    };
+    r.readAsDataURL(file);
+});
+
+/* ===== ERROR DISPLAY ===== */
+function showError(msg){
+    validImage = false;
+    fileError.innerHTML = `🚫 <b>You inserted an invalid image</b><br>${msg}<br><span class='text-red-700'>You cannot update the blog until you correct this.</span>`;
+    fileError.classList.remove("hidden");
+
+    submitBtn.disabled = true;
+    submitBtn.classList.add("opacity-50","cursor-not-allowed");
+
+    reset();
+}
+
+/* ===== RESET IMAGE ===== */
+function reset(){
+    img.value="";
+    box.classList.add("hidden");
+    prev.classList.add("hidden");
+    removeBtn.classList.add("hidden");
+}
+removeBtn.onclick = reset;
+
+/* 🔥 Prevent submit if invalid */
+form.addEventListener("submit", e=> {
+    if(!validImage){
+        fileError.classList.remove("hidden");
+        alert("❌ Cannot update! Fix invalid image first.");
+        e.preventDefault();
+    }else{
+        document.getElementById("blur-loader").classList.remove("hidden");
+    }
+});
+</script>
+
+<style>
+/* Shake animation */
+.shake{animation:shake .35s}
+@keyframes shake{
+0%{transform:translateX(0)}
+25%{transform:translateX(-4px)}
+50%{transform:translateX(4px)}
+75%{transform:translateX(-4px)}
+100%{transform:translateX(0)}
+}
+</style>
+
 </body>
 </html>

@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Assigned Expert Queries | Propulsion Expert</title>
-  <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+  <link rel="icon" type="image/png" href="{% static 'img/logo6.png'%}">
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
@@ -16,7 +16,7 @@
     <h1 class="text-2xl font-bold">Assigned Expert Queries</h1>
     <div>
       <a href="{% url 'expert_dashboard' %}" class="text-[#FF9728] font-semibold hover:text-white mr-6">Dashboard</a>
-      <a href="{% url 'expert_logout' %}" 
+      <a href="{% url 'expert_logout' %}"
          class="bg-[#FF9728] text-[#053830] px-4 py-2 rounded-xl font-semibold hover:bg-white hover:text-[#053830] transition-all">
          Logout
       </a>
@@ -57,7 +57,21 @@
             <td class="py-3 px-6 font-medium uppercase">{{ q.name }}</td>
             <td class="py-3 px-6">{{ q.email }}</td>
             <td class="py-3 px-6 text-[#FF9728] font-semibold">{{ q.service.title }}</td>
-            <td class="py-3 px-6">{{ q.message|truncatechars:50 }}</td>
+            <!-- <td class="py-3 px-6">{{ q.message|truncatechars:50 }}</td> -->
+             <td class="py-3 px-6">
+  <span class="text-sm text-gray-700">
+    {{ q.message|truncatechars:50 }}
+  </span>
+
+  {% if q.message|length > 50 %}
+    <button type="button"
+            class="text-blue-600 text-xs font-semibold hover:underline ml-2"
+            onclick="openMessageModal(`{{ q.name }}, {{ q.message|escapejs }}`)">
+      Read More
+    </button>
+  {% endif %}
+</td>
+
             <td class="py-3 px-6 text-center">
               {% if q.status == "accepted" %}
                 <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold shadow-sm">Accepted</span>
@@ -69,16 +83,17 @@
             </td>
             <td class="py-3 px-6 text-center">
               {% if q.status == "assigned" %}
-              <form method="POST" class="flex justify-center gap-2">
+              <button type="button" onclick="openRejectQuery('{{ q.id }}')"
+                class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-xs font-semibold shadow-md transition">
+                Reject
+              </button>
+
+              <form method="POST" class="inline">
                 {% csrf_token %}
                 <input type="hidden" name="query_id" value="{{ q.id }}">
                 <button name="action" value="accept"
-                        class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-xs font-semibold shadow-md transition-all transform hover:scale-105">
+                        class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-xs font-semibold shadow-md transition">
                         Accept
-                </button>
-                <button name="action" value="reject"
-                        class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-xs font-semibold shadow-md transition-all transform hover:scale-105">
-                        Reject
                 </button>
               </form>
               {% else %}
@@ -97,6 +112,73 @@
     </div>
     {% endif %}
   </main>
+
+  <!-- Reject Query Modal -->
+  <div id="rejectQueryModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white p-6 rounded-2xl shadow-xl max-w-md w-full">
+      <h3 class="text-xl font-bold mb-3 text-[#053830]">Reject Query</h3>
+      <form method="POST">
+        {% csrf_token %}
+        <textarea name="reject_reason" required rows="4"
+          class="w-full border p-3 rounded-xl"
+          placeholder="Enter rejection reason"></textarea>
+
+        <input type="hidden" name="query_id" id="rejectQueryId">
+
+        <button name="action" value="reject"
+          class="mt-4 bg-red-600 text-white px-4 py-2 rounded-xl w-full hover:bg-red-700 transition">
+          Submit Rejection
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+  function openRejectQuery(id) {
+    document.getElementById("rejectQueryId").value = id;
+    document.getElementById("rejectQueryModal").classList.remove("hidden");
+  }
+  </script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".read-more-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const box = btn.previousElementSibling;
+            const isShort = box.textContent === box.dataset.short;
+
+            box.textContent = isShort ? box.dataset.full : box.dataset.short;
+            btn.textContent = isShort ? "Read Less" : "Read More";
+        });
+    });
+});
+</script>
+<!-- Full Message Modal -->
+<div id="fullMessageModal"
+     class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white w-full max-w-lg p-6 rounded-2xl shadow-xl relative">
+    
+    <h3 id="modalClientName" class="text-xl font-bold text-[#053830] mb-3"></h3>
+
+    <p id="modalMessageContent" class="text-gray-700 leading-relaxed max-h-80 overflow-y-auto"></p>
+
+    <button onclick="closeMessageModal()"
+            class="mt-5 w-full bg-[#053830] text-white py-2 rounded-xl hover:bg-[#064a42] transition">
+      Close
+    </button>
+  </div>
+</div>
+<script>
+function openMessageModal(name, message) {
+    document.getElementById("modalClientName").textContent = "Message from " + name;
+    document.getElementById("modalMessageContent").textContent = message;
+
+    document.getElementById("fullMessageModal").classList.remove("hidden");
+}
+
+function closeMessageModal() {
+    document.getElementById("fullMessageModal").classList.add("hidden");
+}
+</script>
 
   <!-- Footer -->
   <footer class="text-center text-sm text-gray-600 pb-6">

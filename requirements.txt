@@ -1,0 +1,68 @@
+# ========== CORE ==========
+Django==4.2.27
+asgiref==3.11.0
+sqlparse==0.5.5
+typing_extensions==4.15.0
+
+# ========== DATABASE ==========
+psycopg2-binary==2.9.11
+
+# ========== PDF & EXCEL ==========
+reportlab==4.1.0
+openpyxl==3.1.2
+
+# ========== WEB FRAMEWORK ==========
+python-dotenv==1.0.0
+django-crispy-forms==2.1
+crispy-bootstrap5
+cryptography==46.0.3
+django-widget-tweaks==1.5.1
+
+# ========== UTILITIES ==========
+python-dateutil==2.8.2
+pytz==2025.2
+django-extensions==3.2.3
+
+# ========== PRODUCTION ==========
+whitenoise==6.6.0
+gunicorn==23.0.0
+pillow==11.3.0
+
+
+
+#================================================================
+
+
+# Create fresh requirements.txt
+
+# ========== CORE ==========
+#Django==5.0.2
+
+# ========== DATABASE ==========
+#psycopg[binary]
+
+# ========== PDF & EXCEL ==========
+#reportlab==4.1.0
+#openpyxl==3.1.2
+
+# ========== WEB FRAMEWORK ==========
+#python-dotenv==1.0.0
+#django-crispy-forms==2.1
+#crispy-bootstrap5
+#cryptography==46.0.3
+#django-widget-tweaks==1.5.1
+
+# ========== UTILITIES ==========
+#python-dateutil==2.8.2
+#pytz==2023.3
+#django-extensions==3.2.3
+
+# ========== PRODUCTION ==========
+#whitenoise==6.6.0
+#gunicorn==21.2.0
+
+
+# pandas==2.2.0
+# numpy==1.26.4
+# Pillow==10.3.0
+# qrcode==7.4.2

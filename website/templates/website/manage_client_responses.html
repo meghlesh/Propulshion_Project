@@ -6,7 +6,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Client Responses | Admin Dashboard</title>
-  <link rel="icon" type="image/png" href="{% static 'img/logo.png'%}">
+  <link rel="icon" type="image/png" href="{% static 'img/logo6.png' %}">
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
@@ -28,6 +28,15 @@
 
     .animate-fade-in {
       animation: fade-in 0.25s ease-out;
+    }
+
+    /* small helpers to better emulate your screenshot look */
+    .input-date {
+      background: white;
+      border-radius: 12px;
+      padding: 10px 14px;
+      border: 1px solid #d1d5db;
+      min-width: 170px;
     }
   </style>
 
@@ -51,6 +60,40 @@
   <!-- MAIN CONTENT -->
   <main class="max-w-7xl mx-auto mt-10 p-8 bg-white rounded-3xl shadow-2xl">
     <h2 class="text-3xl font-extrabold mb-8 text-center">All Client Responses</h2>
+
+    <!-- FILTER BAR (added) -->
+    <form method="GET" class="flex flex-wrap items-end gap-4 mb-6">
+
+      <div class="flex flex-col">
+        <label class="block text-sm font-semibold mb-1">From</label>
+        <input type="date" name="from" value="{{ request.GET.from|default:'' }}"
+          class="input-date focus:outline-none focus:ring-2 focus:ring-[#053830]">
+      </div>
+
+      <div class="flex flex-col">
+        <label class="block text-sm font-semibold mb-1">To</label>
+        <input type="date" name="to" value="{{ request.GET.to|default:'' }}"
+          class="input-date focus:outline-none focus:ring-2 focus:ring-[#053830]">
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button type="submit"
+          class="bg-[#053830] text-white px-6 py-2 rounded-xl font-semibold hover:bg-[#0a544b] transition">
+          Apply Filters
+        </button>
+
+        <a href="{% url 'manage_client_responses' %}"
+          class="bg-gray-300 text-[#053830] px-6 py-2 rounded-xl font-semibold hover:bg-gray-400 transition">
+          Reset
+        </a>
+
+        <a href="?download=excel{% if request.GET.from %}&amp;from={{ request.GET.from }}{% endif %}{% if request.GET.to %}&amp;to={{ request.GET.to }}{% endif %}"
+          class="bg-[#FF9728] text-[#053830] px-6 py-2 rounded-xl font-semibold hover:bg-[#ffb055] transition">
+          Download Excel
+        </a>
+      </div>
+
+    </form>
 
     <!-- Message Box -->
     <div class="bg-[#EAF4E0] p-6 rounded-2xl shadow-inner mb-10">
@@ -185,7 +228,74 @@
       modal.classList.remove("flex");
       document.body.style.overflow = "";
     }
+
+    // close modal on ESC
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        closeModal();
+      }
+    });
+
+    // optional: close when clicking overlay (but not when clicking inside modal)
+    document.getElementById('messageModal').addEventListener('click', function (e) {
+      if (e.target === this) closeModal();
+    });
   </script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const filterForm = document.getElementById("filterForm");
+  const fromDateInput = document.querySelector('input[name="from"]');
+  const toDateInput = document.querySelector('input[name="to"]');
+  const dateError = document.getElementById("date-error");
+  const loader = document.getElementById("blur-loader");
+
+  // Real-time validation when dates change
+  function validateDates() {
+    const fromDate = fromDateInput.value;
+    const toDate = toDateInput.value;
+    const today = new Date().toISOString().split("T")[0];
+
+    // Reset styles
+    toDateInput.classList.remove("border-red-600");
+    if (dateError) dateError.classList.add("hidden");
+
+    if (toDate) {
+      // To date must be today or future
+      if (toDate < today) {
+        toDateInput.classList.add("border-red-600");
+        if (dateError) dateError.textContent = "To date cannot be in the past";
+        if (dateError) dateError.classList.remove("hidden");
+        return false;
+      }
+      
+      // To date must be on/after From date
+      if (fromDate && toDate < fromDate) {
+        toDateInput.classList.add("border-red-600");
+        if (dateError) dateError.textContent = "To date must be on or after From date";
+        if (dateError) dateError.classList.remove("hidden");
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // Listen for date changes
+  fromDateInput.addEventListener("change", validateDates);
+  toDateInput.addEventListener("change", validateDates);
+
+  if (filterForm) {
+    filterForm.addEventListener("submit", function(e) {
+      if (!validateDates()) {
+        e.preventDefault();
+        return;
+      }
+      if (loader) loader.classList.remove("hidden");
+    });
+  }
+});
+</script>
+
+
 
 </body>
 

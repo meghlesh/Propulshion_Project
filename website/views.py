@@ -1,10 +1,35 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.csrf import csrf_exempt
+from decimal import Decimal
+from django.db.models import Sum
+from django.contrib.messages import get_messages
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.dateparse import parse_datetime
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from client.models import Project, ProjectDocument, ClientProfile, Payment
+from .forms import AssignProjectForm
+from client.models import ProjectDocument, Payment, PaymentRequest, Payment, Project
+import logging
+from website.utils import send_expert_rejection_email, send_expert_accept_email
 import os
+import mimetypes
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
+from .models import JobApplication  # adjust import if needed
+import os
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.conf import settings
+import logging
 from django.contrib.auth.models import User
 from django.contrib.auth.views import PasswordResetConfirmView
 from django.utils.crypto import get_random_string
@@ -187,7 +212,7 @@ def home(request):
     latest_posts = BlogPost.objects.filter(status='published').order_by('-published_date')
     feedbacks = ClientFeedback.objects.all().order_by('-created_at')
 
-    return render(request, 'website/finalprop2.html', {
+    return render(request, 'website/index.html', {
         'services': services,
         'latest_posts': latest_posts,
         'portfolios': portfolios,
@@ -261,14 +286,14 @@ def admin_login_view(request):
         password = request.POST.get('password', '').strip()
         
         # Username length validation
-        if len(username) < 4 or len(username) > 15:
+        if len(username) < 4 or len(username) > 30:
             messages.error(request, 'Username must be between 4 and 15 characters long.')
-            return redirect('expert_login')
+            return redirect('admin_login')
 
         # Password max length validation
         if len(password) > 100:
             messages.error(request, 'Password is too long.')
-            return redirect('expert_login')
+            return redirect('admin_login')
         
         user = authenticate(request, username=username, password=password)
 
@@ -306,8 +331,13 @@ def admin_dashboard(request):
 
 
 #  ADMIN LOGOUT 
+
 @login_required(login_url='admin_login')
 def admin_logout(request):
+    # Clear all Django messages before logout
+    storage = get_messages(request)
+    list(storage)  # force message deletion
+
     logout(request)
     return redirect('home')
 
@@ -318,7 +348,7 @@ def manage_services(request):
     services = Service.objects.all().order_by('order')
 
     # Limits
-    TITLE_LIMIT = 50
+    TITLE_LIMIT = 40
     SHORT_DESC_LIMIT = 100   
     FULL_DESC_LIMIT = 250
 
@@ -441,13 +471,21 @@ def edit_service(request, pk):
         service.color = request.POST.get('color')
         service.order = request.POST.get('order') or 0
 
+        # Slug logic
         slug_input = request.POST.get('slug')
         if slug_input and slug_input.strip().lower() != 'none':
             service.slug = slug_input
         elif not service.slug or service.slug == 'None':
             service.slug = slugify(service.title)
 
-        if 'image' in request.FILES:
+        # Remove Image (if remove flag = 1)
+        if request.POST.get("remove_image") == "1":
+            if service.image:
+                service.image.delete(save=False)
+            service.image = None
+
+        # Upload new image — this always runs AFTER remove image check
+        elif 'image' in request.FILES:
             service.image = request.FILES['image']
 
         service.save()
@@ -464,7 +502,7 @@ def delete_service(request, pk):
     if request.method == "POST":
         title = service.title
         service.delete()
-        messages.success(request, f'"{title}" has been deleted successfully.')
+        messages.error(request, f'"{title}" has been deleted successfully.')
         return redirect('manage_services')
     return render(request, 'website/delete_service.html', {'service': service})
 
@@ -483,6 +521,11 @@ def manage_blog_posts(request):
         slug_value = slugify(title)
         published_date = timezone.now() if status == 'published' else None
 
+       
+        if BlogPost.objects.filter(slug=slug_value).exists():
+            messages.error(request, f'A blog post with the title "{title}" already exists. Please use a different title.')
+            return redirect('manage_blog_posts')
+
         BlogPost.objects.create(
             title=title,
             slug=slug_value,
@@ -497,6 +540,7 @@ def manage_blog_posts(request):
         return redirect('manage_blog_posts')
 
     return render(request, 'website/manage_blog_posts.html', {'posts': posts})
+
 
 
 # Edit blog
@@ -535,7 +579,7 @@ def delete_blog_post(request, pk):
     if request.method == "POST":
         title = post.title
         post.delete()
-        messages.success(request, f'Blog post "{title}" deleted successfully.')
+        messages.error(request, f'Blog post "{title}" deleted successfully.')
         return redirect('manage_blog_posts')
     return render(request, 'website/delete_blog_post_confirm.html', {'post': post})
 
@@ -790,30 +834,18 @@ def schedule_demo(request):
 
 #  MANAGE DEMO REQUESTS 
 @login_required(login_url='admin_login')
-
 def manage_demo_requests(request):
-    """
-    Manage demo requests: list requests & experts (GET),
-    assign an expert or decline a demo (POST).
-
-    Behavior:
-    - On GET: show the list of demo requests and available experts.
-      Ordering: newest bookings first (order by created_at desc; fallback to id).
-    - On POST: handle 'assign' or 'decline' actions, then redirect back.
-    """
-
-    # Single canonical ordering: newest booking first
-    # created_at exists on ScheduleDemo (used elsewhere), so prefer it.
     demo_requests = ScheduleDemo.objects.all().order_by("-created_at", "-id")
     experts = Expert.objects.all().order_by("full_name")
 
+    # ---------------- POST REQUEST -----------------
     if request.method == "POST":
         demo_id = request.POST.get("id") or request.POST.get("demo_id")
         expert_id = request.POST.get("expert_id")
         action = request.POST.get("action")
 
         if not demo_id:
-            messages.error(request, "Invalid request: missing demo id.")
+            messages.error(request, "Invalid request: missing demo ID.")
             return redirect("manage_demo_requests")
 
         try:
@@ -822,11 +854,10 @@ def manage_demo_requests(request):
             messages.error(request, "Demo request not found.")
             return redirect("manage_demo_requests")
 
-        # Assign flow
+        # -------- ASSIGN --------
         if action == "assign":
-            # Prevent assignment for past scheduled dates
             if demo.scheduled_date and demo.scheduled_date < timezone.now():
-                messages.error(request, "You cannot assign a demo that is already in the past.")
+                messages.error(request, "You cannot assign this request because the scheduled date is already in the past.")
                 return redirect("manage_demo_requests")
 
             if not expert_id:
@@ -838,69 +869,97 @@ def manage_demo_requests(request):
                 demo.assigned_expert = expert
                 demo.status = "assigned"
                 demo.save()
-                messages.success(request, f"Assigned demo '{demo.company or demo.name}' to {expert.full_name or expert.username}.")
+
+                messages.success(
+                    request,
+                    f"Assigned demo '{demo.company or demo.name}' to {expert.full_name or expert.username}."
+                )
+
             except Expert.DoesNotExist:
                 messages.error(request, "Selected expert does not exist.")
                 return redirect("manage_demo_requests")
 
-        # Decline flow
+        # -------- DECLINE --------
         elif action == "decline":
-            decline_reason = request.POST.get(
-                "decline_reason",
-                "The request did not meet our current scheduling criteria."
-            )
-
+            decline_reason = request.POST.get("decline_reason", "No reason provided.")
             demo.assigned_expert = None
             demo.status = "declined"
             demo.save()
 
-            user_name = demo.name
-            recipient_email = demo.email
-
-            intro_message = (
-                f"We have reviewed your request. Unfortunately, your Demo Request "
-                f"scheduled for {demo.scheduled_date.strftime('%Y-%m-%d %H:%M') if demo.scheduled_date else 'N/A'} has been declined."
-            )
-
-            details = {
-                "Status": "Declined",
-                "Reason Provided": decline_reason,
-                "Company/Service": demo.company or "N/A",
-                "Scheduled Date": demo.scheduled_date.strftime("%Y-%m-%d %H:%M") if demo.scheduled_date else "N/A",
-            }
-
-            # send confirmation email (non-blocking ideally)
             try:
                 send_confirmation_email(
-                    recipient_email,
-                    user_name,
-                    "Demo Request (Declined)",
-                    details,
-                    template_name="website/decline_email.html",
-                    extra_context={"intro_message": intro_message}
+                    demo.email,
+                    demo.name,
+                    "Demo Request Declined",
+                    {"Reason": decline_reason},
+                    template_name="website/decline_email.html"
                 )
             except Exception:
-                # Log but don't break the user flow
-                logger.exception("Failed to send decline email for demo id=%s", getattr(demo, "id", "n/a"))
+                logger.exception("Failed to send decline email.")
 
-            messages.warning(request, f"Demo request from {demo.name} declined and client notified.")
-
+            messages.error(request, f"Demo request from {demo.name} declined.")
+        
         else:
             messages.error(request, "Unknown action.")
 
-        # After handling POST, redirect back to list (fresh GET)
         return redirect("manage_demo_requests")
 
-    # GET flow — pass the demo_requests already ordered newest-first
-    return render(request, "website/manage_demo_requests.html", {
-        "demo_requests": demo_requests,
-        "experts": experts,
-    })
+    # ---------------- GET REQUEST (IMPORTANT PART!) -----------------
+    return render(
+        request,
+        "website/manage_demo_requests.html",
+        {
+            "demo_requests": demo_requests,
+            "experts": experts,
+        }
+    )
 
-#  CAREERS LIST 
+
+
+
+
 def careers_list(request):
+    """
+    View to display job listings with filtering capabilities.
+    """
+    # Start with all active jobs, sorted by newest
     jobs = Job.objects.filter(is_active=True).order_by('-posted_at')
-    return render(request, 'website/careers_list.html', {'jobs': jobs})
+
+    # --- 1. Filter by Position ---
+    position_query = request.GET.get('position')
+    if position_query:
+        jobs = jobs.filter(title__icontains=position_query)
+
+    # --- 2. Filter by Skills ---
+    # This searches the job title, summary, and description for the keyword.
+    # If you have a specific tags field, add it to the Q object below.
+    skills_query = request.GET.get('skills')
+    if skills_query:
+        jobs = jobs.filter(
+            Q(title__icontains=skills_query) |
+            Q(description__icontains=skills_query) |
+            Q(requirements__icontains=skills_query)
+        ).distinct()
+
+    # --- 3. Filter by Date Posted ---
+    date_query = request.GET.get('date_posted')
+    if date_query:
+        now = timezone.now()
+        if date_query == 'today':
+            start_date = now - timedelta(days=1)
+            jobs = jobs.filter(posted_at__gte=start_date)
+        elif date_query == 'week':
+            start_date = now - timedelta(weeks=1)
+            jobs = jobs.filter(posted_at__gte=start_date)
+        elif date_query == 'month':
+            start_date = now - timedelta(days=30)
+            jobs = jobs.filter(posted_at__gte=start_date)
+
+    context = {
+        'jobs': jobs,
+    }
+    
+    return render(request, 'website/careers_list.html', context)
 
 
 
@@ -972,14 +1031,15 @@ def apply_job(request, pk):
                 # -----------------------------
                 user_name = application.full_name
                 recipient_email = application.email
+                ist_time = application.applied_at.astimezone(timezone.get_fixed_timezone(330))
 
                 details = {
                     'Job Title': job.title,
                     'Application Status': application.get_status_display(),
-                    'Applied On': application.applied_at.strftime("%Y-%m-%d %H:%M:%S"),
+                    'Applied On': ist_time.strftime("%Y-%m-%d %H:%M:%S"),
                     'Phone': application.phone or 'N/A',
                     'Cover Letter Snippet': (application.cover_letter[:50] + '...') if application.cover_letter else 'N/A',
-                }
+}
 
                 try:
                     dashboard_path = reverse('candidate_dashboard')
@@ -1233,19 +1293,18 @@ def edit_job(request, pk):
 # DELETE JOB
 @login_required(login_url='admin_login')
 def delete_job(request, pk):
-    """
-    Safely delete a job (used by AJAX in manage_jobs.html)
-    """
     if request.method == "POST":
         try:
             job = get_object_or_404(Job, pk=pk)
-            job.jobapplication_set.all().delete()  # delete related applications
             job.delete()
-            return JsonResponse({'success': True})
+            messages.error(request, "Job deleted successfully!")  # RED
+            return redirect('manage_jobs')
         except Exception as e:
-            print(f"[ERROR] Delete Job: {e}")
-            return JsonResponse({'success': False, 'message': str(e)})
-    return JsonResponse({'success': False, 'message': 'Invalid request method.'})
+            messages.error(request, f"Error: {e}")
+            return redirect('manage_jobs')
+
+    messages.error(request, "Invalid request.")
+    return redirect('manage_jobs')
                   
 #  ASK EXPERT 
 def ask_expert(request):
@@ -1313,38 +1372,48 @@ def manage_expert_queries(request):
     queries = ExpertQuery.objects.filter(
         Q(status='pending') | Q(status='accepted') | Q(status='rejected')
     ).select_related('service').order_by('-submitted_at')
+
     experts = Expert.objects.all().order_by('full_name')
 
+    # -------------------------
+    # POST REQUEST HANDLING
+    # -------------------------
     if request.method == "POST":
+
         query_id = request.POST.get('id') or request.POST.get('query_id')
         expert_id = request.POST.get('expert_id')
         action = request.POST.get('action')
 
-        # Defensive: require an action
+        # Validate action
         if not action:
             messages.error(request, "Invalid action.")
             return redirect('manage_expert_queries')
 
-        # Defensive: ensure we have query_id before proceeding
+        # Validate query ID
         if not query_id:
-            messages.error(request, "Missing query id.")
+            messages.error(request, "Missing query ID.")
             return redirect('manage_expert_queries')
 
+        # Fetch query object
         try:
             query = ExpertQuery.objects.get(id=query_id)
         except ExpertQuery.DoesNotExist:
-            messages.error(request, " Expert query not found.")
+            messages.error(request, "Expert query not found.")
             return redirect('manage_expert_queries')
 
+        # -------------------------
+        # ASSIGN QUERY
+        # -------------------------
         if action == "assign":
+
             if not expert_id:
-                messages.error(request, " No expert selected.")
+                messages.error(request, "No expert selected.")
                 return redirect('manage_expert_queries')
 
             try:
                 expert = Expert.objects.get(id=expert_id)
             except Expert.DoesNotExist:
-                messages.error(request, " Selected expert does not exist.")
+                messages.error(request, "Selected expert does not exist.")
                 return redirect('manage_expert_queries')
 
             try:
@@ -1353,35 +1422,37 @@ def manage_expert_queries(request):
                     query.status = "assigned"
                     query.save()
 
-                    expert_display = (expert.full_name or expert.username)
+                expert_display = (expert.full_name or expert.username)
+                messages.success(request, f"Assigned query from '{query.name}' to {expert_display}.")
 
-                    messages.success(request, f" Assigned '{query.name}' query to {expert_display}.")
             except Exception as e:
                 logger.exception("Error assigning expert for query id %s: %s", query_id, e)
-                messages.error(request, " An error occurred while assigning the expert.")
+                messages.error(request, "An error occurred while assigning the expert.")
                 return redirect('manage_expert_queries')
 
+        # -------------------------
+        # DECLINE QUERY
+        # -------------------------
         elif action == "decline":
-                decline_reason = request.POST.get(
-            'decline_reason',
-            'The query did not fit our expert capacity or scope.'
-        )
-        try:
-            with transaction.atomic():
-                query.assigned_expert = None
-                query.status = "declined"
 
-                # ⭐⭐⭐ ADD THIS LINE ⭐⭐⭐
-                query.decline_reason = decline_reason
+            decline_reason = request.POST.get(
+                'decline_reason',
+                'The query did not fit our expert capacity or scope.'
+            )
 
-                query.save()
+            try:
+                with transaction.atomic():
+                    query.assigned_expert = None
+                    query.status = "declined"
+                    query.decline_reason = decline_reason
+                    query.save()
 
+                # Prepare email content
                 user_name = query.name
                 recipient_email = query.email
-
                 intro_message = (
-                    f"We have observed your request carefully. We regret to inform you that your "
-                    f"Expert Query regarding the {query.service.title} service has been declined by our team."
+                    f"We have reviewed your request and regret to inform you that your Expert Query "
+                    f"related to the '{query.service.title}' service has been declined."
                 )
 
                 details = {
@@ -1392,6 +1463,7 @@ def manage_expert_queries(request):
                     'Submitted On': query.submitted_at.strftime("%Y-%m-%d %H:%M:%S")
                 }
 
+                # Send decline email
                 try:
                     send_confirmation_email(
                         recipient_email,
@@ -1404,23 +1476,24 @@ def manage_expert_queries(request):
                 except Exception as e:
                     logger.exception(
                         "Failed to send decline email for query id %s: %s",
-                        query_id, e
+                        query.id, e
                     )
 
                 messages.warning(
                     request,
-                    f" Query from {query.name} declined and client notified."
+                    f"Query from {query.name} declined and client notified."
                 )
 
-        except Exception as e:
-            logger.exception("Error declining query id %s: %s", query_id, e)
-            messages.error(request, " An error occurred while declining the query.")
-            return redirect('manage_expert_queries')
-
-
+            except Exception as e:
+                logger.exception("Error declining query id %s: %s", query.id, e)
+                messages.error(request, "An error occurred while declining the query.")
+                return redirect('manage_expert_queries')
 
         return redirect('manage_expert_queries')
 
+    # -------------------------
+    # GET REQUEST
+    # -------------------------
     return render(request, 'website/manage_expert_queries.html', {
         'queries': queries,
         'experts': experts,
@@ -1450,7 +1523,7 @@ def manage_declined_queries(request):
         try:
             query = get_object_or_404(ExpertQuery, id=query_id, status='declined')
             query.delete()
-            messages.success(request, f" Declined query from {query.name} successfully deleted.")
+            messages.error(request, f" Declined query from {query.name} successfully deleted.")
         except Exception:
             messages.error(request, " Could not delete the declined query.")
         
@@ -1466,7 +1539,64 @@ def manage_declined_queries(request):
 @login_required(login_url='admin_login')
 def manage_client_responses(request):
     messages_data = ContactMessage.objects.all().order_by('-submitted_at')
-    return render(request, 'website/manage_client_responses.html', {'messages_data': messages_data})
+
+    from_date = request.GET.get('from')
+    to_date = request.GET.get('to')
+    download = request.GET.get('download')
+
+    # --- Apply Date Filters ---
+    if from_date:
+        try:
+            messages_data = messages_data.filter(submitted_at__date__gte=from_date)
+        except:
+            pass
+
+    if to_date:
+        try:
+            messages_data = messages_data.filter(submitted_at__date__lte=to_date)
+        except:
+            pass
+
+    # --- Handle Excel Download ---
+    if download == "excel":
+        return export_client_responses_to_excel(messages_data)
+
+    return render(request, 'website/manage_client_responses.html', {
+        'messages_data': messages_data,
+        'request': request,   # Needed for template download link
+    })
+
+
+def export_client_responses_to_excel(queryset):
+    import openpyxl
+    from django.http import HttpResponse
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Client Responses"
+
+    # Excel Header Row
+    ws.append(["Name", "Email", "Subject", "Message", "Submitted At", "Attachment"])
+
+    for msg in queryset:
+        ws.append([
+            msg.name,
+            msg.email,
+            msg.subject,
+            msg.message,
+            msg.submitted_at.strftime('%Y-%m-%d %H:%M'),
+            msg.attachment.url if msg.attachment else "No File"
+        ])
+
+    # Prepare File Response
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename="client_responses.xlsx"'
+
+    wb.save(response)
+    return response
+
 
 
 #  EXPERT REGISTER 
@@ -1639,40 +1769,40 @@ def expert_login_view(request):
     return render(request, 'website/expert_login.html')
 
 def expert_dashboard_view(request):
-    expert_id = request.session.get('expert_id')
+    expert_id = request.session.get("expert_id")
     if not expert_id:
-        return redirect('expert_login')
+        messages.error(request, "Please log in to continue.")
+        return redirect("expert_login")
 
     expert = Expert.objects.get(id=expert_id)
-    expert_name = request.session.get('expert_name')
 
-    # Assigned Queries
+    expert_name = expert.full_name or expert.username
+    expert_email = expert.email
+    expert_initial = expert_name[0].upper() if expert_name else "E"
+
     assigned_queries_count = ExpertQuery.objects.filter(
         assigned_expert=expert
     ).count()
 
-    # Assigned Demo Schedules
     assigned_demos_count = ScheduleDemo.objects.filter(
         assigned_expert=expert
     ).count()
 
-    # Completed Tasks = Accepted Queries + Accepted Demos
-    completed_queries = ExpertQuery.objects.filter(
-        assigned_expert=expert, status="accepted"
-    ).count()
-
-    completed_demos = ScheduleDemo.objects.filter(
-        assigned_expert=expert, status="accepted"
-    ).count()
-
-    completed_tasks = completed_queries + completed_demos
+    completed_tasks = (
+        ExpertQuery.objects.filter(assigned_expert=expert, status="completed").count() +
+        ScheduleDemo.objects.filter(assigned_expert=expert, status="completed").count()
+    )
 
     return render(request, "website/expert_dashboard.html", {
         "expert_name": expert_name,
+        "expert_email": expert_email,
+        "expert_initial": expert_initial,
         "assigned_queries_count": assigned_queries_count,
         "assigned_demos_count": assigned_demos_count,
         "completed_tasks": completed_tasks,
     })
+
+
 
 
 def expert_logout_view(request):
@@ -1685,74 +1815,158 @@ def expert_logout_view(request):
 
 
 def expert_assigned_queries_view(request):
-    expert_id = request.session.get('expert_id')
+
+    # Check if expert is logged in using session-based authentication
+    expert_id = request.session.get("expert_id")
     if not expert_id:
-        return redirect('expert_login')
+        messages.error(request, "Please log in to continue.")
+        return redirect("expert_login")
 
     expert = Expert.objects.get(id=expert_id)
-    assigned_queries = ExpertQuery.objects.filter(assigned_expert=expert).order_by('-submitted_at')
 
+    # Fetch assigned queries
+    assigned_queries = ExpertQuery.objects.filter(
+        assigned_expert=expert
+    ).order_by('-submitted_at')
+
+    # Handle POST actions
     if request.method == "POST":
-        query_id = request.POST.get('query_id')
-        action = request.POST.get('action')
-        query = ExpertQuery.objects.get(id=query_id)
+        action = request.POST.get("action")
+        query_id = request.POST.get("query_id")
+        query = get_object_or_404(ExpertQuery, id=query_id)
 
+        # ===== ACCEPT QUERY =====
         if action == "accept":
             query.status = "accepted"
             query.save()
+
+            # Email details
+            details = {
+                "Service": query.service.title,
+                "Message Snippet": query.message[:50] + "..."
+            }
+
+            # SEND ACCEPTANCE EMAIL
+            send_expert_accept_email(
+                query.email,
+                query.name,
+                expert.full_name or expert.username,
+                "Expert Query",
+                details
+            )
+
+            messages.success(request, "Query accepted and email sent to customer.")
+            return redirect("expert_assigned_queries")
+
+        # ===== REJECT QUERY =====
         elif action == "reject":
+            reason = request.POST.get("reject_reason", "").strip()
+
             query.status = "rejected"
+            query.expert_reject_reason = reason
             query.save()
 
-        return redirect('expert_assigned_queries')
+            details = {
+                "Service": query.service.title,
+                "Message Snippet": query.message[:50] + "...",
+                "Reason": reason,
+            }
 
-    return render(request, 'website/expert_assigned_queries.html', {
-        'assigned_queries': assigned_queries,
-        'expert': expert,
+            # SEND REJECTION EMAIL
+            send_expert_rejection_email(
+                query.email,
+                query.name,
+                expert.full_name or expert.username,
+                "Expert Query",
+                details
+            )
+
+            messages.error(request, "Query rejected and email sent to customer.")
+            return redirect("expert_assigned_queries")
+
+    return render(request, "website/expert_assigned_queries.html", {
+        "assigned_queries": assigned_queries
     })
 
 
 def expert_assigned_demos_view(request):
-    expert_id = request.session.get('expert_id')
+
+    # Check session-based login
+    expert_id = request.session.get("expert_id")
     if not expert_id:
-        return redirect('expert_login')
+        messages.error(request, "Please log in to continue.")
+        return redirect("expert_login")
 
     expert = Expert.objects.get(id=expert_id)
-    assigned_demos = ScheduleDemo.objects.filter(assigned_expert=expert).order_by('-created_at')
 
+    # Fetch assigned demos
+    assigned_demos = ScheduleDemo.objects.filter(
+        assigned_expert=expert
+    ).order_by('-created_at')
+
+    # Handle POST
     if request.method == "POST":
-        demo_id = request.POST.get('demo_id')
-        action = request.POST.get('action')
-        demo = ScheduleDemo.objects.get(id=demo_id)
+        action = request.POST.get("action")
+        demo_id = request.POST.get("demo_id")
+        demo = get_object_or_404(ScheduleDemo, id=demo_id)
 
+        # ===== ACCEPT DEMO =====
         if action == "accept":
             demo.status = "accepted"
             demo.save()
+
+            details = {
+                "Company": demo.company,
+                "Scheduled Date": demo.scheduled_date.strftime("%Y-%m-%d %H:%M") if demo.scheduled_date else "N/A",
+                "Phone": demo.phone,
+            }
+
+            # SEND ACCEPTANCE EMAIL
+            send_expert_accept_email(
+                demo.email,
+                demo.name,
+                expert.full_name or expert.username,
+                "Demo Request",
+                details
+            )
+
+            messages.success(request, "Demo request accepted and email sent to customer.")
+            return redirect("expert_assigned_demos")
+
+        # ===== REJECT DEMO =====
         elif action == "reject":
+            reason = request.POST.get("reject_reason", "").strip()
+
             demo.status = "rejected"
+            demo.expert_reject_reason = reason
             demo.save()
 
-        return redirect('expert_assigned_demos')
+            details = {
+                "Company": demo.company,
+                "Scheduled Date": demo.scheduled_date.strftime("%Y-%m-%d %H:%M") if demo.scheduled_date else "N/A",
+                "Phone": demo.phone,
+                "Reason": reason,
+            }
 
-    return render(request, 'website/expert_assigned_demos.html', {
-        'assigned_demos': assigned_demos,
-        'expert': expert,
+            # SEND REJECTION EMAIL
+            send_expert_rejection_email(
+                demo.email,
+                demo.name,
+                expert.full_name or expert.username,
+                "Demo Request",
+                details
+            )
+
+            messages.error(request, "Demo request rejected and email sent to customer.")
+            return redirect("expert_assigned_demos")
+
+    return render(request, "website/expert_assigned_demos.html", {
+        "assigned_demos": assigned_demos
     })
 
 
-import logging
-import os
-import mimetypes
-
-from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
-from django.views.decorators.http import require_GET
-
-from .models import JobApplication  # adjust import if needed
 
 logger = logging.getLogger(__name__)
-
-
 @require_GET
 def preview_job_application(request, application_id):
     """
@@ -2102,7 +2316,7 @@ def delete_our_value(request, pk):
     if request.method == "POST":
         title = value.title
         value.delete()
-        messages.success(request, f'Value "{title}" has been deleted successfully.')
+        messages.error(request, f'Value "{title}" has been deleted successfully.')
         return redirect('manage_our_values')
     return render(request, 'website/delete_our_value_confirm.html', {'value': value})
 
@@ -2128,12 +2342,13 @@ def manage_expert_registrations(request):
     Display all expert registration requests for admin approval.
     When admin approves or rejects, sends an email notification to the expert.
     """
+
     experts = Expert.objects.all().order_by('-id')
 
     if request.method == 'POST':
         expert_id = request.POST.get('expert_id')
         action = request.POST.get('action')
-        reason = request.POST.get('reason', '').strip()  # from modal popup
+        reason = request.POST.get('reason', '').strip()
 
         expert = get_object_or_404(Expert, id=expert_id)
 
@@ -2145,7 +2360,6 @@ def manage_expert_registrations(request):
             expert.is_verified = True
             expert.save()
 
-            # Send confirmation email
             try:
                 send_expert_status_email(expert, "approved")
                 messages.success(
@@ -2155,7 +2369,7 @@ def manage_expert_registrations(request):
             except Exception as e:
                 messages.warning(
                     request,
-                    f"{expert.full_name or expert.username} approved, but email sending failed: {e}"
+                    f"{expert.full_name or expert.username} was approved, but email sending failed: {e}"
                 )
 
         # --- REJECTION HANDLER ---
@@ -2164,7 +2378,6 @@ def manage_expert_registrations(request):
             expert.is_verified = False
             expert.save()
 
-            # Send decline email with reason
             try:
                 send_expert_status_email(expert, "rejected", reason)
                 messages.error(
@@ -2179,8 +2392,70 @@ def manage_expert_registrations(request):
 
         return redirect('manage_expert_registrations')
 
-    return render(request, 'website/manage_expert_registrations.html', {'experts': experts})
+    return render(request, 'website/manage_expert_registrations.html', {
+        'experts': experts
+    })
 
+
+
+
+logger = logging.getLogger(__name__)
+
+def send_expert_status_email(expert, status, reason=None):
+    """
+    Sends approval or rejection email to an expert.
+    status = "approved" or "rejected"
+    reason = rejection message (optional)
+    """
+
+    user_name = expert.full_name or expert.username
+
+    if status == "approved":
+        subject = "Your Expert Registration Has Been Approved"
+        template = "website/expert_approval_email.html"
+        context = {
+            "user_name": user_name,
+            "submission_type": "Expert Registration Approved",
+            "details": {
+                "Status": "Approved",
+                "Message": "Your expert account has been successfully approved."
+            },
+            "site_url": settings.DEFAULT_SITE_URL,
+        }
+
+    elif status == "rejected":
+        subject = "Your Expert Registration Has Been Rejected"
+        template = "website/expert_reject_email.html"
+        context = {
+            "user_name": user_name,
+            "submission_type": "Expert Registration Rejected",
+            "details": {
+                "Status": "Rejected",
+                "Reason": reason or "No reason provided."
+            },
+            "site_url": settings.DEFAULT_SITE_URL,
+        }
+
+    else:
+        return False  # Unknown status
+
+    # Render email content
+    html_message = render_to_string(template, context)
+    plain_message = strip_tags(html_message)
+
+    try:
+        send_mail(
+            subject,
+            plain_message,
+            settings.DEFAULT_FROM_EMAIL,
+            [expert.email],
+            html_message=html_message,
+            fail_silently=False,
+        )
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send expert status email: {e}")
+        return False
 
 
 
@@ -2346,6 +2621,7 @@ def edit_mission(request, pk):
 def delete_mission(request, pk):
     mission = get_object_or_404(Mission, pk=pk)
     mission.delete()
+    messages.error(request, "Mission deleted successfully.")
     return redirect('manage_mission')
 
 
@@ -2363,6 +2639,7 @@ def manage_privacy(request):
 
     if request.method == "POST" and form.is_valid():
         form.save()
+        messages.success(request, "Privacy-policy updated  successfully.")
         return redirect("manage_privacy")
 
     return render(request, "website/manage_privacy.html", {"form": form, "policies": policies})
@@ -2374,6 +2651,7 @@ def edit_privacy(request, pk):
 
     if request.method == "POST" and form.is_valid():
         form.save()
+        messages.success(request, "Privacy-policy edited  successfully.")
         return redirect("manage_privacy")
 
     return render(
@@ -2386,6 +2664,7 @@ def edit_privacy(request, pk):
 def delete_privacy(request, pk):
     policy = get_object_or_404(PrivacyPolicy, pk=pk)
     policy.delete()
+    messages.error(request, "Privacy-policy deleted successfully.")
     return redirect("manage_privacy")
 
 
@@ -2409,6 +2688,7 @@ def manage_terms(request):
 
     if request.method == "POST" and form.is_valid():
         form.save()
+        messages.success(request, "Terms & Condition updated successfully")
         return redirect("manage_terms")
 
     return render(request, "website/manage_terms.html", {"form": form, "terms": terms})
@@ -2420,6 +2700,7 @@ def edit_terms(request, pk):
 
     if request.method == "POST" and form.is_valid():
         form.save()
+        messages.success(request, "Terms & Condition edited successfully")
         return redirect("manage_terms")
 
     return render(
@@ -2432,6 +2713,7 @@ def edit_terms(request, pk):
 def delete_terms(request, pk):
     term = get_object_or_404(TermsAndConditions, pk=pk)
     term.delete()
+    messages.error(request, "Terms & Condition deleted successfully")
     return redirect("manage_terms")
 
 
@@ -2550,7 +2832,7 @@ def delete_portfolio(request, pk):
     portfolio = get_object_or_404(Portfolio, pk=pk)
     if request.method == "POST":
         portfolio.delete()
-        messages.success(request, "Portfolio deleted successfully!")
+        messages.error(request, "Portfolio deleted successfully!")
         return redirect('manage_portfolio')
     return render(request, 'website/delete_portfolio.html', {'portfolio': portfolio})
 
@@ -2595,6 +2877,7 @@ class ExpertPasswordResetView(auth_views.PasswordResetView):
         # Render HTML email
         html_message = render_to_string(self.email_template_name, {
             'user': expert,
+            'username': expert.username,
             'uid': uid,
             'token': token,
             'reset_url': reset_url,
@@ -2606,7 +2889,7 @@ class ExpertPasswordResetView(auth_views.PasswordResetView):
         msg = EmailMessage(
             subject="Propulsion Technology - Expert Password Reset",
             body=html_message,
-            from_email="Propulsion Technology <jayesh@creativewebsolution.in>",
+            from_email="Propulsion Technology <Propulsiontech381@gmail.com>",
             to=[input_email],
         )
         msg.content_subtype = "html"
@@ -2772,7 +3055,7 @@ def edit_feedback(request, pk):
 def delete_feedback(request, pk):
     fb = get_object_or_404(ClientFeedback, pk=pk)
     fb.delete()
-    messages.success(request, "Feedback deleted successfully!")
+    messages.error(request, "Feedback deleted successfully!")
     return redirect('manage_feedback')
 
 
@@ -2800,6 +3083,7 @@ def admin_forgot_password(request):
         # Email context
         context = {
             'username': admin_user.username,
+            'user': admin_user,
             'otp': otp,
             'year': datetime.now().year,
             'site_url': getattr(settings, 'DEFAULT_SITE_URL', 'https://propulsiontech.in'),
@@ -2946,7 +3230,7 @@ class CandidatePasswordResetView(auth_views.PasswordResetView):
         email_obj = EmailMessage(
             subject="Propulsion Technology - Password Reset",
             body=html_message,
-            from_email="Propulsion Technology <jayesh@creativewebsolution.in>",
+            from_email="Propulsion Technology <Propulsiontech381@gmail.com>",
             to=[email]
         )
         email_obj.content_subtype = "html"
@@ -2954,3 +3238,463 @@ class CandidatePasswordResetView(auth_views.PasswordResetView):
 
         messages.success(request, "Password reset link has been sent to your email.")
         return self.form_invalid(None)
+    
+
+def assign_project(request):
+    if request.method == "POST":
+        form = AssignProjectForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            project = form.save()
+
+            # --- SAVE BRIEF DOCUMENT IN BOTH MODELS ---
+            brief_file = request.FILES.get("brief")
+            if brief_file:
+                # Save the brief inside Project model
+                project.brief = brief_file
+                project.save()
+
+                # ALSO save it as an entry in ProjectDocument
+                ProjectDocument.objects.create(
+                    project=project,
+                    attachment=brief_file
+                )
+
+            # --- CREATE PAYMENT ENTRY ---
+            total = form.cleaned_data.get("amount_total") or 0
+            paid = form.cleaned_data.get("amount_paid") or 0
+
+            Payment.objects.create(
+                project=project,
+                amount_total=total,
+                amount_paid=paid
+            )
+
+            messages.success(request, "Project assigned successfully!")
+            return redirect("assign_project")
+
+        else:
+            print("FORM ERRORS:", form.errors)
+
+    else:
+        form = AssignProjectForm()
+
+    return render(request, "website/assign_project.html", {"form": form})
+                                                            
+
+# Admin: list all assigned projects
+from django.db.models import Q
+
+def admin_project_list(request):
+    projects = Project.objects.select_related("client__user").all().order_by("-id")
+
+    # SEARCH
+    search = request.GET.get("search")
+    if search:
+        projects = projects.filter(
+            Q(project_name__icontains=search) |
+            Q(client__user__username__icontains=search)
+        )
+
+    # FILTER BY CLIENT
+    client_name = request.GET.get("client")
+    if client_name and client_name != "None" and client_name.strip() != "":
+        projects = projects.filter(
+            client__user__username__icontains=client_name
+        )
+
+    # FILTER BY DATE
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+    if start_date and end_date:
+        projects = projects.filter(start_date__range=[start_date, end_date])
+
+    return render(request, "website/admin_project_list.html", {
+        "projects": projects,
+        "search": search,
+        "client": client_name,
+        "start_date": start_date,
+        "end_date": end_date,
+    })
+
+
+# Admin: show project details
+def admin_project_details(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+    history = PaymentRequest.objects.filter(project=project).order_by('-created_at')
+    documents = ProjectDocument.objects.filter(project=project).order_by("-uploaded_at")
+    payments = Payment.objects.filter(project=project).order_by("-payment_date")
+    return render(request, "website/admin_project_details.html", {
+        "project": project,
+        "documents": documents,
+        "payments": payments,
+        "history": history,
+    })
+
+
+
+def payment_requests_list(request):
+    requests_list = PaymentRequest.objects.order_by("-created_at")
+    return render(request, "website/payment_requests_list.html", {
+        "requests_list": requests_list
+})
+
+
+def payment_request_detail(request, req_id):
+    pr = get_object_or_404(PaymentRequest, id=req_id)
+    return render(request, "website/payment_request_detail.html", {
+        "request_obj": pr
+})
+
+
+def approve_payment_request(request, req_id):
+    pr = get_object_or_404(PaymentRequest, id=req_id)
+
+    # 1) Update payment summary of the project
+    payment, created = Payment.objects.get_or_create(project=pr.project)
+
+    payment.amount_paid = float(payment.amount_paid) + float(pr.amount)
+    payment.balance_amount = float(payment.amount_total) - float(payment.amount_paid)
+    payment.save()
+
+    # 2) Update request status
+    pr.status = "Approved"
+    pr.admin_reason = ""
+    pr.save()
+
+    messages.success(request, "Payment approved successfully.")
+    return redirect("payment_requests_list")
+
+
+
+def reject_payment_request(request, req_id):
+    pr = get_object_or_404(PaymentRequest, id=req_id)
+
+    if request.method == "POST":
+        reason = request.POST.get("reason", "").strip()   # ✔ ALWAYS a string
+
+        if not reason:
+            messages.error(request, "Please enter reason for rejection.")
+            return redirect("payment_request_detail", req_id=req_id)
+
+        pr.status = "Rejected"
+        pr.admin_reason = reason
+        pr.save()
+
+        messages.success(request, "Payment rejected successfully.")
+        return redirect("payment_requests_list")
+
+    return redirect("payment_request_detail", req_id=req_id)
+
+
+
+def admin_add_payment(request, project_id):
+    project = Project.objects.get(id=project_id)
+    payment = Payment.objects.get(project=project)
+
+    if request.method == "POST":
+
+        # Convert to Decimal
+        amount = Decimal(request.POST.get("amount"))
+        mode = request.POST.get("mode")
+        note = request.POST.get("note")
+
+        # Create Payment Request (transaction history)
+        PaymentRequest.objects.create(
+            project=project,
+            client=project.client,
+            amount=amount,       # Decimal
+            mode=mode,
+            note=note,
+            status="Approved",
+            added_by_admin=True,
+            admin_reason="Added by Admin"
+        )
+
+        # Update totals safely with Decimal
+        payment.amount_paid += amount
+        payment.balance_amount = payment.amount_total - payment.amount_paid
+        payment.save()
+
+        return redirect('admin_project_details', project_id=project.id)
+
+    return render(request, 'website/admin_add_payment.html', {
+        'project': project,
+        'payment': payment,
+    })
+
+
+def admin_project_payment_list(request):
+    from client.models import PaymentRequest
+    payments = PaymentRequest.objects.all().order_by('-created_at')
+    return render(request, 'website/admin_project_payment_list.html', {'payments': payments})
+
+
+
+NAME_RE = re.compile(r'^[A-Za-z][A-Za-z ]{0,49}$')       
+COMPANY_RE = re.compile(r'^[A-Za-z ]{1,50}$')           
+PHONE_RE = re.compile(r'^[0-9]{10}$')                   
+
+
+@login_required(login_url="admin_login")
+def admin_client_register(request):
+    if request.method == "POST":
+        name = (request.POST.get("name") or "").strip()
+        email = (request.POST.get("email") or "").strip()
+        phone = (request.POST.get("phone") or "").strip()
+        company = (request.POST.get("company_name") or "").strip()
+        address = (request.POST.get("address") or "").strip()
+        password = (request.POST.get("password") or "")
+
+        # ===== Required Field Checks =====
+        if not name:
+            messages.error(request, "Name is required.")
+            return redirect("admin_client_register")
+
+        if not email:
+            messages.error(request, "Email is required.")
+            return redirect("admin_client_register")
+
+        if not phone:
+            messages.error(request, "Phone number is required.")
+            return redirect("admin_client_register")
+
+        if not password:
+            messages.error(request, "Password is required.")
+            return redirect("admin_client_register")
+
+        # ===== Name Validation =====
+        if len(name) > 50 or not NAME_RE.match(name):
+            messages.error(request, "Enter a valid name (letters and spaces only, up to 50 characters).")
+            return redirect("admin_client_register")
+
+        # ===== Email Validation =====
+        try:
+            validate_email(email)
+        except ValidationError:
+            messages.error(request, "Enter a valid email address.")
+            return redirect("admin_client_register")
+
+        if User.objects.filter(username=email).exists():
+            messages.error(request, "Email is already registered")
+            return redirect("admin_client_register")
+
+        # ===== Phone Validation =====
+        digits_only = re.sub(r'[^0-9]', '', phone)  # keep only digits
+
+        if not PHONE_RE.match(digits_only):
+            messages.error(request, "Phone must be exactly 10 digits.")
+            return redirect("admin_client_register")
+
+        phone = digits_only
+
+        # === NEW: Phone uniqueness check ===
+        if ClientProfile.objects.filter(phone=phone).exists():
+            messages.error(request, "Phone number is already registered")
+            return redirect("admin_client_register")
+
+        # ===== Company Validation (Optional) =====
+        if company:
+            if len(company) > 50 or not COMPANY_RE.match(company):
+                messages.error(request, "Company name may contain only letters and spaces, up to 50 characters.")
+                return redirect("admin_client_register")
+
+        # ===== Address Validation (Optional) =====
+        if address and len(address) > 300:
+            messages.error(request, "Address must be 300 characters or fewer.")
+            return redirect("admin_client_register")
+
+        # ===== Password Validation =====
+        if len(password) < 4 or len(password) > 20:
+            messages.error(request, "Password must be between 4 and 20 characters.")
+            return redirect("admin_client_register")
+
+        # ===== Create User =====
+        user = User.objects.create_user(
+            username=email,
+            email=email,
+            first_name=name,
+            password=password
+        )
+
+        # Ensure client is not staff / not superuser
+        user.is_staff = False
+        user.is_superuser = False
+        user.save()
+
+        # ===== Create Client Profile =====
+        ClientProfile.objects.create(
+            user=user,
+            name=name,
+            phone=phone,
+            email=email,
+            company_name=company,
+            address=address,
+            subject="Client Registration"
+        )
+
+        messages.success(request, "Client registered successfully!")
+        return redirect("admin_client_register")
+
+    return render(request, "website/admin_client_register.html")
+
+
+
+# 1) LIST ALL CLIENTS
+@login_required(login_url='admin_login')
+def manage_clients(request):
+    clients = (
+        ClientProfile.objects
+        .select_related('user')
+        .filter(
+            user__is_staff=False,       
+            user__is_superuser=False    
+        )
+        .order_by('-id')
+    )
+    
+    return render(request, 'website/manage_clients.html', {
+        'clients': clients
+})
+
+
+@login_required(login_url='admin_login')
+def client_detail(request, pk):
+    client = get_object_or_404(ClientProfile, pk=pk)
+
+    # All projects for this client
+    projects = Project.objects.filter(client=client)
+
+    # Payments for those projects
+    payments = Payment.objects.filter(project__in=projects)
+
+    # Totals
+    total_amount = payments.aggregate(total=Sum('amount_total'))['total'] or 0
+    paid_amount = payments.aggregate(total=Sum('amount_paid'))['total'] or 0
+
+    # Remaining amount (never negative)
+    remaining_amount = total_amount - paid_amount
+    if remaining_amount < 0:
+        remaining_amount = 0
+
+    # -------------- AUTO STATUS LOGIC --------------
+    # 1) No project assigned
+    if not projects.exists():
+        client.payment_status = "Not Assigned"
+
+    # 2) Project exists and no dues left
+    elif remaining_amount <= 0:
+        client.payment_status = "Paid"
+
+    # 3) Some amount paid, some due
+    elif 0 < paid_amount < total_amount:
+        client.payment_status = "Partial"
+
+    # 4) Project has amount but nothing paid yet
+    else:
+        client.payment_status = "Pending"
+
+    client.save(update_fields=["payment_status"])
+
+    context = {
+        "client": client,
+        "projects": projects,
+        "total_amount": total_amount,
+        "paid_amount": paid_amount,
+        "remaining_amount": remaining_amount,
+    }
+
+    return render(request, 'website/client_detail.html', context)
+
+# 3) EDIT CLIENT (basic inline edit of profile and user name/email)
+@login_required(login_url='admin_login')
+def edit_client(request, pk):
+    client = get_object_or_404(ClientProfile, pk=pk)
+    user = client.user
+
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        email = request.POST.get('email', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        company = request.POST.get('company_name', '').strip()
+        website = request.POST.get('website', '').strip()  # 👈 needed
+        address = request.POST.get('address', '').strip()
+        admin_notes = request.POST.get('admin_notes', '').strip()  # 👈 needed
+
+        if not email:
+            messages.error(request, 'Email is required.')
+            return redirect('edit_client', pk=pk)
+
+        user.first_name = name
+        user.username = email
+        user.email = email
+        user.save()
+
+        client.phone = phone
+        client.company_name = company
+        client.website = website        # <-- Now saves website
+        client.address = address
+        client.admin_notes = admin_notes  # <-- Now saves notes
+        client.save()
+
+        messages.success(request, "Client updated successfully!")
+        return redirect('client_detail', pk=pk)  # RELOAD to show updated fields
+
+    return render(request, 'website/edit_client.html', {"client": client})
+
+# 4) DELETE CLIENT
+@login_required(login_url='admin_login')
+def delete_client(request, pk):
+    client = get_object_or_404(ClientProfile, pk=pk)
+
+    if request.method == "POST":
+        # Delete user + client profile
+        user = client.user
+        client.delete()
+        user.delete()
+
+        messages.error(request, "Client deleted successfully.")
+        return redirect('manage_clients')
+
+    return redirect('manage_clients')
+
+
+
+def admin_upload_document(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+
+    if request.method == "POST" and request.FILES.get("document"):
+        ProjectDocument.objects.create(
+            project=project,
+            attachment=request.FILES["document"],
+            uploaded_by="admin",
+            status="approved"
+        )
+        messages.success(request, "Project document uploaded successfully.")
+        return redirect("admin_project_details", project_id=project.id)
+
+    return redirect("admin_project_details", project.id)
+
+
+def approve_document(request, doc_id):
+    doc = get_object_or_404(ProjectDocument, id=doc_id)
+    doc.status = "approved"
+    doc.rejection_reason = ""
+    doc.save()
+    messages.success(request, "Client uploaded document approved successfully.")
+    return redirect("admin_project_details", doc.project.id)
+
+
+def reject_document(request, doc_id):
+    doc = get_object_or_404(ProjectDocument, id=doc_id)
+
+    if request.method == "POST":
+        reason = request.POST.get("reason")
+        doc.status = "rejected"
+        doc.rejection_reason = reason
+        doc.save()
+
+        messages.error(request, "Document rejected with reason.")
+        return redirect("admin_project_details", doc.project.id)
+
+    return render(request, "website/reject_document.html", {"doc": doc})
